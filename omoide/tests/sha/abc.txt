@@ -1,0 +1,4 @@
+# abc.txt
+# Copyright (C) 2008 梅どぶろく umedoblock
+
+abc

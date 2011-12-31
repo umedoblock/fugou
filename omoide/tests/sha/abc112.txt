@@ -1,0 +1,4 @@
+# abc112.txt
+# Copyright (C) 2008 梅どぶろく umedoblock
+
+abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu

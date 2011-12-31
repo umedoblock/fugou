@@ -1,0 +1,4 @@
+# abc56.txt
+# Copyright (C) 2008 梅どぶろく umedoblock
+
+abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq
