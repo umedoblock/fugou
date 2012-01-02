@@ -83,7 +83,6 @@ montgomery_gcdext(PyObject *self, PyObject *args)
     PyObject *ret, *a, *b;
     PyObject *x, *y, *gcd, *x1, *y1, *z1, *x2, *y2, *z2;
     PyObject *divmod, *div, *div_x1, *div_y1, *zero;
-    int count = 0;
 
     x2 = y2 = z2 = NULL;
 
