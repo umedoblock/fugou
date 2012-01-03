@@ -1,3 +1,4 @@
+import re
 import unittest
 
 from camellia import Camellia
@@ -28,6 +29,48 @@ class TestMontgomery(unittest.TestCase):
         dd = cm128.decrypt(cc)
         self.assertEqual(BLOCK_SIZE, len(dd))
         self.assertEqual(m, dd)
+
+    def test_all_vectors(self):
+        '''
+        got the text vector files from
+          http://info.isl.ntt.co.jp/crypt/camellia/dl/cryptrec/t_camellia.txt
+          http://info.isl.ntt.co.jp/crypt/camellia/dl/cryptrec/intermediate.txt
+        put it to
+          camellia/t_camellia.txt
+          camellia/intermediate.txt
+        '''
+
+        f = open('camellia/t_camellia.txt')
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            if re.match(r'^$', line):
+                continue
+            if re.match(r'^Camellia', line):
+                hit = re.search('\d\d\d', line)
+                key_size = int(hit.group())
+                continue
+            if re.match(r'^K', line):
+                hexes = line.split(':')[1]
+                k = bytes.fromhex(hexes)
+                cm = Camellia(k, key_size)
+                continue
+            if re.match(r'^P', line):
+                hexes = line.split(':')[1]
+                m = bytes.fromhex(hexes)
+                continue
+            if re.match(r'^C', line):
+                hexes = line.split(':')[1]
+                c = bytes.fromhex(hexes)
+
+            cc = cm.encrypt(m)
+            self.assertEqual(BLOCK_SIZE, len(cc))
+            self.assertEqual(c, cc)
+
+            dd = cm.decrypt(cc)
+            self.assertEqual(BLOCK_SIZE, len(dd))
+            self.assertEqual(m, dd)
+        f.close()
 
 if __name__ == '__main__':
     unittest.main()
