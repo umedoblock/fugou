@@ -100,7 +100,7 @@ class TestMontgomery(unittest.TestCase):
         self.assertEqual(expected_message, args[0])
 
     def test_no_exeption(self):
-        k = b'\00' * (128 // 8)
+        k = b'\00' * ((128 // 8) + 1)
         cm = Camellia(k, 128)
 
         m = b'\00' * (BLOCK_SIZE + 1)
