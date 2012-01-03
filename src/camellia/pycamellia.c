@@ -66,12 +66,25 @@ static PyObject *
 _decrypt(CamelliaObject *self, PyObject *args)
 {
     Py_buffer cipher;
+    char *c, *m;
+    PyBytesObject *text;
 
 fprintf(stderr, "_decrypt()\n");
     if (!PyArg_ParseTuple(args, "y*", &cipher))
         return NULL;
+
+    c = (char *)cipher.buf;
+
+    text = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, CM_BLOCKSIZE);
+    if(!text){
+        return NULL;
+    }
+    m = PyBytes_AsString((PyObject *)text);
+
+    camellia_decrypt((uchar *)m, (uchar *)c, &CM_KEY(self));
+
 fprintf(stderr, "_decrypt() end\n");
-    Py_RETURN_NONE;
+    return (PyObject *)text;
 }
 
 static int

@@ -26,7 +26,7 @@ class TestMontgomery(unittest.TestCase):
         cc = cm128.encrypt(m)
         print('cc =', cc)
         self.assertEqual(c, cc)
-        dd = cm128.encrypt(cc)
+        dd = cm128.decrypt(cc)
         self.assertEqual(m, dd)
 
 if __name__ == '__main__':
