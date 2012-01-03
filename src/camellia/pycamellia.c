@@ -45,7 +45,6 @@ _encrypt(CamelliaObject *self, PyObject *args)
     char *m, *c;
     PyBytesObject *cipher;
 
-fprintf(stderr, "_encrypt()\n");
     if (!PyArg_ParseTuple(args, "y*", &text))
         return NULL;
     m = (char *)text.buf;
@@ -58,7 +57,6 @@ fprintf(stderr, "_encrypt()\n");
 
     camellia_encrypt((uchar *)c, (uchar *)m, &CM_KEY(self));
 
-fprintf(stderr, "_encrypt() end\n");
     return (PyObject *)cipher;
 }
 
@@ -69,7 +67,6 @@ _decrypt(CamelliaObject *self, PyObject *args)
     char *c, *m;
     PyBytesObject *text;
 
-fprintf(stderr, "_decrypt()\n");
     if (!PyArg_ParseTuple(args, "y*", &cipher))
         return NULL;
 
@@ -83,7 +80,6 @@ fprintf(stderr, "_decrypt()\n");
 
     camellia_decrypt((uchar *)m, (uchar *)c, &CM_KEY(self));
 
-fprintf(stderr, "_decrypt() end\n");
     return (PyObject *)text;
 }
 
@@ -94,14 +90,13 @@ Camallia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
     uchar *uk;
     unt key_size = 0;
 
-fprintf(stderr, "_init()\n");
     if (!PyArg_ParseTuple(args, "y*I", &key, &key_size))
         return -1;
     uk = (uchar *)(key.buf);
     CM_KEY(self).keysize = key_size;
     camellia_keyset(&CM_KEY(self), uk, key_size);
     camellia_keygen(&CM_KEY(self));
-fprintf(stderr, "_init() end\n");
+
     return 0;
 }
 
