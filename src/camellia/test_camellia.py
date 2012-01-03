@@ -20,7 +20,14 @@ class TestMontgomery(unittest.TestCase):
         k256 = bytes.fromhex(''' 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00''')
         print('k128 = ', type(k128), k128)
         cm128 = Camellia(k128, 128)
-        print(cm128)
+        m = bytes.fromhex('80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
+        c = bytes.fromhex('07 92 3A 39 EB 0A 81 7D 1C 4D 87 BD B8 2D 1F 1C')
+        print('cm128 =', cm128)
+        cc = cm128.encrypt(m)
+        print('cc =', cc)
+        self.assertEqual(c, cc)
+        dd = cm128.encrypt(cc)
+        self.assertEqual(m, dd)
 
 if __name__ == '__main__':
     unittest.main()

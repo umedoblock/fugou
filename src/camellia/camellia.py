@@ -1,4 +1,5 @@
 from _camellia import _Camellia
+from _camellia import BLOCK_SIZE
 
 class CamelliaError: pass
 

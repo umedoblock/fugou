@@ -37,22 +37,25 @@ Camallia_dealloc(CamelliaObject* self)
 }
 
 static PyObject *
-_encrypt(PyObject *self, PyObject *args)
+_encrypt(CamelliaObject *self, PyObject *args)
 {
-    const char *text = NULL;
-
+    Py_buffer text;
+fprintf(stderr, "_encrypt()\n");
     if (!PyArg_ParseTuple(args, "y*", &text))
         return NULL;
+fprintf(stderr, "_encrypt() end\n");
     Py_RETURN_NONE;
 }
 
 static PyObject *
-_decrypt(PyObject *self, PyObject *args)
+_decrypt(CamelliaObject *self, PyObject *args)
 {
-    const char *cipher = NULL;
+    Py_buffer cipher;
 
-    if (!PyArg_ParseTuple(args, "y", &cipher))
+fprintf(stderr, "_decrypt()\n");
+    if (!PyArg_ParseTuple(args, "y*", &cipher))
         return NULL;
+fprintf(stderr, "_decrypt() end\n");
     Py_RETURN_NONE;
 }
 
@@ -63,12 +66,14 @@ Camallia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
     uchar *uk;
     unt key_size = 0;
 
+fprintf(stderr, "_init()\n");
     if (!PyArg_ParseTuple(args, "y*I", &key, &key_size))
         return -1;
     uk = (uchar *)(key.buf);
     self->cm_key.keysize = key_size;
     camellia_keyset(&(((CamelliaObject *)self)->cm_key), uk, key_size);
     camellia_keygen(&(((CamelliaObject *)self)->cm_key));
+fprintf(stderr, "_init() end\n");
     return 0;
 }
 
@@ -147,4 +152,3 @@ PyInit__camellia(void)
 
     return m;
 }
-
