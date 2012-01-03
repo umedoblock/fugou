@@ -8,15 +8,8 @@ class TestMontgomery(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test__init__(self):
-        '''
-        got the text vector files from
-          http://info.isl.ntt.co.jp/crypt/camellia/dl/cryptrec/t_camellia.txt
-          http://info.isl.ntt.co.jp/crypt/camellia/dl/cryptrec/intermediate.txt
-        put it to
-          camellia/t_camellia.txt
-          camellia/intermediate.txt
-        '''
+    def test_simple(self):
+        '''got test vector from t_camellia.txt at first'''
         k128 = bytes.fromhex('00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
         cm128 = Camellia(k128, 128)
         m = bytes.fromhex('80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
@@ -34,10 +27,8 @@ class TestMontgomery(unittest.TestCase):
         '''
         got the text vector files from
           http://info.isl.ntt.co.jp/crypt/camellia/dl/cryptrec/t_camellia.txt
-          http://info.isl.ntt.co.jp/crypt/camellia/dl/cryptrec/intermediate.txt
         put it to
           camellia/t_camellia.txt
-          camellia/intermediate.txt
         '''
 
         f = open('camellia/t_camellia.txt')
