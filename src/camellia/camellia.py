@@ -23,3 +23,17 @@ class Camellia:
         if cipher_size < BLOCK_SIZE:
             raise ValueError('cipher length must be longer than 16 octets.')
         return self.cm._decrypt(cipher)
+
+if __name__ == '__main__':
+    key_size = 128
+    k = b'\00' * (key_size // 8)
+
+    cm = Camellia(k, key_size)
+    m = b'\00' * BLOCK_SIZE
+    c = cm.encrypt(m)
+    d = cm.decrypt(c)
+
+    print('m =', m)
+    print('c =', c)
+    print('d =', d)
+    print('m == d is', m == d)
