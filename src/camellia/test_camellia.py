@@ -63,6 +63,51 @@ class TestMontgomery(unittest.TestCase):
             self.assertEqual(m, dd)
         f.close()
 
+    def test_exeption(self):
+        k = b'\00' * (128 // 8)
+        cm = Camellia(k, 128)
+
+        for invalid_keysize in (127, 129, 191, 193, 255, 257, 0, -1):
+            with self.assertRaises(ValueError) as raiz:
+                Camellia(k, invalid_keysize)
+            args = raiz.exception.args
+            self.assertEqual(args[0], 'key_size must be 128, 192 or 256.')
+
+        with self.assertRaises(ValueError) as raiz:
+            invalid_length_k = b'\00' * 15
+            Camellia(invalid_length_k, 128)
+        args = raiz.exception.args
+        self.assertEqual(args[0], 'len(key) * 8 must be longer than key_size.')
+
+        s = str(k)
+        with self.assertRaises(TypeError) as raiz:
+            Camellia(s, 128)
+        args = raiz.exception.args
+        self.assertEqual(args[0], 'type(key) must be bytes.')
+
+        m = b'\00' * (BLOCK_SIZE - 1)
+        with self.assertRaises(ValueError) as raiz:
+            cm.encrypt(m)
+        args = raiz.exception.args
+        expected_message = 'text length must be longer than 16 octets.'
+        self.assertEqual(expected_message, args[0])
+
+        c = b'\00' * (BLOCK_SIZE - 1)
+        with self.assertRaises(ValueError) as raiz:
+            cm.decrypt(c)
+        args = raiz.exception.args
+        expected_message = 'cipher length must be longer than 16 octets.'
+        self.assertEqual(expected_message, args[0])
+
+    def test_no_exeption(self):
+        k = b'\00' * (128 // 8)
+        cm = Camellia(k, 128)
+
+        m = b'\00' * (BLOCK_SIZE + 1)
+        cm.encrypt(m)
+
+        c = b'\00' * (BLOCK_SIZE + 1)
+        cm.decrypt(c)
+
 if __name__ == '__main__':
     unittest.main()
-

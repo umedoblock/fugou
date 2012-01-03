@@ -1,14 +1,14 @@
 from _camellia import _Camellia
 from _camellia import BLOCK_SIZE
 
-class CamelliaError: pass
-
 class Camellia:
     def __init__(self, key, key_size):
         if key_size not in (128, 192, 256):
-            raise CamelliaError('key_size must be 128, 192 or 256')
+            raise ValueError('key_size must be 128, 192 or 256.')
         if not isinstance(key, bytes):
-            raise TypeError('type(key) must be bytes')
+            raise TypeError('type(key) must be bytes.')
+        if len(key) * 8 < key_size:
+            raise ValueError('len(key) * 8 must be longer than key_size.')
 
         self.cm = _Camellia(key, key_size)
 
