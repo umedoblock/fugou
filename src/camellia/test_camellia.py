@@ -17,13 +17,9 @@ class TestMontgomery(unittest.TestCase):
           camellia/intermediate.txt
         '''
         k128 = bytes.fromhex('00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
-        k192 = bytes.fromhex(''' 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00''')
-        k256 = bytes.fromhex(''' 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00''')
-        print('k128 = ', type(k128), k128)
         cm128 = Camellia(k128, 128)
         m = bytes.fromhex('80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
         c = bytes.fromhex('07 92 3A 39 EB 0A 81 7D 1C 4D 87 BD B8 2D 1F 1C')
-        print('cm128 =', cm128)
 
         cc = cm128.encrypt(m)
         self.assertEqual(BLOCK_SIZE, len(cc))
