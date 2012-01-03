@@ -1,6 +1,7 @@
 import unittest
 
 from camellia import Camellia
+from camellia import BLOCK_SIZE
 
 class TestMontgomery(unittest.TestCase):
     def setUp(self):
@@ -23,10 +24,13 @@ class TestMontgomery(unittest.TestCase):
         m = bytes.fromhex('80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
         c = bytes.fromhex('07 92 3A 39 EB 0A 81 7D 1C 4D 87 BD B8 2D 1F 1C')
         print('cm128 =', cm128)
+
         cc = cm128.encrypt(m)
-        print('cc =', cc)
+        self.assertEqual(BLOCK_SIZE, len(cc))
         self.assertEqual(c, cc)
+
         dd = cm128.decrypt(cc)
+        self.assertEqual(BLOCK_SIZE, len(dd))
         self.assertEqual(m, dd)
 
 if __name__ == '__main__':
