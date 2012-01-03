@@ -5,6 +5,8 @@
 
 #include "camellia.h"
 
+#define CM_KEY(obj) ((((CamelliaObject *)obj)->cm_key))
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -24,7 +26,7 @@ Camallia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     CamelliaObject *self = NULL;
     self = (CamelliaObject *)type->tp_alloc(type, 0);
     if (self != NULL) {
-        self->cm_key.keysize = 0;
+        CM_KEY(self).keysize = 0;
     }
 
     return (PyObject *)self;
@@ -40,11 +42,24 @@ static PyObject *
 _encrypt(CamelliaObject *self, PyObject *args)
 {
     Py_buffer text;
+    char *m, *c;
+    PyBytesObject *cipher;
+
 fprintf(stderr, "_encrypt()\n");
     if (!PyArg_ParseTuple(args, "y*", &text))
         return NULL;
+    m = (char *)text.buf;
+
+    cipher = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, CM_BLOCKSIZE);
+    if(!cipher){
+        return NULL;
+    }
+    c = PyBytes_AsString((PyObject *)cipher);
+
+    camellia_encrypt((uchar *)c, (uchar *)m, &CM_KEY(self));
+
 fprintf(stderr, "_encrypt() end\n");
-    Py_RETURN_NONE;
+    return (PyObject *)cipher;
 }
 
 static PyObject *
@@ -70,9 +85,9 @@ fprintf(stderr, "_init()\n");
     if (!PyArg_ParseTuple(args, "y*I", &key, &key_size))
         return -1;
     uk = (uchar *)(key.buf);
-    self->cm_key.keysize = key_size;
-    camellia_keyset(&(((CamelliaObject *)self)->cm_key), uk, key_size);
-    camellia_keygen(&(((CamelliaObject *)self)->cm_key));
+    CM_KEY(self).keysize = key_size;
+    camellia_keyset(&CM_KEY(self), uk, key_size);
+    camellia_keygen(&CM_KEY(self));
 fprintf(stderr, "_init() end\n");
     return 0;
 }
