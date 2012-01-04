@@ -3,6 +3,7 @@ import unittest
 
 from camellia import Camellia
 from camellia import BLOCK_SIZE
+from camellia import _calc_size
 
 class TestMontgomery(unittest.TestCase):
     def setUp(self):
@@ -11,21 +12,19 @@ class TestMontgomery(unittest.TestCase):
     def test_cbc(self):
         text_sizes = (BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE + 1, 100)
         for key_size in (128, 192, 256):
-            print('key_size =', key_size)
             k = b'\x00' * (key_size // 8)
             cm = Camellia(k, key_size)
             for text_size in text_sizes:
-                print('text_size =', text_size)
-                m = b'\x83' * text_size
-                cc = cm.encrypt_cbc(m)
-                # print('cc =', cc)
-                # self.assertEqual(BLOCK_SIZE, len(cc))
-                # self.assertEqual(c, cc)
+                m = int.to_bytes(text_size, 1, 'big') * text_size
+                iv = b'\x00' * BLOCK_SIZE
+                cc = cm.encrypt_cbc(m, iv)
+                cipher_size, snip_size, padding_size = \
+                    _calc_size(text_size, BLOCK_SIZE)
+                self.assertEqual(cipher_size, len(cc))
 
-                # dd = cm.decrypt_cbc(cc)
-                # self.assertEqual(text_size, len(dd))
-                # self.assertEqual(m, dd)
-            print()
+                dd = cm.decrypt_cbc(cc)
+                self.assertEqual(text_size, len(dd))
+                self.assertEqual(m, dd)
 
     def test_simple(self):
         '''got test vector from t_camellia.txt at first'''

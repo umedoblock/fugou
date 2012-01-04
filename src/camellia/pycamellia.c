@@ -20,6 +20,18 @@ static PyMemberDef Camallia_members[] = {
     {NULL}  // Sentinel
 };
 
+void dump(uchar *data, int length, int width)
+{
+    int i;
+    for(i=0;i<length;i++){
+        fprintf(stderr, "%02x ", data[i]);
+        if((i+1)%width == 0)
+            fprintf(stderr, "\n");
+    }
+    if(i%width)
+        fprintf(stderr, "\n");
+}
+
 static PyObject *
 Camallia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -84,20 +96,24 @@ _decrypt(CamelliaObject *self, PyObject *args)
 }
 
 typedef struct {
+    unt text_size;
     unt cipher_size;
     unt snip_size;
     unt padding_size;
-} size_brother;
+    unt block_size;
+} _size_brother;
 
 static void
-_calc_size(size_brother *sizes, unt text_size)
+_calc_size(_size_brother *sb, unt text_size, unt block_size)
 {
-    sizes->snip_size = text_size % CM_BLOCKSIZE;
-    if(sizes->snip_size == 0)
-        sizes->padding_size = 0;
+    sb->text_size = text_size;
+    sb->block_size = block_size;
+    sb->snip_size = text_size % block_size;
+    if(sb->snip_size == 0)
+        sb->padding_size = block_size;
     else
-        sizes->padding_size = CM_BLOCKSIZE - sizes->snip_size;
-    sizes->cipher_size = CM_BLOCKSIZE + text_size + sizes->padding_size;
+        sb->padding_size = block_size - sb->snip_size;
+    sb->cipher_size = block_size + text_size + sb->padding_size;
 }
 
 static void
@@ -106,25 +122,35 @@ encrypt_mode_cbc(
     uchar *iv,
     uchar *m,
     void *key,
-    unt cipher_size,
-    unt block_size,
+    _size_brother *sb,
     void (*encrypt)(uchar *,uchar *,void *)
 )
 {
     int i;
+    unt encrypted_size = 0, block_size = sb->block_size;
+    uchar last_octet, *cp = c;
 
     memcpy(c, iv, block_size);
-    c += block_size;
-    cipher_size -= block_size;
-    while(cipher_size){
+    while(encrypted_size < sb->cipher_size - block_size * 2){
+        c += block_size;
         for(i=0;i<block_size;i++)
             c[i] = iv[i] ^ m[i];
-        encrypt(c, m, key);
+        encrypt(c, c, key);
         iv = c;
-        c += block_size;
         m += block_size;
-        cipher_size -= block_size;
+        encrypted_size += block_size;
     }
+    c += block_size;
+
+    memcpy(c, m,  sb->snip_size);
+    memset(c + sb->snip_size, 0x9f, sb->padding_size);
+    last_octet = c[block_size - 1];
+    last_octet = (last_octet & (~(block_size - 1))) | sb->snip_size;
+    c[block_size - 1] = last_octet;
+
+    for(i=0;i<sb->block_size;i++)
+        c[i] ^= iv[i];
+    encrypt(c, c, key);
 }
 
 static PyObject *
@@ -134,13 +160,13 @@ _encrypt_cbc(CamelliaObject *self, PyObject *args)
     unt text_size;
     char *m, *c, *iv;
     PyBytesObject *cipher;
-    size_brother sb;
+    _size_brother sb;
 
     if (!PyArg_ParseTuple(args, "y*y*I", &iv_, &text, &text_size))
         return NULL;
     m = (char *)text.buf;
     iv = (char *)iv_.buf;
-    _calc_size(&sb, text_size);
+    _calc_size(&sb, text_size, CM_BLOCKSIZE);
 
     cipher = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, sb.cipher_size);
     if(!cipher){
@@ -149,9 +175,72 @@ _encrypt_cbc(CamelliaObject *self, PyObject *args)
     c = PyBytes_AsString((PyObject *)cipher);
 
     encrypt_mode_cbc((uchar *)c, (uchar *)iv, (uchar *)m, &CM_KEY(self),
-                     sb.cipher_size, CM_BLOCKSIZE, camellia_encrypt);
+                     &sb, camellia_encrypt);
 
     return (PyObject *)cipher;
+}
+
+static unt
+decrypt_mode_cbc(
+    uchar *m,
+    uchar *c,
+    void *key,
+    _size_brother *sb,
+    void (*decrypt)(uchar *,uchar *,void *)
+)
+{
+    int i;
+    uchar *d = m, *iv, *cp = c;
+    unt text_size, decrypted_size = 0;
+    unt block_size = sb->block_size, snip_size;
+
+    iv = c;
+    c += block_size;
+    while(decrypted_size < sb->cipher_size - block_size){
+        decrypt(d, c, key);
+        for(i=0;i<block_size;i++)
+            m[i] = iv[i] ^ d[i];
+        iv = c;
+        c += block_size;
+        m += block_size;
+        d = m;
+        decrypted_size += block_size;
+    }
+
+    snip_size = m[-1] % block_size;
+    text_size = sb->cipher_size - block_size * 2 + snip_size;
+    _calc_size(&sb, text_size, block_size);
+
+    return text_size;
+}
+
+static PyObject *
+_decrypt_cbc(CamelliaObject *self, PyObject *args)
+{
+    Py_buffer cipher;
+    unt cipher_size, text_size;
+    char *m, *c;
+    PyBytesObject *text;
+    _size_brother sb;
+
+    if (!PyArg_ParseTuple(args, "y*I", &cipher, &cipher_size))
+        return NULL;
+    c = (char *)cipher.buf;
+
+    text = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, cipher_size);
+    if(!text){
+        return NULL;
+    }
+    m = PyBytes_AsString((PyObject *)text);
+
+    sb.cipher_size = cipher_size;
+    sb.block_size = CM_BLOCKSIZE;
+    text_size = decrypt_mode_cbc((uchar *)m, (uchar *)c, &CM_KEY(self),
+                      &sb, camellia_decrypt);
+
+    Py_SIZE(text) = text_size;
+    m[text_size] = '\0';
+    return (PyObject *)text;
 }
 
 static int
@@ -176,6 +265,8 @@ static PyMethodDef Camallia_methods[] = {
     {"_decrypt", (PyCFunction )_decrypt, METH_VARARGS, "_decrypt()"},
     {"_encrypt_cbc", (PyCFunction )_encrypt_cbc,
         METH_VARARGS, "_encrypt_cbc()"},
+    {"_decrypt_cbc", (PyCFunction )_decrypt_cbc,
+        METH_VARARGS, "_decrypt_cbc()"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
 

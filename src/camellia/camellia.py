@@ -2,6 +2,15 @@ from _camellia import _Camellia
 from _camellia import BLOCK_SIZE
 import random
 
+def _calc_size(text_size, block_size):
+    snip_size = text_size % block_size
+    if(snip_size == 0):
+        padding_size = block_size
+    else:
+        padding_size = block_size - snip_size
+    cipher_size = block_size + text_size + padding_size
+    return cipher_size, snip_size, padding_size
+
 class Camellia:
     def __init__(self, key, key_size):
         if key_size not in (128, 192, 256):
@@ -43,6 +52,16 @@ class Camellia:
 
         # print('self.cm._encrypt_cbc(iv, text, text_size)')
         return self.cm._encrypt_cbc(iv, text, text_size)
+
+    def decrypt_cbc(self, cipher):
+        cipher_size = len(cipher)
+        if not cipher_size:
+            raise ValueError('len(cipher) must be greater than zero')
+        if cipher_size % BLOCK_SIZE:
+            raise ValueError('len(cipher) must be multiply by BLOCK_SIZE')
+
+        # print('self.cm._decrypt_cbc(iv, cipher, cipher_size)')
+        return self.cm._decrypt_cbc(cipher, cipher_size)
 
 if __name__ == '__main__':
     key_size = 128
