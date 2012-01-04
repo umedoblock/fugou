@@ -36,6 +36,7 @@ static PyObject *
 Camallia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     CamelliaObject *self = NULL;
+
     self = (CamelliaObject *)type->tp_alloc(type, 0);
     if (self != NULL) {
         CM_KEY(self).keysize = 0;
@@ -128,7 +129,7 @@ encrypt_mode_cbc(
 {
     int i;
     unt encrypted_size = 0, block_size = sb->block_size;
-    uchar last_octet, *cp = c;
+    uchar last_octet;
 
     memcpy(c, iv, block_size);
     while(encrypted_size < sb->cipher_size - block_size * 2){
