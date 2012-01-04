@@ -5,7 +5,7 @@ from camellia import Camellia
 from camellia import BLOCK_SIZE
 from camellia import _calc_size
 
-class TestMontgomery(unittest.TestCase):
+class TestCamellia(unittest.TestCase):
     def setUp(self):
         pass
 
