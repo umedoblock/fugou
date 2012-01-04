@@ -191,7 +191,7 @@ decrypt_mode_cbc(
 )
 {
     int i;
-    uchar *d = m, *iv, *cp = c;
+    uchar *d = m, *iv;
     unt text_size, decrypted_size = 0;
     unt block_size = sb->block_size, snip_size;
 
@@ -281,7 +281,7 @@ static struct PyModuleDef Camallia_module = {
 
 static PyTypeObject Camallia_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_camellia.Camellia",             /* tp_name */
+    "_camellia._Camellia",             /* tp_name */
     sizeof(CamelliaObject),             /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)Camallia_dealloc, /* tp_dealloc */
