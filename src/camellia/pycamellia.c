@@ -83,6 +83,77 @@ _decrypt(CamelliaObject *self, PyObject *args)
     return (PyObject *)text;
 }
 
+typedef struct {
+    unt cipher_size;
+    unt snip_size;
+    unt padding_size;
+} size_brother;
+
+static void
+_calc_size(size_brother *sizes, unt text_size)
+{
+    sizes->snip_size = text_size % CM_BLOCKSIZE;
+    if(sizes->snip_size == 0)
+        sizes->padding_size = 0;
+    else
+        sizes->padding_size = CM_BLOCKSIZE - sizes->snip_size;
+    sizes->cipher_size = CM_BLOCKSIZE + text_size + sizes->padding_size;
+}
+
+static void
+encrypt_mode_cbc(
+    uchar *c,
+    uchar *iv,
+    uchar *m,
+    void *key,
+    unt cipher_size,
+    unt block_size,
+    void (*encrypt)(uchar *,uchar *,void *)
+)
+{
+    int i;
+
+    memcpy(c, iv, block_size);
+    c += block_size;
+    cipher_size -= block_size;
+    while(cipher_size){
+        for(i=0;i<block_size;i++)
+            c[i] = iv[i] ^ m[i];
+        encrypt(c, m, key);
+        iv = c;
+        c += block_size;
+        m += block_size;
+        cipher_size -= block_size;
+    }
+}
+
+static PyObject *
+_encrypt_cbc(CamelliaObject *self, PyObject *args)
+{
+    Py_buffer text, iv_;
+    unt text_size;
+    char *m, *c, *iv;
+    PyBytesObject *cipher;
+    size_brother sb;
+
+    if (!PyArg_ParseTuple(args, "y*y*I", &iv_, &text, &text_size))
+        return NULL;
+    m = (char *)text.buf;
+    iv = (char *)iv_.buf;
+    _calc_size(&sb, text_size);
+
+    cipher = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, sb.cipher_size);
+    if(!cipher){
+        return NULL;
+    }
+    c = PyBytes_AsString((PyObject *)cipher);
+
+    encrypt_mode_cbc((uchar *)c, (uchar *)iv, (uchar *)m, &CM_KEY(self),
+                     sb.cipher_size, CM_BLOCKSIZE, camellia_encrypt);
+
+    return (PyObject *)cipher;
+}
+
 static int
 Camallia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
 {
@@ -103,6 +174,8 @@ Camallia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
 static PyMethodDef Camallia_methods[] = {
     {"_encrypt", (PyCFunction )_encrypt, METH_VARARGS, "_encrypt()"},
     {"_decrypt", (PyCFunction )_decrypt, METH_VARARGS, "_decrypt()"},
+    {"_encrypt_cbc", (PyCFunction )_encrypt_cbc,
+        METH_VARARGS, "_encrypt_cbc()"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
 

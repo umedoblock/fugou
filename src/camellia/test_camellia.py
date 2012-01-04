@@ -8,6 +8,25 @@ class TestMontgomery(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_cbc(self):
+        text_sizes = (BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE + 1, 100)
+        for key_size in (128, 192, 256):
+            print('key_size =', key_size)
+            k = b'\x00' * (key_size // 8)
+            cm = Camellia(k, key_size)
+            for text_size in text_sizes:
+                print('text_size =', text_size)
+                m = b'\x83' * text_size
+                cc = cm.encrypt_cbc(m)
+                # print('cc =', cc)
+                # self.assertEqual(BLOCK_SIZE, len(cc))
+                # self.assertEqual(c, cc)
+
+                # dd = cm.decrypt_cbc(cc)
+                # self.assertEqual(text_size, len(dd))
+                # self.assertEqual(m, dd)
+            print()
+
     def test_simple(self):
         '''got test vector from t_camellia.txt at first'''
         k128 = bytes.fromhex('00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00')
