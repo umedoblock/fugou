@@ -1,4 +1,4 @@
-import re
+# Copyright 2011 梅どぶろく(umedoblock)
 import datetime
 import unittest
 
