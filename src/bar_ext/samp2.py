@@ -1,8 +1,6 @@
 import bar
-baar = None
-from bar import Bar_abstract
 
-baar = bar.Bar(8)
+baar = bar.Bar()
 print('baar =')
 print(baar)
 print()

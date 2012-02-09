@@ -8,17 +8,7 @@ char c_extension[] = "C_EXTENSION pybar.c";
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    int num;
-    char CONST[sizeof(c_extension)];
 } BarObject;
-
-static PyMemberDef Bar_members[] = {
-    {"num", T_INT, offsetof(BarObject, num), 0,
-        "Bar number"},
-    {"CONST", T_STRING_INPLACE, offsetof(BarObject, CONST), READONLY,
-        "c extension"},
-    {NULL}  // Sentinel
-};
 
 static PyObject *
 Bar_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -75,39 +65,12 @@ Bar_dealloc(BarObject* self)
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyObject *
-Bar_number(BarObject *self, PyObject *args)
-{
-    return Py_BuildValue("i", self->num);
-}
-
-static PyObject *
-Bar_string(BarObject *self, PyObject *args)
-{
-//  return Py_BuildValue("s", self->ss);
-    return Py_BuildValue("s", "string.");
-}
-
-static PyObject *
-Bar_absmethod(BarObject *self, PyObject *args)
-{
-    return Py_BuildValue("s", "abstractmethod");
-}
-
-static PyMethodDef Bar_methods[] = {
-    {"number", (PyCFunction )Bar_number, METH_NOARGS, "number()"},
-    {"string", (PyCFunction )Bar_string, METH_NOARGS, "string()"},
-    {"absmethod", (PyCFunction )Bar_absmethod,
-        METH_NOARGS, "absmethod()"},
-    {NULL, NULL, 0, NULL}   /* sentinel */
-};
-
 static struct PyModuleDef Bar_module = {
     PyModuleDef_HEAD_INIT,
     "_bar", /* name of module */
     NULL, /* module documentation */
     -1,
-    Bar_methods
+    NULL
 };
 
 static PyTypeObject Bar_base_Type = {
@@ -139,8 +102,8 @@ static PyTypeObject Bar_base_Type = {
     0,                     /* tp_weaklistoffset */
     0,                     /* tp_iter */
     0,                     /* tp_iternext */
-    Bar_methods,             /* tp_methods */
-    Bar_members,             /* tp_members */
+    0,                         /* tp_methods */
+    0,                         /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
