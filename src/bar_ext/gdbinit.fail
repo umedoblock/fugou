@@ -1,0 +1,26 @@
+b PyObject_Dir
+run samp2.py
+c
+b _dir_object
+b _generic_dir
+
+# b _PyObject_GenericGetAttrWithDict
+# b PyObject_GenericGetAttr
+# b object.c:1326
+# b object.c:1420
+# b object.c:1378
+# b object.c:1379
+# b object.c:1381
+# b PyObject_GetAttrString
+# b PyObject_GetAttr
+# b _PyObject_GenericGetAttrWithDict
+# b descr_check
+
+# b object.c:1383
+# b _dir_object
+
+##########################################################
+# ここより下は debug のために必要となる
+# 下が一番大事な気がする
+# b descrobject.c:147
+
