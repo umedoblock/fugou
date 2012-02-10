@@ -1,0 +1,55 @@
+# symbol-file build/lib.linux-i686-3.2-pydebug/_foo.cpython-32dm.so
+# run samp3.py
+# symbol-file build/lib.linux-i686-3.2-pydebug/_foo.cpython-32dm.so
+# b module_load
+# b import_submodule
+# b import.c:2894
+# b _PyImport_LoadDynamicModule
+
+# b load_module if strcmp(name, "_foo") == 0
+# b _PyImport_LoadDynamicModule if strcmp(name, "_foo") == 0
+
+# b dynload_shlib.c:100
+
+# b Foo_init
+# info b
+# Function "Foo_init" not defined.
+
+b importdl.c:52 if strcmp(name, "_foo") == 0
+# ここ以下より pyfoo.c に対して break point を設定できる。
+
+run samp2.py
+b Foo_init
+b builtin_dir
+
+info b
+
+info sharedlibrary
+
+# b subtype_dict
+# b getset_get
+
+# b super_init
+# b super_dealloc
+# b super_repr
+# b super_getattro
+# b super_descr_get
+# b super_traverse
+
+# Foo__init()に入った状態。
+s
+c
+bt 4
+# b importdl.c:51
+# b importdl.c:62
+# b importdl.c:63
+
+# 0x002fb7e0  0x002fc078  Yes python3.2/lib-dynload/_bisect.cpython-32dm.so
+# 0x002ff910  0x00301818  Yes python3.2/lib-dynload/_heapq.cpython-32dm.so
+# ここで _foo に停止。 
+# c 2
+# bt 1
+
+# break PyMethod_New
+# b super_getattro
+# b typeobject.c:6068
