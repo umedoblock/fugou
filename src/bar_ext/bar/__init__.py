@@ -4,7 +4,7 @@ class Bar_abstract(metaclass=ABCMeta):
     pass
 
 try:
-    raise ImportError
+#   raise ImportError
     from _bar import Bar_base
     print('you use c extension')
   # print('_bar.Bar_base = 0x{:x}'.format(id(_bar.Bar_base)))

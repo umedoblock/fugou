@@ -1,0 +1,44 @@
+# b getset_get
+# b subtype_dict
+# b PyObject_Dir
+# b _dir_object
+# b _PyObject_GenericGetAttrWithDict
+# b PyObject_GenericGetAttr
+# b PyObject_GetAttr
+# b PyObject_GetAttrString
+# b _generic_dir
+# b builtin_dir
+b main.c:599
+run samp2.py
+b inherit_special
+
+c
+pyo base
+pyo type
+
+until 3606
+pyo type->tp_dict
+p type->tp_dictoffset
+p type->tp_basicsize
+p type->tp_flags
+
+c
+pyo base
+pyo type
+
+until 3606
+pyo type->tp_dict
+p type->tp_dictoffset
+p type->tp_basicsize
+p type->tp_flags
+
+c
+pyo base
+pyo type
+
+until 3606
+pyo type->tp_dict
+p type->tp_dictoffset
+p type->tp_basicsize
+p type->tp_flags
+
