@@ -1,6 +1,6 @@
 import bar
 
-baar = bar.Bar()
+baar = bar.Bar_base()
 print('baar =')
 print(baar)
 print()

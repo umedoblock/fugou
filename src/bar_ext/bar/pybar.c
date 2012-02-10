@@ -26,6 +26,8 @@ fprintf(stderr, "\n");
     return (PyObject *)self;
 }
 
+#define _TP_BASE 1
+
 static int
 Bar_init(BarObject *self, PyObject *args, PyObject *kwds)
 {
@@ -41,10 +43,14 @@ Py_INCREF(Bar_base);
 fprintf(stderr, "Bar_base = %p\n", Bar_base);
 PyObject_Print((PyObject *)Bar_base, stderr, 0); fprintf(stderr, "\n");
 
+if (_TP_BASE){
 Bar_abstract = Bar_base->tp_base;
 Py_INCREF(Bar_abstract);
 fprintf(stderr, "Bar_abstract = %p\n", Bar_abstract);
 PyObject_Print((PyObject *)Bar_abstract, stderr, 0); fprintf(stderr, "\n");
+}
+else{
+}
 
 /*
 endless loop
@@ -93,7 +99,15 @@ static PyTypeObject Bar_base_Type = {
     0,                         /* tp_getattro */
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
+#if _TP_BASE
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+#else
+    Py_TPFLAGS_DEFAULT,
+#endif
+/*
+#define Py_TPFLAGS_BASE_EXC_SUBCLASS    (1L<<30)
+#define Py_TPFLAGS_TYPE_SUBCLASS        (1L<<31)
+*/
                                /* tp_flags */
     "Bar_base class objects",           /* tp_doc */
     0,                     /* tp_traverse */
@@ -130,14 +144,21 @@ fprintf(stderr, "PyInit__bar(1)\n");
 fprintf(stderr, "Bar_abstract = %p\n", Bar_abstract);
 PyObject_Print(Bar_abstract, stderr, 0);
 fprintf(stderr, "\n");
-    Bar_base_Type.tp_new = Bar_new;
 
-if(1)
+if (_TP_BASE){
     Bar_base_Type.tp_base = (struct _typeobject *)Bar_abstract;
-else
-    Bar_base_Type.tp_base = &PyBaseObject_Type;
-
     Py_INCREF(Bar_base_Type.tp_base);
+}
+else{
+if (1){
+    Bar_base_Type.tp_base = &PyBaseObject_Type;
+    Py_INCREF(Bar_base_Type.tp_base);
+}
+else{
+    Bar_base_Type.tp_base = NULL;
+}
+}
+
     if (PyType_Ready(&Bar_base_Type) < 0)
         return NULL;
     Py_INCREF(&Bar_base_Type);
