@@ -8,6 +8,11 @@ char c_extension[] = "C_EXTENSION pybar.c";
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
+    int i;
+    int n;
+    int t;
+    int m;
+    int z[1000];
 } BarObject;
 
 static PyObject *
@@ -26,28 +31,43 @@ fprintf(stderr, "\n");
     return (PyObject *)self;
 }
 
-#define _TP_BASE 1
+#define _TP_BASE 0
 
 static int
 Bar_init(BarObject *self, PyObject *args, PyObject *kwds)
 {
     int ret = 0;
+    PyObject **ptr;
     PyTypeObject *Bar_abstract = NULL, *Bar_base = NULL;
 fprintf(stderr, "Bar_init()\n");
-
-fprintf(stderr, "self = %p\n", self);
-PyObject_Print((PyObject *)self, stderr, 0); fprintf(stderr, "\n");
+// fprintf(stderr, "sizeof(BarObject) = %d\n", sizeof(BarObject));
+fprintf(stderr, "    self = %p\n", self);
+ptr = _PyObject_GetDictPtr(self);
+fprintf(stderr, "    _PyObject_GetDictPtr(self) = 0x%p\n", *ptr);
+fprintf(stderr, "    Py_TYPE(self)->tp_dictoffset = %d\n", Py_TYPE(self)->tp_dictoffset);
+fprintf(stderr, "    Py_TYPE(self)->tp_basicsize = %d\n", Py_TYPE(self)->tp_basicsize);
+fprintf(stderr, "    Py_TYPE(self)->tp_itemsize = %d\n",  Py_TYPE(self)->tp_itemsize);
+PyObject_Print((PyObject *)Py_TYPE(self), stderr, 0); fprintf(stderr, "\n");
+fprintf(stderr, "\n");
 
 Bar_base = Py_TYPE(self)->tp_base;
 Py_INCREF(Bar_base);
-fprintf(stderr, "Bar_base = %p\n", Bar_base);
+fprintf(stderr, "    Bar_base = %p\n", Bar_base);
+fprintf(stderr, "    Bar_base->tp_dictoffset = %d\n", Bar_base->tp_dictoffset);
+fprintf(stderr, "    Bar_base->tp_basicsize = %d\n", Bar_base->tp_basicsize);
+fprintf(stderr, "    Bar_base->tp_itemsize = %d\n", Bar_base->tp_itemsize);
 PyObject_Print((PyObject *)Bar_base, stderr, 0); fprintf(stderr, "\n");
+fprintf(stderr, "\n");
 
 if (_TP_BASE){
 Bar_abstract = Bar_base->tp_base;
 Py_INCREF(Bar_abstract);
-fprintf(stderr, "Bar_abstract = %p\n", Bar_abstract);
+fprintf(stderr, "    Bar_abstract = %p\n", Bar_abstract);
+fprintf(stderr, "    Bar_abstract->tp_dictoffset = %d\n", Bar_abstract->tp_dictoffset);
+fprintf(stderr, "    Bar_abstract->tp_basicsize = %d\n", Bar_abstract->tp_basicsize);
+fprintf(stderr, "    Bar_abstract->tp_itemsize = %d\n", Bar_abstract->tp_itemsize);
 PyObject_Print((PyObject *)Bar_abstract, stderr, 0); fprintf(stderr, "\n");
+fprintf(stderr, "\n");
 }
 else{
 }
@@ -102,7 +122,8 @@ static PyTypeObject Bar_base_Type = {
 #if _TP_BASE
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
 #else
-    Py_TPFLAGS_DEFAULT,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    // Py_TPFLAGS_DEFAULT,
 #endif
 /*
 #define Py_TPFLAGS_BASE_EXC_SUBCLASS    (1L<<30)
@@ -146,12 +167,15 @@ PyObject_Print(Bar_abstract, stderr, 0);
 fprintf(stderr, "\n");
 
 if (_TP_BASE){
+    // Bar_base_Type.tp_dictoffset = 88;
     Bar_base_Type.tp_base = (struct _typeobject *)Bar_abstract;
     Py_INCREF(Bar_base_Type.tp_base);
 }
 else{
 if (1){
-    Bar_base_Type.tp_base = &PyBaseObject_Type;
+    Bar_base_Type.tp_base = &PySuper_Type;
+    Bar_base_Type.tp_base = &PyList_Type;
+    Bar_base_Type.tp_base = &PyTuple_Type;
     Py_INCREF(Bar_base_Type.tp_base);
 }
 else{
