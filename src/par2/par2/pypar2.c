@@ -23,11 +23,14 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    par2_t *par2;
+    par2_t par2;
+    char *mem;
 } Par2Object;
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
+    {"bits", T_INT, offsetof(Par2Object, par2.bits), 0, ""},
+    {"redundancy", T_INT, offsetof(Par2Object, par2.redundancy), 0, ""},
     {NULL}  // Sentinel
 };
 
@@ -41,7 +44,7 @@ fprintf(stderr, "Par2_new(type=%p, args=%p, kwds=%p)\n", type, args, kwds);
     if (self != NULL) {
 fprintf(stderr, "self = %p\n", self);
 fprintf(stderr, "type->tp_init = %p\n", type->tp_init);
-fprintf(stderr, "self->par2 = %p\n", self->par2);
+fprintf(stderr, "self->mem = %p\n", self->mem);
     }
 fprintf(stderr, "\n");
 
@@ -51,18 +54,20 @@ fprintf(stderr, "\n");
 static int
 Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
 {
-    int par2_t_size = sizeof(par2_t);
+    int gf_and_gfi_size = 0, vander_matrix_size = 0;
     int allocate_size = 0;
     int bits = -1, redundancy = -1;
     PyObject *bits_obj = NULL, *redundancy_obj = NULL;
 
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
-    allocate_size += par2_t_size;
-    self->par2 = PyMem_Malloc(allocate_size);
-    if (self->par2 == NULL)
+    allocate_size = gf_and_gfi_size + vander_matrix_size + 100;
+    self->mem = PyMem_Malloc(allocate_size);
+fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
+                                    allocate_size, self->mem);
+    if (self->mem == NULL)
         return -1;
 
-fprintf(stderr, "self->par2=%p\n", self->par2);
+fprintf(stderr, "self->par2.bits=%d\n", self->par2.bits);
 fprintf(stderr, "bits=%d\n", bits);
 bits_obj = PyObject_GetAttrString((PyObject *)self, "bits");
 fprintf(stderr, "bits_obj=\n");
@@ -70,6 +75,7 @@ PyObject_Print(bits_obj, stderr, 0);
 fprintf(stderr, "\n");
 Py_DECREF(bits_obj);
 
+fprintf(stderr, "self->par2.redundancy=%d\n", self->par2.redundancy);
 fprintf(stderr, "redundancy=%d\n", redundancy);
 redundancy_obj = PyObject_GetAttrString((PyObject *)self, "redundancy");
 fprintf(stderr, "redundancy_obj=\n");
@@ -88,7 +94,7 @@ static void
 Par2_dealloc(Par2Object* self)
 {
 fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
-    PyMem_Free(self->par2);
+    PyMem_Free(self->mem);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
