@@ -60,12 +60,20 @@ fprintf(stderr, "\n");
 static int
 Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
 {
-    int gf_and_gfi_size = 0, vander_matrix_size = 0;
+    int gf_size = 0, vander_matrix_size = 0;
     int allocate_size = 0;
 
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
-    allocate_size = gf_and_gfi_size + vander_matrix_size + 100;
+    gf_size = self->par2.w * sizeof(ushort);
+    vander_matrix_size = \
+        self->par2.redundancy * self->par2.redundancy * sizeof(ushort);
+    allocate_size = gf_size * 2 + vander_matrix_size;
+fprintf(stderr, "gf_size = %d\n", gf_size);
+fprintf(stderr, "vander_matrix_size = %d\n", vander_matrix_size);
     self->mem = PyMem_Malloc(allocate_size);
+    self->par2.gf = (ushort *)self->mem;
+    self->par2.gfi = (ushort *)(self->mem + gf_size);
+    self->par2.vander_matrix = (ushort *)(self->mem + gf_size * 2);
 fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
                                     allocate_size, self->mem);
     if (self->mem == NULL)
