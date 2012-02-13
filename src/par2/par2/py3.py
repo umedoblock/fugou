@@ -124,7 +124,8 @@ class Par2Archive:
 try:
     from _par2 import _Par2 as par2_base
 except ImportError as e:
-    print(e.args[0])
+    print('cannot import _Par2')
+    print('reason: ', e.args[0])
     par2_base = object
 
 print('par2_base is {}'.format(par2_base))
@@ -165,6 +166,8 @@ class Par2(par2_base):
         if Par2.C_EXTENSION:
             su = super(Par2, self)
             su.__init__()
+            su._make_gf_and_gfi()
+            su._make_vandermonde_matrix()
         else:
             fmt = {4: 'B', 8: 'B', 16: 'H'}
             self.format = '>{}'.format(fmt[bits])

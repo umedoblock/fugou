@@ -110,6 +110,42 @@ fprintf(stderr, "Par2_free(self=%p)\n", self);
     PyObject_Free(self);
 }
 
+static PyObject *
+Par2__make_gf_and_gfi(Par2Object *self)
+{
+    int i, bit_pattern = 1;
+    par2_t *p2 = &self->par2;
+    ushort *gf = p2->gf, *gfi = p2->gfi;
+
+    for(i=0;i<p2->gf_max;i++){
+        if (bit_pattern & p2->w)
+            bit_pattern ^= p2->poly;
+        gf[bit_pattern] = i;
+        gfi[i] = bit_pattern;
+        bit_pattern <<= 1;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+Par2__make_vandermonde_matrix(Par2Object *self)
+{
+    par2_t *p2 = &self->par2;
+    ushort *vm = p2->vander_matrix;
+    int i, j, redundancy = p2->redundancy;
+
+    for(i=0;i<redundancy;i++)
+        vm[i] = 1;
+
+    for(j=1;j<redundancy;j++)
+        for(i=0;i<redundancy;i++)
+            vm[j * redundancy + i] = \
+                _mul(self, vm[(j-1) * redundancy + i], i + 1);
+
+    Py_RETURN_NONE;
+}
+
 void dump(void *ptr, int length, int width)
 {
     int i;
@@ -158,6 +194,10 @@ Py_dump(Par2Object *self, PyObject *args)
 }
 
 static PyMethodDef Par2_methods[] = {
+    {"_make_gf_and_gfi", (PyCFunction )Par2__make_gf_and_gfi, \
+        METH_NOARGS, "_make_gf_and_gfi()"},
+    {"_make_vandermonde_matrix", (PyCFunction )Par2__make_vandermonde_matrix, \
+        METH_NOARGS, "_make_vandermonde_matrix()"},
     {"dump", (PyCFunction )Py_dump, METH_VARARGS, "dump()"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
