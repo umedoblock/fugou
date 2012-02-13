@@ -51,11 +51,18 @@ fprintf(stderr, "\n");
 static int
 Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
 {
+    int par2_t_size = sizeof(par2_t);
+    int allocate_size = 0;
     int bits = -1, redundancy = -1;
     PyObject *bits_obj = NULL, *redundancy_obj = NULL;
 
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
+    allocate_size += par2_t_size;
+    self->par2 = PyMem_Malloc(allocate_size);
+    if (self->par2 == NULL)
+        return -1;
 
+fprintf(stderr, "self->par2=%p\n", self->par2);
 fprintf(stderr, "bits=%d\n", bits);
 bits_obj = PyObject_GetAttrString((PyObject *)self, "bits");
 fprintf(stderr, "bits_obj=\n");
@@ -81,6 +88,7 @@ static void
 Par2_dealloc(Par2Object* self)
 {
 fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
+    PyMem_Free(self->par2);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
