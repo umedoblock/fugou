@@ -131,9 +131,11 @@ print('par2_base is {}'.format(par2_base))
 
 class Par2(par2_base):
 
-    C_EXTENSION = False
+    if par2_base == object:
+        C_EXTENSION = False
 
     def __init__(self, bits, redundancy=0):
+        print('Par2.__init__()')
       # refs #22 and galois_{4,8,16}bits.log
       # poly = {4: 25, 8: 501, 16: 131053}
         poly = {4: 19, 8: 285, 16: 65581}
@@ -162,8 +164,12 @@ class Par2(par2_base):
         fmt = {4: 'B', 8: 'B', 16: 'H'}
         self.format = '>{}'.format(fmt[bits])
 
-        self._make_gf_and_gfi()
-        self._make_vandermonde_matrix()
+        if Par2.C_EXTENSION:
+            super(Par2, self).__init__(4, 17)
+        else:
+            self._make_gf_and_gfi()
+            self._make_vandermonde_matrix()
+        print('Par2.C_EXTENSION =', Par2.C_EXTENSION)
 
     def encode(self, part_slots):
         slot_size = \

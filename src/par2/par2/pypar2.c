@@ -60,6 +60,8 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
         return -1;
 fprintf(stderr, "bits=%d\n", bits);
 fprintf(stderr, "redundancy=%d\n", redundancy);
+fprintf(stderr, "dir(self)=\n");
+PyObject_Dir((PyObject *)self);
 fprintf(stderr, "\n");
 
     return 0;

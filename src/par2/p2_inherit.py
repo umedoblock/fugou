@@ -1,7 +1,5 @@
 from par2 import *
 
-print(dir())
-
 p2 = Par2(4)
 print('p2 =', p2)
 print('p2.__sizeof__() =', p2.__sizeof__())

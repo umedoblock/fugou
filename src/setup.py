@@ -29,7 +29,7 @@ from distutils.core import setup, Extension
 
 # module_camellia = Extension('camellia', sources = ['camellia/pycamellia.c'])
 module_par2 = \
-    Extension('_par2', sources = ['par2/pypar2.c'])
+    Extension('_par2', sources = ['par2/par2/pypar2.c'])
 
 module_montgomery = \
     Extension('_montgomery', sources = ['montgomery/pymontgomery.c'])
