@@ -62,8 +62,6 @@ Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
 {
     int gf_and_gfi_size = 0, vander_matrix_size = 0;
     int allocate_size = 0;
-    int bits = -1, redundancy = -1;
-    PyObject *bits_obj = NULL, *redundancy_obj = NULL;
 
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
     allocate_size = gf_and_gfi_size + vander_matrix_size + 100;
@@ -81,21 +79,6 @@ fprintf(stderr, "self->par2.digits = %d\n", self->par2.digits);
 fprintf(stderr, "self->par2.redundancy = %d\n", self->par2.redundancy);
 fprintf(stderr, "self->par2.octets = %d\n", self->par2.octets);
 fprintf(stderr, "self->par2.vertical_size = %d\n", self->par2.vertical_size);
-
-fprintf(stderr, "bits=%d\n", bits);
-bits_obj = PyObject_GetAttrString((PyObject *)self, "bits");
-fprintf(stderr, "bits_obj=\n");
-PyObject_Print(bits_obj, stderr, 0);
-fprintf(stderr, "\n");
-Py_DECREF(bits_obj);
-
-fprintf(stderr, "self->par2.redundancy=%d\n", self->par2.redundancy);
-fprintf(stderr, "redundancy=%d\n", redundancy);
-redundancy_obj = PyObject_GetAttrString((PyObject *)self, "redundancy");
-fprintf(stderr, "redundancy_obj=\n");
-PyObject_Print(redundancy_obj, stderr, 0);
-fprintf(stderr, "\n");
-Py_DECREF(redundancy_obj);
 
 fprintf(stderr, "dir(self)=\n");
 PyObject_Dir((PyObject *)self);
