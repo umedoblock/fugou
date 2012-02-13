@@ -139,7 +139,6 @@ class Par2(par2_base):
       # refs #22 and galois_{4,8,16}bits.log
       # poly = {4: 25, 8: 501, 16: 131053}
         poly = {4: 19, 8: 285, 16: 65581}
-        octets = {4: 1, 8: 1, 16: 2}
         try:
             self.poly = poly[bits]
         except KeyError:
@@ -159,14 +158,16 @@ class Par2(par2_base):
             message += 'redundancy must be '
             message += '2 <= redundancy <= {}'.format(self.gf_max)
             raise Par2Error(message)
+        octets = {4: 1, 8: 1, 16: 2}
         self.octets = octets[bits]
         self.vertical_size = self.redundancy * self.octets
-        fmt = {4: 'B', 8: 'B', 16: 'H'}
-        self.format = '>{}'.format(fmt[bits])
 
         if Par2.C_EXTENSION:
-            super(Par2, self).__init__()
+            su = super(Par2, self)
+            su.__init__()
         else:
+            fmt = {4: 'B', 8: 'B', 16: 'H'}
+            self.format = '>{}'.format(fmt[bits])
             self._make_gf_and_gfi()
             self._make_vandermonde_matrix()
 
