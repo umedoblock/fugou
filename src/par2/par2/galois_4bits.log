@@ -1,0 +1,4 @@
+n_bits = 4
+galois_field =
+19, 0b10011
+25, 0b11001
