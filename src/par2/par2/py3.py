@@ -400,6 +400,9 @@ class Par2(par2_base):
         return a ^ b
 
     def _mul(self, a, b):
+        if Par2.C_EXTENSION:
+            return super()._mul(a, b)
+
         if a == 0 or b == 0:
             return 0
       # print('a =', a, 'b =', b)
@@ -411,6 +414,10 @@ class Par2(par2_base):
     def _div(self, a, b):
         if b == 0:
             raise ZeroDivisionError('tried to devide by zero')
+
+        if Par2.C_EXTENSION:
+            return super()._div(a, b)
+
         if a == 0:
             return 0
         c = self.gf[a] - self.gf[b]

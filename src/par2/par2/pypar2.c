@@ -110,6 +110,63 @@ fprintf(stderr, "Par2_free(self=%p)\n", self);
     PyObject_Free(self);
 }
 
+static ushort
+_mul(Par2Object *self, ushort a, ushort b)
+{
+    int c;
+    par2_t *p2 = &self->par2;
+
+    if (a == 0 || b == 0)
+        return 0;
+
+    c = p2->gf[a] + p2->gf[b];
+
+    if (c < p2->gf_max)
+        return p2->gfi[c];
+    return p2->gfi[c - p2->gf_max];
+}
+
+static PyObject *
+Par2__mul(Par2Object *self, PyObject *args)
+{
+    ushort a, b, c;
+
+    if (!PyArg_ParseTuple(args, "HH", &a, &b))
+        return NULL;
+
+    c = _mul(self, a, b);
+
+    return Py_BuildValue("H", c);
+}
+
+static ushort
+_div(Par2Object *self, ushort a, ushort b)
+{
+    int c;
+    par2_t *p2 = &self->par2;
+
+    if (a == 0)
+        return 0;
+
+    c = p2->gf[a] - p2->gf[b];
+    if (c >= 0)
+        return p2->gfi[c];
+    return p2->gfi[c + p2->gf_max];
+}
+
+static PyObject *
+Par2__div(Par2Object *self, PyObject *args)
+{
+    ushort a, b, c;
+
+    if (!PyArg_ParseTuple(args, "HH", &a, &b))
+        return NULL;
+
+    c = _div(self, a, b);
+
+    return Py_BuildValue("H", c);
+}
+
 static PyObject *
 Par2__make_gf_and_gfi(Par2Object *self)
 {
@@ -198,6 +255,8 @@ static PyMethodDef Par2_methods[] = {
         METH_NOARGS, "_make_gf_and_gfi()"},
     {"_make_vandermonde_matrix", (PyCFunction )Par2__make_vandermonde_matrix, \
         METH_NOARGS, "_make_vandermonde_matrix()"},
+    {"_mul", (PyCFunction )Par2__mul, METH_VARARGS, "_mul()"},
+    {"_div", (PyCFunction )Par2__div, METH_VARARGS, "_div()"},
     {"dump", (PyCFunction )Py_dump, METH_VARARGS, "dump()"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
