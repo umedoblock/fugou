@@ -52,14 +52,24 @@ static int
 Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
 {
     int bits = -1, redundancy = -1;
-    static char *kwlist[] = {"bits", "redundancy", NULL};
+    PyObject *bits_obj = NULL, *redundancy_obj = NULL;
 
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
-    if (! PyArg_ParseTupleAndKeywords(args, kwds, "i|i", kwlist,
-                                      &bits, &redundancy))
-        return -1;
+
 fprintf(stderr, "bits=%d\n", bits);
+bits_obj = PyObject_GetAttrString((PyObject *)self, "bits");
+fprintf(stderr, "bits_obj=\n");
+PyObject_Print(bits_obj, stderr, 0);
+fprintf(stderr, "\n");
+Py_DECREF(bits_obj);
+
 fprintf(stderr, "redundancy=%d\n", redundancy);
+redundancy_obj = PyObject_GetAttrString((PyObject *)self, "redundancy");
+fprintf(stderr, "redundancy_obj=\n");
+PyObject_Print(redundancy_obj, stderr, 0);
+fprintf(stderr, "\n");
+Py_DECREF(redundancy_obj);
+
 fprintf(stderr, "dir(self)=\n");
 PyObject_Dir((PyObject *)self);
 fprintf(stderr, "\n");

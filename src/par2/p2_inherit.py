@@ -1,6 +1,6 @@
 from par2 import *
 
-p2 = Par2(4)
+p2 = Par2(4, 11)
 print('p2 =', p2)
 print('p2.__sizeof__() =', p2.__sizeof__())
 # print('p2.__dict__ =', p2.__dict__)

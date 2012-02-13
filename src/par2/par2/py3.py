@@ -165,11 +165,10 @@ class Par2(par2_base):
         self.format = '>{}'.format(fmt[bits])
 
         if Par2.C_EXTENSION:
-            super(Par2, self).__init__(4, 17)
+            super(Par2, self).__init__()
         else:
             self._make_gf_and_gfi()
             self._make_vandermonde_matrix()
-        print('Par2.C_EXTENSION =', Par2.C_EXTENSION)
 
     def encode(self, part_slots):
         slot_size = \
