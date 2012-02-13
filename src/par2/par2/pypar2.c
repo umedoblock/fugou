@@ -29,8 +29,14 @@ typedef struct {
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
+    {"poly", T_INT, offsetof(Par2Object, par2.poly), 0, ""},
     {"bits", T_INT, offsetof(Par2Object, par2.bits), 0, ""},
+    {"w", T_INT, offsetof(Par2Object, par2.w), 0, ""},
+    {"gf_max", T_INT, offsetof(Par2Object, par2.gf_max), 0, ""},
+    {"digits", T_INT, offsetof(Par2Object, par2.digits), 0, ""},
     {"redundancy", T_INT, offsetof(Par2Object, par2.redundancy), 0, ""},
+    {"octets", T_INT, offsetof(Par2Object, par2.octets), 0, ""},
+    {"vertical_size", T_INT, offsetof(Par2Object, par2.vertical_size), 0, ""},
     {NULL}  // Sentinel
 };
 
@@ -67,7 +73,15 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
     if (self->mem == NULL)
         return -1;
 
+fprintf(stderr, "self->par2.poly=%d\n", self->par2.poly);
 fprintf(stderr, "self->par2.bits=%d\n", self->par2.bits);
+fprintf(stderr, "self->par2.w=%d\n", self->par2.w);
+fprintf(stderr, "self->par2.gf_max = %d\n", self->par2.gf_max);
+fprintf(stderr, "self->par2.digits = %d\n", self->par2.digits);
+fprintf(stderr, "self->par2.redundancy = %d\n", self->par2.redundancy);
+fprintf(stderr, "self->par2.octets = %d\n", self->par2.octets);
+fprintf(stderr, "self->par2.vertical_size = %d\n", self->par2.vertical_size);
+
 fprintf(stderr, "bits=%d\n", bits);
 bits_obj = PyObject_GetAttrString((PyObject *)self, "bits");
 fprintf(stderr, "bits_obj=\n");
