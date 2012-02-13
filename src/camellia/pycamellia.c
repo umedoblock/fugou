@@ -13,7 +13,7 @@ typedef struct {
     CAMELLIA_KEY cm_key;
 } CamelliaObject;
 
-static PyMemberDef Camallia_members[] = {
+static PyMemberDef Camellia_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
     {"key_size", T_UINT, offsetof(CamelliaObject, cm_key.keysize), 0,
         "Camellia Key Length"},
@@ -33,7 +33,7 @@ void dump(uchar *data, int length, int width)
 }
 
 static PyObject *
-Camallia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+Camellia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     CamelliaObject *self = NULL;
 
@@ -46,7 +46,7 @@ Camallia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 }
 
 static void
-Camallia_dealloc(CamelliaObject* self)
+Camellia_dealloc(CamelliaObject* self)
 {
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -176,7 +176,7 @@ _encrypt_cbc(CamelliaObject *self, PyObject *args)
     c = PyBytes_AsString((PyObject *)cipher);
 
     encrypt_mode_cbc((uchar *)c, (uchar *)iv, (uchar *)m, &CM_KEY(self),
-                     &sb, camellia_encrypt);
+                     &sb, (void *)camellia_encrypt);
 
     return (PyObject *)cipher;
 }
@@ -210,7 +210,7 @@ decrypt_mode_cbc(
 
     snip_size = m[-1] % block_size;
     text_size = sb->cipher_size - block_size * 2 + snip_size;
-    _calc_size(&sb, text_size, block_size);
+    _calc_size(sb, text_size, block_size);
 
     return text_size;
 }
@@ -237,7 +237,7 @@ _decrypt_cbc(CamelliaObject *self, PyObject *args)
     sb.cipher_size = cipher_size;
     sb.block_size = CM_BLOCKSIZE;
     text_size = decrypt_mode_cbc((uchar *)m, (uchar *)c, &CM_KEY(self),
-                      &sb, camellia_decrypt);
+                      &sb, (void *)camellia_decrypt);
 
     Py_SIZE(text) = text_size;
     m[text_size] = '\0';
@@ -245,7 +245,7 @@ _decrypt_cbc(CamelliaObject *self, PyObject *args)
 }
 
 static int
-Camallia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
+Camellia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
 {
     Py_buffer key;
     uchar *uk;
@@ -261,7 +261,7 @@ Camallia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static PyMethodDef Camallia_methods[] = {
+static PyMethodDef Camellia_methods[] = {
     {"_encrypt", (PyCFunction )_encrypt, METH_VARARGS, "_encrypt()"},
     {"_decrypt", (PyCFunction )_decrypt, METH_VARARGS, "_decrypt()"},
     {"_encrypt_cbc", (PyCFunction )_encrypt_cbc,
@@ -271,20 +271,20 @@ static PyMethodDef Camallia_methods[] = {
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
 
-static struct PyModuleDef Camallia_module = {
+static struct PyModuleDef Camellia_module = {
     PyModuleDef_HEAD_INIT,
     "_camellia", /* name of module */
     NULL, /* module documentation */
     -1,
-    Camallia_methods
+    Camellia_methods
 };
 
-static PyTypeObject Camallia_Type = {
+static PyTypeObject Camellia_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_camellia._Camellia",             /* tp_name */
     sizeof(CamelliaObject),             /* tp_basicsize */
     0,                         /* tp_itemsize */
-    (destructor)Camallia_dealloc, /* tp_dealloc */
+    (destructor)Camellia_dealloc, /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -307,17 +307,17 @@ static PyTypeObject Camallia_Type = {
     0,                     /* tp_weaklistoffset */
     0,                     /* tp_iter */
     0,                     /* tp_iternext */
-    Camallia_methods,             /* tp_methods */
-    Camallia_members,             /* tp_members */
+    Camellia_methods,             /* tp_methods */
+    Camellia_members,             /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    (initproc)Camallia_init,      /* tp_init */
+    (initproc)Camellia_init,      /* tp_init */
     0,                         /* tp_alloc */
-    Camallia_new,                 /* tp_new */
+    Camellia_new,                 /* tp_new */
     0,                         /* tp_free Low-level free-memory routine */
 };
 
@@ -326,15 +326,15 @@ PyInit__camellia(void)
 {
     PyObject *m;
 
-    Camallia_Type.tp_new = Camallia_new;
-    if (PyType_Ready(&Camallia_Type) < 0)
+    Camellia_Type.tp_new = Camellia_new;
+    if (PyType_Ready(&Camellia_Type) < 0)
         return NULL;
-    Py_INCREF(&Camallia_Type);
+    Py_INCREF(&Camellia_Type);
 
-    m = PyModule_Create(&Camallia_module);
+    m = PyModule_Create(&Camellia_module);
     if (m == NULL)
         return NULL;
-    PyModule_AddObject(m, "_Camellia", (PyObject *)&Camallia_Type);
+    PyModule_AddObject(m, "_Camellia", (PyObject *)&Camellia_Type);
 
     PyModule_AddIntConstant(m, "BLOCK_SIZE", CM_BLOCKSIZE);
 
