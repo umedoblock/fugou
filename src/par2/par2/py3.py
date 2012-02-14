@@ -147,6 +147,29 @@ class Par2_abstract(metaclass=ABCMeta):
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
 
+    def _make_gf_and_gfi(self):
+        self.gf = [None] * self.w
+        self.gfi = [None] * self.w
+
+        bit_pattern = 1
+        for i in range(self.gf_max):
+            if bit_pattern & self.w:
+                bit_pattern ^= self.poly
+            self.gf[bit_pattern] = i
+            self.gfi[i] = bit_pattern
+            bit_pattern <<= 1
+
+    def _make_vandermonde_matrix(self):
+        vander_matrix = [None] * self.redundancy
+        vm = vander_matrix
+        vm[0] = [1] * self.redundancy
+        for j in range(1, self.redundancy):
+            vm[j] = [None] * self.redundancy
+            for i in range(self.redundancy):
+                vm[j][i] = self._mul(vm[j-1][i], i + 1)
+        self.vander_matrix = vm
+      # self.view_matrix(vm)
+
     def _mul(self, a, b):
         if a == 0 or b == 0:
             return 0
@@ -166,16 +189,6 @@ class Par2_base(Par2_abstract):
 
     def _add(self, a, b):
         return a ^ b
-
-    def _pow(self, a, x):
-        if a == 0:
-            raise RuntimeError('cannot accept argment a is zero')
-        if x == 0 or a == 1:
-            return 1
-        ret = a
-        for i in range(x):
-            ret = self._mul(ret, a)
-        return ret
 
 try:
 #   raise ImportError('test')
@@ -219,16 +232,15 @@ class Par2(Par2_base):
         self.octets = octets[bits]
         self.vertical_size = self.redundancy * self.octets
 
-        if Par2.C_EXTENSION:
-            su = super(Par2, self)
-            su.__init__()
-            su._make_gf_and_gfi()
-            su._make_vandermonde_matrix()
-        else:
+        su = super(Par2, self)
+        su.__init__()
+
+        if not Par2.C_EXTENSION:
             fmt = {4: 'B', 8: 'B', 16: 'H'}
             self.format = '>{}'.format(fmt[bits])
-            self._make_gf_and_gfi()
-            self._make_vandermonde_matrix()
+
+        su._make_gf_and_gfi()
+        su._make_vandermonde_matrix()
 
     def encode(self, part_slots):
         slot_size = \
@@ -416,29 +428,6 @@ class Par2(Par2_base):
 
         return inverse_matrix
 
-    def _make_gf_and_gfi(self):
-        self.gf = [None] * self.w
-        self.gfi = [None] * self.w
-
-        bit_pattern = 1
-        for i in range(self.gf_max):
-            if bit_pattern & self.w:
-                bit_pattern ^= self.poly
-            self.gf[bit_pattern] = i
-            self.gfi[i] = bit_pattern
-            bit_pattern <<= 1
-
-    def _make_vandermonde_matrix(self):
-        vander_matrix = [None] * self.redundancy
-        vm = vander_matrix
-        vm[0] = [1] * self.redundancy
-        for j in range(1, self.redundancy):
-            vm[j] = [None] * self.redundancy
-            for i in range(self.redundancy):
-                vm[j][i] = self._mul(vm[j-1][i], i + 1)
-        self.vander_matrix = vm
-      # self.view_matrix(vm)
-
     def _make_square_matrix(self, value=None):
         square_matrix = [None] * self.redundancy
         for i in range(self.redundancy):
@@ -478,6 +467,16 @@ class Par2(Par2_base):
             raise ZeroDivisionError('tried to devide by zero')
 
         return super()._div(a, b)
+
+    def _pow(self, a, x):
+        if a == 0:
+            raise RuntimeError('cannot accept argment a is zero')
+        if x == 0 or a == 1:
+            return 1
+        ret = a
+        for i in range(x):
+            ret = self._mul(ret, a)
+        return ret
 
     def _make_part_or_parity_slots(self, slot_size):
         part_or_parity_slots = [None] * self.redundancy
