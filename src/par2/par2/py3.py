@@ -121,22 +121,48 @@ class Par2Archive:
         for index in parity_indexies:
             self.set_parity(index, None)
 
+from abc import ABCMeta, abstractmethod, abstractproperty
+class Par2_abstract(metaclass=ABCMeta):
+
+    @abstractmethod
+    def _make_gf_and_gfi(self):
+        pass
+
+    @abstractmethod
+    def _make_vandermonde_matrix(self):
+        pass
+
+    @abstractmethod
+    def _mul(self, a, b):
+        pass
+
+    @abstractmethod
+    def _div(self, a, b):
+        pass
+
+#   @abstractmethod
+#   def _add(self, a, b):
+#       pass
+
 try:
-    from _par2 import _Par2 as par2_base
+#   raise ImportError('test')
+    from _par2 import _Par2
+    class Par2_base(_Par2, Par2_abstract):
+        pass
+
 except ImportError as e:
     print('cannot import _Par2')
     print('reason: ', e.args[0])
-    par2_base = object
 
-print('par2_base is {}'.format(par2_base))
-
-class Par2(par2_base):
-
-    if par2_base == object:
+    class Par2_base(Par2_abstract):
         C_EXTENSION = False
 
+print('Par2_base is {}'.format(Par2_base))
+
+class Par2(Par2_base):
+
     def __init__(self, bits, redundancy=0):
-        print('Par2.__init__()')
+      # print('Par2.__init__()')
       # refs #22 and galois_{4,8,16}bits.log
       # poly = {4: 25, 8: 501, 16: 131053}
         poly = {4: 19, 8: 285, 16: 65581}
