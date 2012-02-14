@@ -148,9 +148,6 @@ class Par2_base(Par2_abstract):
     C_EXTENSION = False
 
     def _mul(self, a, b):
-        if Par2.C_EXTENSION:
-            return super()._mul(a, b)
-
         if a == 0 or b == 0:
             return 0
       # print('a =', a, 'b =', b)
@@ -160,12 +157,6 @@ class Par2_base(Par2_abstract):
         return self.gfi[c - self.gf_max]
 
     def _div(self, a, b):
-        if b == 0:
-            raise ZeroDivisionError('tried to devide by zero')
-
-        if Par2.C_EXTENSION:
-            return super()._div(a, b)
-
         if a == 0:
             return 0
         c = self.gf[a] - self.gf[b]
@@ -481,6 +472,12 @@ class Par2(Par2_base):
       # print('encode_size = {}'.format(encode_size))
       # print('in _calculate_size()')
         return slot_size, snip_size, padding_size, encode_size
+
+    def _div(self, a, b):
+        if b == 0:
+            raise ZeroDivisionError('tried to devide by zero')
+
+        return super()._div(a, b)
 
     def _make_part_or_parity_slots(self, slot_size):
         part_or_parity_slots = [None] * self.redundancy
