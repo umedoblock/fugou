@@ -111,6 +111,29 @@ fprintf(stderr, "Par2_free(self=%p)\n", self);
 }
 
 static ushort
+_add(ushort a, ushort b)
+{
+    int c;
+
+    c = a ^ b;
+
+    return c;
+}
+
+static PyObject *
+Par2__add(Par2Object *self, PyObject *args)
+{
+    ushort a, b, c;
+
+    if (!PyArg_ParseTuple(args, "HH", &a, &b))
+        return NULL;
+
+    c = _add(a, b);
+
+    return Py_BuildValue("H", c);
+}
+
+static ushort
 _mul(Par2Object *self, ushort a, ushort b)
 {
     int c;
@@ -255,6 +278,7 @@ static PyMethodDef Par2_methods[] = {
         METH_NOARGS, "_make_gf_and_gfi()"},
     {"_make_vandermonde_matrix", (PyCFunction )Par2__make_vandermonde_matrix, \
         METH_NOARGS, "_make_vandermonde_matrix()"},
+    {"_add", (PyCFunction )Par2__add, METH_VARARGS, "_add()"},
     {"_mul", (PyCFunction )Par2__mul, METH_VARARGS, "_mul()"},
     {"_div", (PyCFunction )Par2__div, METH_VARARGS, "_div()"},
     {"dump", (PyCFunction )Py_dump, METH_VARARGS, "dump()"},

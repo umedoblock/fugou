@@ -140,9 +140,51 @@ class Par2_abstract(metaclass=ABCMeta):
     def _div(self, a, b):
         pass
 
-#   @abstractmethod
-#   def _add(self, a, b):
-#       pass
+    @abstractmethod
+    def _add(self, a, b):
+        pass
+
+class Par2_base(Par2_abstract):
+    C_EXTENSION = False
+
+    def _mul(self, a, b):
+        if Par2.C_EXTENSION:
+            return super()._mul(a, b)
+
+        if a == 0 or b == 0:
+            return 0
+      # print('a =', a, 'b =', b)
+        c = self.gf[a] + self.gf[b]
+        if c < self.gf_max:
+            return self.gfi[c]
+        return self.gfi[c - self.gf_max]
+
+    def _div(self, a, b):
+        if b == 0:
+            raise ZeroDivisionError('tried to devide by zero')
+
+        if Par2.C_EXTENSION:
+            return super()._div(a, b)
+
+        if a == 0:
+            return 0
+        c = self.gf[a] - self.gf[b]
+        if c >= 0:
+            return self.gfi[c]
+        return self.gfi[c + self.gf_max]
+
+    def _add(self, a, b):
+        return a ^ b
+
+    def _pow(self, a, x):
+        if a == 0:
+            raise RuntimeError('cannot accept argment a is zero')
+        if x == 0 or a == 1:
+            return 1
+        ret = a
+        for i in range(x):
+            ret = self._mul(ret, a)
+        return ret
 
 try:
 #   raise ImportError('test')
@@ -153,9 +195,6 @@ try:
 except ImportError as e:
     print('cannot import _Par2')
     print('reason: ', e.args[0])
-
-    class Par2_base(Par2_abstract):
-        C_EXTENSION = False
 
 print('Par2_base is {}'.format(Par2_base))
 
@@ -421,45 +460,6 @@ class Par2(Par2_base):
             e[i][i] = 1
       # self.view_matrix(e)
         return e
-
-    def _add(self, a, b):
-        return a ^ b
-
-    def _mul(self, a, b):
-        if Par2.C_EXTENSION:
-            return super()._mul(a, b)
-
-        if a == 0 or b == 0:
-            return 0
-      # print('a =', a, 'b =', b)
-        c = self.gf[a] + self.gf[b]
-        if c < self.gf_max:
-            return self.gfi[c]
-        return self.gfi[c - self.gf_max]
-
-    def _div(self, a, b):
-        if b == 0:
-            raise ZeroDivisionError('tried to devide by zero')
-
-        if Par2.C_EXTENSION:
-            return super()._div(a, b)
-
-        if a == 0:
-            return 0
-        c = self.gf[a] - self.gf[b]
-        if c >= 0:
-            return self.gfi[c]
-        return self.gfi[c + self.gf_max]
-
-    def _pow(self, a, x):
-        if a == 0:
-            raise RuntimeError('cannot accept argment a is zero')
-        if x == 0 or a == 1:
-            return 1
-        ret = a
-        for i in range(x):
-            ret = self._mul(ret, a)
-        return ret
 
     def _calculate_size(self, data_size):
         if not 1 <= data_size <= DATA_SIZE_MAX:
