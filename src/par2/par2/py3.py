@@ -125,6 +125,14 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 class Par2_abstract(metaclass=ABCMeta):
 
     @abstractmethod
+    def _mul_matrixes(self, matrix, inverse_matrix):
+        pass
+
+    @abstractmethod
+    def _make_square_matrix(self, value=None):
+        pass
+
+    @abstractmethod
     def _make_gf_and_gfi(self):
         pass
 
@@ -144,8 +152,42 @@ class Par2_abstract(metaclass=ABCMeta):
     def _add(self, a, b):
         pass
 
+#   @abstractmethod
+#   def _solve_inverse_matrix(self, matrix):
+#       pass
+
+    @abstractmethod
+    def _make_e_matrix(self):
+        pass
+
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
+
+    def _mul_matrixes(self, a, b):
+        answer = self._make_square_matrix()
+        for j in range(self.redundancy):
+            # print('koko 2')
+            for i in range(self.redundancy):
+                tmp = 0
+                # bb = [b[h][i] for h in range(self.redundancy)]
+                for k in range(self.redundancy):
+                    muled = self._mul(a[j][k], b[k][i])
+                    tmp = self._add(tmp, muled)
+                answer[j][i] = tmp
+        return answer
+
+    def _make_square_matrix(self, value=None):
+        square_matrix = [None] * self.redundancy
+        for i in range(self.redundancy):
+            square_matrix[i] = [value] * self.redundancy
+        return square_matrix
+
+    def _make_e_matrix(self):
+        e = self._make_square_matrix(0)
+        for i in range(self.redundancy):
+            e[i][i] = 1
+      # self.view_matrix(e)
+        return e
 
     def _make_gf_and_gfi(self):
         self.gf = [None] * self.w
@@ -350,19 +392,6 @@ class Par2(Par2_base):
                 part = self._add(part, tmp)
             answer[j] = part
 
-    def _mul_matrixes(self, a, b):
-        answer = self._make_square_matrix()
-        for j in range(self.redundancy):
-            # print('koko 2')
-            for i in range(self.redundancy):
-                tmp = 0
-                bb = [b[h][i] for h in range(self.redundancy)]
-                for k in range(self.redundancy):
-                    muled = self._mul(a[j][k], b[k][i])
-                    tmp = self._add(tmp, muled)
-                answer[j][i] = tmp
-        return answer
-
     def _solve_inverse_matrix(self, matrix):
         matrix = copy.deepcopy(matrix)
         im = inverse_matrix = self._make_e_matrix()
@@ -427,19 +456,6 @@ class Par2(Par2_base):
       # print()
 
         return inverse_matrix
-
-    def _make_square_matrix(self, value=None):
-        square_matrix = [None] * self.redundancy
-        for i in range(self.redundancy):
-            square_matrix[i] = [value] * self.redundancy
-        return square_matrix
-
-    def _make_e_matrix(self):
-        e = self._make_square_matrix(0)
-        for i in range(self.redundancy):
-            e[i][i] = 1
-      # self.view_matrix(e)
-        return e
 
     def _calculate_size(self, data_size):
         if not 1 <= data_size <= DATA_SIZE_MAX:

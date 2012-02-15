@@ -226,6 +226,77 @@ Par2__make_vandermonde_matrix(Par2Object *self)
     Py_RETURN_NONE;
 }
 
+static PyBytesObject *
+Par2__make_square_matrix(Par2Object *self)
+{
+    par2_t *p2 = &self->par2;
+    int redundancy = p2->redundancy;
+    int matrix_size = 0;
+    PyBytesObject *matrix = NULL;
+
+    matrix_size = sizeof(ushort) * redundancy * redundancy;
+    matrix = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, matrix_size);
+
+    return matrix;
+}
+
+static PyObject *
+Par2__make_e_matrix(Par2Object *self)
+{
+    par2_t *p2 = &self->par2;
+    int redundancy = p2->redundancy;
+    int i, matrix_size = 0;
+    PyBytesObject *matrix = NULL;
+    ushort *mt;
+
+    matrix = Par2__make_square_matrix(self);
+    if (matrix == NULL)
+        return NULL;
+    mt = (ushort *)PyBytes_AS_STRING(matrix);
+    matrix_size = PyBytes_GET_SIZE(matrix);
+    memset(mt, '\0', matrix_size);
+
+    for(i=0;i<redundancy;i++)
+        mt[i * redundancy + i] = 1;
+
+    return (PyObject *)matrix;
+}
+
+static PyObject *
+Par2__mul_matrixes(Par2Object *self, PyObject *args)
+{
+    par2_t *p2 = &self->par2;
+    int redundancy = p2->redundancy;
+    int i, j, k;
+    PyBytesObject *answer = NULL, *a, *b;
+    ushort *ans, *a_mt, *b_mt, tmp, muled;
+
+    if (!PyArg_ParseTuple(args, "OO", &a, &b))
+        return NULL;
+
+    answer = Par2__make_square_matrix(self);
+    if (answer == NULL)
+        return NULL;
+    ans = (ushort *)PyBytes_AS_STRING(answer);
+
+    a_mt = (ushort *)PyBytes_AS_STRING(a);
+    b_mt = (ushort *)PyBytes_AS_STRING(b);
+
+    for (j=0;j<redundancy;j++){
+        for (i=0;i<redundancy;i++){
+            tmp = 0x0000;
+            for (k=0;k<redundancy;k++){
+                muled = _mul(self, a_mt[j * redundancy + k], \
+                                   b_mt[k * redundancy + i]);
+                tmp = _add(tmp, muled);
+            }
+            ans[j * redundancy + i] = tmp;
+        }
+    }
+
+    return (PyObject *)answer;
+}
+
 void dump(void *ptr, int length, int width)
 {
     int i;
@@ -278,6 +349,12 @@ static PyMethodDef Par2_methods[] = {
         METH_NOARGS, "_make_gf_and_gfi()"},
     {"_make_vandermonde_matrix", (PyCFunction )Par2__make_vandermonde_matrix, \
         METH_NOARGS, "_make_vandermonde_matrix()"},
+    {"_make_square_matrix", (PyCFunction )Par2__make_square_matrix, \
+        METH_NOARGS, "_make_square_matrix()"},
+    {"_make_e_matrix", (PyCFunction )Par2__make_e_matrix, \
+        METH_NOARGS, "_make_e_matrix()"},
+    {"_mul_matrixes", (PyCFunction )Par2__mul_matrixes, \
+        METH_VARARGS, "_mul_matrixes()"},
     {"_add", (PyCFunction )Par2__add, METH_VARARGS, "_add()"},
     {"_mul", (PyCFunction )Par2__mul, METH_VARARGS, "_mul()"},
     {"_div", (PyCFunction )Par2__div, METH_VARARGS, "_div()"},
