@@ -351,7 +351,12 @@ class Par2(Par2_base):
         su._make_gf_and_gfi()
         su._make_vandermonde_matrix()
 
-    def encode(self, part_slots):
+    def encode(self, part_slots=None, data=b''):
+        if not part_slots:
+            if not data:
+                raise ValueError('must set part_slots or data.')
+            else:
+                part_slots = self._make_data_slots(data)
         slot_size = \
             min([len(slot) for slot in part_slots if slot and len(slot)])
         if not slot_size:
@@ -365,6 +370,24 @@ class Par2(Par2_base):
         parity_slots = self._bytearray2bytes_all(parity_slots)
 
         return parity_slots
+
+    def _make_data_slots(self, data, data_size=0):
+        if not isinstance(data, bytes):
+            raise ValueError('data must be bytes.')
+        if not data_size:
+            data_size = len(data)
+        if not 1 <= data_size <= DATA_SIZE_MAX:
+            msg = 'data_size must be 1 <= data_size <= 2 ** {} - 1'
+            ValueError(msg.format(TAIL_SIZE * 8))
+        self.data_size = data_size
+        self._set_size(data_size)
+        fmt = {4: '>I', 8: '>Q'}
+        tail_bytes = struct.pack(fmt[TAIL_SIZE], data_size)
+        self.encode_data = \
+            data + self._padding(self.padding_size) + tail_bytes
+        sp = self.par2.split(self.encode_data, self.slot_size)
+        self.slots[:self.redundancy] = sp
+        return sp
 
     def decode(self, slots):
         slot_size = min([len(slot) for slot in slots if slot and len(slot)])
