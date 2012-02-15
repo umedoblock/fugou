@@ -15,9 +15,12 @@ typedef struct {
     int redundancy;
     int octets;
     int vertical_size;
+    int horizontal_size;
     ushort *gf;
     ushort *gfi;
     ushort *vander_matrix;
+    ushort *inverse_matrix;
+    ushort *horizontal_vector;
 } par2_t;
 
 typedef struct {
@@ -60,26 +63,38 @@ fprintf(stderr, "\n");
 static int
 Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
 {
-    int gf_size = 0, vander_matrix_size = 0;
-    int allocate_size = 0;
+    int gf_size = 0, matrix_size = 0;
+    int allocate_size = 0, horizontal_size = 0;
+    char *mem;
 
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
     gf_size = self->par2.w * sizeof(ushort);
-    vander_matrix_size = \
+    matrix_size = \
         self->par2.redundancy * self->par2.redundancy * sizeof(ushort);
-    allocate_size = gf_size * 2 + vander_matrix_size;
+    horizontal_size = sizeof(ushort) * self->par2.redundancy;
+    self->par2.horizontal_size = horizontal_size;
+    /*  need two matrixes.
+        vander_matrix, inverse_matrix
+     */
+    allocate_size = gf_size * 2 + matrix_size * 2 + horizontal_size;
     self->mem = PyMem_Malloc(allocate_size);
-/*
-fprintf(stderr, "gf_size = %d\n", gf_size);
-fprintf(stderr, "vander_matrix_size = %d\n", vander_matrix_size);
-*/
-fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
-                                    allocate_size, self->mem);
-    self->par2.gf = (ushort *)self->mem;
-    self->par2.gfi = (ushort *)(self->mem + gf_size);
-    self->par2.vander_matrix = (ushort *)(self->mem + gf_size * 2);
     if (self->mem == NULL)
         return -1;
+/*
+fprintf(stderr, "gf_size = %d\n", gf_size);
+fprintf(stderr, "matrix_size = %d\n", matrix_size);
+fprintf(stderr, "horizontal_size = %d\n", horizontal_size);
+
+fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
+                                    allocate_size, self->mem);
+*/
+
+    mem = self->mem;
+    self->par2.gf = (ushort *)mem; mem += gf_size;
+    self->par2.gfi = (ushort *)mem; mem += gf_size;
+    self->par2.vander_matrix = (ushort *)mem; mem += matrix_size;
+    self->par2.inverse_matrix = (ushort *)mem; mem += matrix_size;
+    self->par2.horizontal_vector = (ushort *)mem; mem += horizontal_size;
 
 /*
 fprintf(stderr, "self->par2.poly=%d\n", self->par2.poly);
