@@ -152,9 +152,9 @@ class Par2_abstract(metaclass=ABCMeta):
     def _add(self, a, b):
         pass
 
-#   @abstractmethod
-#   def _solve_inverse_matrix(self, matrix):
-#       pass
+    @abstractmethod
+    def _solve_inverse_matrix(self, matrix):
+        pass
 
     @abstractmethod
     def _make_e_matrix(self):
@@ -162,6 +162,71 @@ class Par2_abstract(metaclass=ABCMeta):
 
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
+
+    def _solve_inverse_matrix(self, matrix):
+        matrix = copy.deepcopy(matrix)
+        im = inverse_matrix = self._make_e_matrix()
+
+      # self._at_a_glance(matrix, im)
+      # print()
+        for k in range(self.redundancy):
+            # self._at_a_glance(matrix, im)
+            if not matrix[k][k]:
+                swap = False
+                for j in range(k + 1, self.redundancy):
+                    if matrix[j][k]:
+                        matrix[k], matrix[j] = matrix[j], matrix[k]
+                        im[k], im[j] = im[j], im[k]
+                        swap = True
+                        break
+                if not swap:
+                    message = \
+                        ('cannot make inverse_matrix. redundancy = {}, ',
+                         'gf_max = {}').format(self.redundancy, self.gf_max)
+                    raise Par2RankError(message)
+
+            if matrix[k][k] != 1:
+                tmp = matrix[k][k]
+                for i in range(self.redundancy):
+                    matrix[k][i] = self._div(matrix[k][i], tmp)
+                    im[k][i] = self._div(im[k][i], tmp)
+
+            for j in range(k + 1, self.redundancy):
+                foo = matrix[j][k]
+                if not foo:
+                    continue
+                for i in range(self.redundancy):
+                    tmp1 = matrix[k][i]
+                    tmp2 = self._mul(foo, tmp1)
+                    tmp3 = matrix[j][i]
+                    matrix[j][i] = self._add(tmp3, tmp2)
+
+                    im1 = im[k][i]
+                    im2 = self._mul(foo, im1)
+                    im3 = im[j][i]
+                    im[j][i] = self._add(im3, im2)
+      # print('前進完了') # moving front done
+
+        for k in range(self.redundancy - 1):
+            for j in range(self.redundancy - 1 - k):
+                z = self.redundancy - 1 - k
+                x = self.redundancy - 1 - k
+                y = self.redundancy - 1 - k - j - 1
+                foo = matrix[y][x]
+
+                for i in range(self.redundancy):
+              #     tmp1 = matrix[z][i]
+              #     tmp2 = self._mul(foo, tmp1)
+              #     tmp3 = matrix[y][i]
+              #     matrix[y][i] = self._add(tmp3, tmp2)
+
+                    im1 = im[z][i]
+                    im2 = self._mul(foo, im1)
+                    im3 = im[y][i]
+                    im[y][i] = self._add(im3, im2)
+      # print()
+
+        return inverse_matrix
 
     def _mul_matrixes(self, a, b):
         answer = self._make_square_matrix()
@@ -278,6 +343,8 @@ class Par2(Par2_base):
         su.__init__()
 
         if not Par2.C_EXTENSION:
+            # 2 means sizeof(unsigned short)
+            self.horizontal_size = 2 * self.redundancy
             fmt = {4: 'B', 8: 'B', 16: 'H'}
             self.format = '>{}'.format(fmt[bits])
 
@@ -391,71 +458,6 @@ class Par2(Par2_base):
                 tmp = self._mul(matrix[j][i], pari[i])
                 part = self._add(part, tmp)
             answer[j] = part
-
-    def _solve_inverse_matrix(self, matrix):
-        matrix = copy.deepcopy(matrix)
-        im = inverse_matrix = self._make_e_matrix()
-
-      # self._at_a_glance(matrix, im)
-      # print()
-        for k in range(self.redundancy):
-            # self._at_a_glance(matrix, im)
-            if not matrix[k][k]:
-                swap = False
-                for j in range(k + 1, self.redundancy):
-                    if matrix[j][k]:
-                        matrix[k], matrix[j] = matrix[j], matrix[k]
-                        im[k], im[j] = im[j], im[k]
-                        swap = True
-                        break
-                if not swap:
-                    message = \
-                        ('cannot make inverse_matrix. redundancy = {}, ',
-                         'gf_max = {}').format(self.redundancy, self.gf_max)
-                    raise Par2RankError(message)
-
-            if matrix[k][k] != 1:
-                tmp = matrix[k][k]
-                for i in range(self.redundancy):
-                    matrix[k][i] = self._div(matrix[k][i], tmp)
-                    im[k][i] = self._div(im[k][i], tmp)
-
-            for j in range(k + 1, self.redundancy):
-                foo = matrix[j][k]
-                if not foo:
-                    continue
-                for i in range(self.redundancy):
-                    tmp1 = matrix[k][i]
-                    tmp2 = self._mul(foo, tmp1)
-                    tmp3 = matrix[j][i]
-                    matrix[j][i] = self._add(tmp3, tmp2)
-
-                    im1 = im[k][i]
-                    im2 = self._mul(foo, im1)
-                    im3 = im[j][i]
-                    im[j][i] = self._add(im3, im2)
-      # print('前進完了') # moving front done
-
-        for k in range(self.redundancy - 1):
-            for j in range(self.redundancy - 1 - k):
-                z = self.redundancy - 1 - k
-                x = self.redundancy - 1 - k
-                y = self.redundancy - 1 - k - j - 1
-                foo = matrix[y][x]
-
-                for i in range(self.redundancy):
-              #     tmp1 = matrix[z][i]
-              #     tmp2 = self._mul(foo, tmp1)
-              #     tmp3 = matrix[y][i]
-              #     matrix[y][i] = self._add(tmp3, tmp2)
-
-                    im1 = im[z][i]
-                    im2 = self._mul(foo, im1)
-                    im3 = im[y][i]
-                    im[y][i] = self._add(im3, im2)
-      # print()
-
-        return inverse_matrix
 
     def _calculate_size(self, data_size):
         if not 1 <= data_size <= DATA_SIZE_MAX:
