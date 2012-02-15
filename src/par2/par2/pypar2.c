@@ -68,17 +68,20 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
     vander_matrix_size = \
         self->par2.redundancy * self->par2.redundancy * sizeof(ushort);
     allocate_size = gf_size * 2 + vander_matrix_size;
+    self->mem = PyMem_Malloc(allocate_size);
+/*
 fprintf(stderr, "gf_size = %d\n", gf_size);
 fprintf(stderr, "vander_matrix_size = %d\n", vander_matrix_size);
-    self->mem = PyMem_Malloc(allocate_size);
+*/
+fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
+                                    allocate_size, self->mem);
     self->par2.gf = (ushort *)self->mem;
     self->par2.gfi = (ushort *)(self->mem + gf_size);
     self->par2.vander_matrix = (ushort *)(self->mem + gf_size * 2);
-fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
-                                    allocate_size, self->mem);
     if (self->mem == NULL)
         return -1;
 
+/*
 fprintf(stderr, "self->par2.poly=%d\n", self->par2.poly);
 fprintf(stderr, "self->par2.bits=%d\n", self->par2.bits);
 fprintf(stderr, "self->par2.w=%d\n", self->par2.w);
@@ -90,7 +93,9 @@ fprintf(stderr, "self->par2.vertical_size = %d\n", self->par2.vertical_size);
 
 fprintf(stderr, "dir(self)=\n");
 PyObject_Dir((PyObject *)self);
+
 fprintf(stderr, "\n");
+*/
 
     return 0;
 }
@@ -99,6 +104,7 @@ static void
 Par2_dealloc(Par2Object* self)
 {
 fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
+fprintf(stderr, "\n");
     PyMem_Free(self->mem);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
