@@ -351,21 +351,21 @@ class Par2(Par2_base):
         su._make_gf_and_gfi()
         su._make_vandermonde_matrix()
 
-    def encode(self, part_slots=None, data=b''):
-        if not part_slots:
+    def encode(self, data_slots=None, data=b''):
+        if not data_slots:
             if not data:
-                raise ValueError('must set part_slots or data.')
+                raise ValueError('must set data_slots or data.')
             else:
-                part_slots = self._make_data_slots(data)
+                data_slots = self._make_data_slots(data)
         slot_size = \
-            min([len(slot) for slot in part_slots if slot and len(slot)])
+            min([len(slot) for slot in data_slots if slot and len(slot)])
         if not slot_size:
             raise()
 
         parity_slots = self._make_part_or_parity_slots(slot_size)
         symbol_num = slot_size // self.octets
 
-        self._encode(parity_slots, part_slots,
+        self._encode(parity_slots, data_slots,
                      self.redundancy, symbol_num, self.octets)
         parity_slots = self._bytearray2bytes_all(parity_slots)
 
@@ -430,13 +430,13 @@ class Par2(Par2_base):
             print(message)
         print()
 
-    def _encode(self, parity_slots, part_slots,
+    def _encode(self, parity_slots, data_slots,
                  redundancy, symbol_num, octets):
         vector = self._make_vector()
         parity = self._make_vector()
         for i in range(symbol_num):
             for j in range(redundancy):
-                num_bytes = part_slots[j][i*octets:(i+1)*octets]
+                num_bytes = data_slots[j][i*octets:(i+1)*octets]
                 num = struct.unpack(self.format, num_bytes)[0]
                 vector[j] = num
             self._mul_matrix_vector(parity, self.vander_matrix, vector)
