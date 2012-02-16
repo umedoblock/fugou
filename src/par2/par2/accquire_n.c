@@ -48,10 +48,10 @@ int main(int argc, char *argv[])
         lim = atoi(argv[1]);
     }
     // for mod in range(lim + 1, lim * 2):
+    s = (int *)malloc(sizeof(int) * lim * 2);
     for(mod=lim+1; mod < lim * 2; mod++){
         appreciate = 1;
         for(j=1; j<lim;j++){
-            s = (int *)malloc(sizeof(int) * lim * 2);
             memset(s, 0, sizeof(int) * lim * 2);
             for(i=1;i<lim;i++){
                 m = mul(i, j, mod);
@@ -61,15 +61,16 @@ int main(int argc, char *argv[])
                 }
                 s[m] = 1;
             }
-            free(s);
         }
 
         if(appreciate){
             fprintf(stderr, "appreciate modulus %d\n", mod);
         }
         else{
-            //printf("not appreciate modulus %d\n", mod);
+            fprintf(stderr, "not appreciate modulus %d\n", mod);
         }
     }
+    free(s);
+
     return 0;
 }
