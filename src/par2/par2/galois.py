@@ -4,7 +4,7 @@ import sys
 
 print(sys.argv)
 if len(sys.argv) == 1:
-    raise('you must use 1 argment')
+    raise ValueError('you must use 1 argment')
 
 n_bits = int(sys.argv[1])
 poly = 1 << n_bits
