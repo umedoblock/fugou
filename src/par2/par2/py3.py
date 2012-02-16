@@ -3,8 +3,29 @@
 import math
 import copy
 import struct
+import pprint
 
-__all__ = ['Par2', 'Par2Archive', 'Par2Error']
+__all__ = [ \
+    'Par2', 'Par2Archive', 'Par2Error', \
+    'matrix_to_bytes', 'bytes_to_matrix' \
+]
+
+pp = pprint.PrettyPrinter(indent=4)
+
+def matrix_to_bytes(matrix):
+    elements = [None] * len(matrix)
+    for i, m in enumerate(matrix):
+        elements[i] = struct.pack('=' + 'H' * len(m), *m)
+    return b''.join(elements)
+
+def bytes_to_matrix(bys, redundancy, horizontal_size):
+    matrix = [None] * redundancy
+    for i in range(redundancy):
+        horizontal_bytes = bys[i*horizontal_size:(i+1)*horizontal_size]
+        vector = struct.unpack('=' + 'H' * redundancy, horizontal_bytes)
+        matrix[i] = list(vector)
+
+    return matrix
 
 class Par2Error(BaseException):
     pass
@@ -125,6 +146,15 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 class Par2_abstract(metaclass=ABCMeta):
 
     @abstractmethod
+    def _encode(self, parity_slots, data_slots,
+                 redundancy, symbol_num, octets):
+        pass
+
+    @abstractmethod
+    def _pick_up_rows(self, slots):
+        pass
+
+    @abstractmethod
     def _mul_matrixes(self, matrix, inverse_matrix):
         pass
 
@@ -162,6 +192,21 @@ class Par2_abstract(metaclass=ABCMeta):
 
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
+
+    def _encode(self, parity_slots, data_slots,
+                 redundancy, symbol_num, octets):
+        vector = self._make_vector()
+        parity = self._make_vector()
+        for i in range(symbol_num):
+            for j in range(redundancy):
+                num_bytes = data_slots[j][i*octets:(i+1)*octets]
+                num = struct.unpack(self.format, num_bytes)[0]
+                vector[j] = num
+            self._mul_matrix_vector(parity, self.vander_matrix, vector)
+            for j in range(redundancy):
+                parity_slots[j][i*octets:(i+1)*octets] = \
+                    struct.pack(self.format, parity[j])
+        return parity_slots
 
     def _solve_inverse_matrix(self, matrix):
         matrix = copy.deepcopy(matrix)
@@ -395,6 +440,11 @@ class Par2(Par2_base):
             raise()
 
         data_and_parity, matrix = self._pick_up_rows(slots)
+      # print('matrix =')
+      # pp.pprint(matrix)
+        if Par2.C_EXTENSION:
+            matrix = matrix_to_bytes(matrix)
+
         inverse_matrix = self._solve_inverse_matrix(matrix)
         vector = self._make_vector()
         symbol_num = slot_size // self.octets
@@ -430,54 +480,77 @@ class Par2(Par2_base):
             print(message)
         print()
 
-    def _encode(self, parity_slots, data_slots,
-                 redundancy, symbol_num, octets):
-        vector = self._make_vector()
-        parity = self._make_vector()
-        for i in range(symbol_num):
-            for j in range(redundancy):
-                num_bytes = data_slots[j][i*octets:(i+1)*octets]
-                num = struct.unpack(self.format, num_bytes)[0]
-                vector[j] = num
-            self._mul_matrix_vector(parity, self.vander_matrix, vector)
-            for j in range(redundancy):
-                parity_slots[j][i*octets:(i+1)*octets] = \
-                    struct.pack(self.format, parity[j])
-        return parity_slots
-
     def _decode(self, decode_data, data_and_parity, inverse_matrix,
                  redundancy, symbol_num, octets):
         vector = self._make_vector()
         vertical_data = self._make_vector()
+        if Par2.C_EXTENSION:
+            inverse_matrix = bytes_to_matrix(inverse_matrix,
+                                             self.redundancy,
+                                             self.horizontal_size)
+
         for i in range(symbol_num):
             for j in range(self.redundancy):
                 num_bytes = data_and_parity[j][i*octets:(i+1)*octets]
-                num = struct.unpack(self.format, num_bytes)[0]
+                if Par2.C_EXTENSION:
+                    fmt = {4: 'B', 8: 'B', 16: 'H'}
+                    format = '>{}'.format(fmt[self.bits])
+                    num = struct.unpack(format, num_bytes)[0]
+                else:
+                    num = struct.unpack(self.format, num_bytes)[0]
                 vector[j] = num
             self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
             for j in range(self.redundancy):
-                decode_data[j][i*octets:(i+1)*octets] = \
-                    struct.pack(self.format, vertical_data[j])
+                if Par2.C_EXTENSION:
+                    fmt = {4: 'B', 8: 'B', 16: 'H'}
+                    format = '>{}'.format(fmt[self.bits])
+                    decode_data[j][i*octets:(i+1)*octets] = \
+                        struct.pack(format, vertical_data[j])
+                else:
+                    decode_data[j][i*octets:(i+1)*octets] = \
+                        struct.pack(self.format, vertical_data[j])
+
+            if Par2.C_EXTENSION:
+                pass
+          #     matrix = par2._get_vandermonde_matrix()
+          #     bytes_to_matrix(matrix, \
+          #                     par2.redundancy, par2.horizontal_size)
 
     def _pick_up_rows(self, slots):
         data_and_parity = [None] * self.redundancy
         matrix = self._make_e_matrix()
         j = 0
+        if Par2.C_EXTENSION:
+            vander_matrix = self._get_vandermonde_matrix()
+            vander_matrix = bytes_to_matrix(vander_matrix, \
+                                            self.redundancy, \
+                                            self.horizontal_size)
+            matrix = bytes_to_matrix(matrix, \
+                                     self.redundancy, \
+                                     self.horizontal_size)
+        else:
+            vander_matrix = self.vander_matrix
+      # print('vander_matrix =')
+      # pp.pprint(vander_matrix)
         for i in range(self.redundancy):
             if slots[i]:
                 data_and_parity[i] = slots[i]
             else:
                 while not slots[self.redundancy + j]:
                     j += 1
-                matrix[i] = self.vander_matrix[j]
+                matrix[i] = vander_matrix[j]
                 data_and_parity[i] = slots[self.redundancy + j]
                 j += 1
         return data_and_parity, matrix
+
+# matrix_to_bytes(matrix):
+# bytes_to_matrix(bys, redundancy, horizontal_size):
 
     def _mul_matrix_vector(self, answer, matrix, pari):
         for j in range(self.redundancy):
             part = 0
             for i in range(self.redundancy):
+              # print('_mul_matrix_vector() =', matrix[j], pari[i])
                 tmp = self._mul(matrix[j][i], pari[i])
                 part = self._add(part, tmp)
             answer[j] = part

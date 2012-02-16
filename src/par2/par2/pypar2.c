@@ -19,7 +19,7 @@ typedef struct {
     int horizontal_size;
     ushort *gf;
     ushort *gfi;
-    ushort *vander_matrix;
+    ushort *vandermonde_matrix;
     ushort *inverse_matrix;
     ushort *horizontal_vector;
 } par2_t;
@@ -82,9 +82,11 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
     horizontal_size = sizeof(ushort) * self->par2.redundancy;
     self->par2.horizontal_size = horizontal_size;
     /*  need two matrixes.
-        vander_matrix, inverse_matrix
+        vandermonde_matrix, inverse_matrix
+        need two vectors.
+        vector, parity
      */
-    allocate_size = gf_size * 2 + matrix_size * 2 + horizontal_size;
+    allocate_size = gf_size * 2 + matrix_size * 2 + horizontal_size * 2;
     self->mem = PyMem_Malloc(allocate_size);
 /*
 fprintf(stderr, "gf_size = %d\n", gf_size);
@@ -99,9 +101,9 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
     mem = self->mem;
     self->par2.gf = (ushort *)mem; mem += gf_size;
     self->par2.gfi = (ushort *)mem; mem += gf_size;
-    self->par2.vander_matrix = (ushort *)mem; mem += matrix_size;
+    self->par2.vandermonde_matrix = (ushort *)mem; mem += matrix_size;
     self->par2.inverse_matrix = (ushort *)mem; mem += matrix_size;
-    self->par2.horizontal_vector = (ushort *)mem; mem += horizontal_size;
+    self->par2.horizontal_vector = (ushort *)mem; mem += horizontal_size * 2;
 
 /*
 fprintf(stderr, "self->par2.poly=%d\n", self->par2.poly);
@@ -163,10 +165,9 @@ Par2__add(Par2Object *self, PyObject *args)
 }
 
 static ushort
-_mul(Par2Object *self, ushort a, ushort b)
+_mul(par2_t *p2, ushort a, ushort b)
 {
     int c;
-    par2_t *p2 = &self->par2;
 
     if (a == 0 || b == 0)
         return 0;
@@ -186,16 +187,15 @@ Par2__mul(Par2Object *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "HH", &a, &b))
         return NULL;
 
-    c = _mul(self, a, b);
+    c = _mul(&self->par2, a, b);
 
     return Py_BuildValue("H", c);
 }
 
 static ushort
-_div(Par2Object *self, ushort a, ushort b)
+_div(par2_t *p2, ushort a, ushort b)
 {
     int c;
-    par2_t *p2 = &self->par2;
 
     if (a == 0)
         return 0;
@@ -214,7 +214,7 @@ Par2__div(Par2Object *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "HH", &a, &b))
         return NULL;
 
-    c = _div(self, a, b);
+    c = _div(&self->par2, a, b);
 
     return Py_BuildValue("H", c);
 }
@@ -256,7 +256,7 @@ fprintf(stderr, "Par2__get_vandermonde_matrix(self=%p)\n", self);
         return NULL;
     vm = (ushort *)PyBytes_AS_STRING(vandermonde_matrix);
 
-    memcpy(vm, p2->vander_matrix, p2->matrix_size);
+    memcpy(vm, p2->vandermonde_matrix, p2->matrix_size);
 
     return (PyObject *)vandermonde_matrix;
 }
@@ -265,7 +265,7 @@ static PyObject *
 Par2__make_vandermonde_matrix(Par2Object *self)
 {
     par2_t *p2 = &self->par2;
-    ushort *vm = p2->vander_matrix;
+    ushort *vm = p2->vandermonde_matrix;
     int i, j, redundancy = p2->redundancy;
 
 /*
@@ -277,7 +277,7 @@ fprintf(stderr, "Par2__make_vandermonde_matrix(self=%p)\n", self);
     for(j=1;j<redundancy;j++)
         for(i=0;i<redundancy;i++)
             vm[j * redundancy + i] = \
-                _mul(self, vm[(j-1) * redundancy + i], i + 1);
+                _mul(p2, vm[(j-1) * redundancy + i], i + 1);
 
     Py_RETURN_NONE;
 }
@@ -347,6 +347,7 @@ _solve_inverse_matrix(ushort *inverse_matrix, ushort *matrix, \
     int horizontal_size = redundancy * sizeof(ushort);
     ushort *im = inverse_matrix, *mt = matrix, *hv = horizontal_vector;
     ushort tmp, tmp1, tmp2, tmp3;
+    par2_t *p2 = &self->par2;
 
 /*
 view_matrix(matrix, redundancy);
@@ -390,8 +391,8 @@ fprintf(stderr, "matrix[%d], matrix[%d] = matrix[%d], matrix[%d]\n", \
         if (tmp != 1) {
             for (i=0;i<redundancy;i++){
                 index = k * redundancy + i;
-                mt[index] = _div(self, mt[index], tmp);
-                im[index] = _div(self, im[index], tmp);
+                mt[index] = _div(p2, mt[index], tmp);
+                im[index] = _div(p2, im[index], tmp);
             }
         }
 
@@ -405,12 +406,12 @@ fprintf(stderr, "matrix[%d], matrix[%d] = matrix[%d], matrix[%d]\n", \
 /*
 */
                 tmp1 = mt[index_k];
-                tmp2 = _mul(self, tmp, tmp1);
+                tmp2 = _mul(p2, tmp, tmp1);
                 tmp3 = mt[index_j];
                 mt[index_j] = _add(tmp3, tmp2);
 
                 tmp1 = im[index_k];
-                tmp2 = _mul(self, tmp, tmp1);
+                tmp2 = _mul(p2, tmp, tmp1);
                 tmp3 = im[index_j];
                 im[index_j] = _add(tmp3, tmp2);
             }
@@ -431,12 +432,12 @@ moving front done
             for (i=0;i<redundancy;i++) {
 /*
                 tmp1 = mt[index_z * redundancy + i];
-                tmp2 = _mul(self, tmp, tmp1);
+                tmp2 = _mul(p2, tmp, tmp1);
                 tmp3 = mt[index_y * redundancy + i];
                 mt[index_y * redundancy + i] = _add(tmp3, tmp2);
 */
                 tmp1 = im[index_z * redundancy + i];
-                tmp2 = _mul(self, tmp, tmp1);
+                tmp2 = _mul(p2, tmp, tmp1);
                 tmp3 = im[index_y * redundancy + i];
                 im[index_y * redundancy + i] = _add(tmp3, tmp2);
             }
@@ -444,6 +445,150 @@ moving front done
     }
 
     return 0;
+}
+
+void
+_mul_matrix_vector(ushort *answer, ushort *matrix, ushort *pari, \
+                   int redundancy, par2_t *p2)
+{
+    int i, j;
+    ushort ans, tmp;
+
+    for (j=0;j<redundancy;j++){
+        ans = 0;
+        for (i=0;i<redundancy;i++){
+            tmp = _mul(p2, matrix[j * redundancy + i], pari[i]);
+            ans = _add(ans, tmp);
+        }
+        answer[j] = ans;
+    }
+}
+
+static void
+_encode(uchar **parity_slots, uchar **data_slots, ushort *vandermonde_matrix, \
+        int redundancy, int symbol_num, int octets, ushort *vector, par2_t *p2)
+{
+    int i, j, k;
+    uchar unum;
+    ushort num;
+    ushort *parity = vector + redundancy;
+
+    for (i=0;i<symbol_num;i++) {
+        for (j=0;j<redundancy;j++) {
+            num = 0;
+            for (k=0;k<octets;k++) {
+                num <<= 8;
+                num += data_slots[j][i * octets + k];
+            }
+            vector[j] = num;
+        }
+
+        _mul_matrix_vector(parity, vandermonde_matrix, vector, redundancy, p2);
+
+        for (j=0;j<redundancy;j++) {
+            num = parity[j];
+            for (k=0;k<octets;k++) {
+                unum = (num >> 8 * (octets - 1 - k)) & 0xff;
+                parity_slots[j][i * octets + k] = unum;
+            }
+        }
+    }
+}
+
+static PyObject *
+Par2__encode(Par2Object *self, PyObject *args)
+{
+    par2_t *p2 = &self->par2;
+    PyObject *parity_slots_obj, *data_slots_obj, *slot_obj;
+    int redundancy, symbol_num, octets;
+    int allocate_size, len_slots, len_data_slots, len_parity_slots;
+    uchar **slots, **data_slots, **parity_slots;
+    int i;
+
+    if (!PyArg_ParseTuple(args, "OOiii", \
+                          &parity_slots_obj, &data_slots_obj, \
+                          &redundancy, &symbol_num, &octets))
+        return NULL;
+
+    allocate_size = sizeof(uchar *) * redundancy * 2;
+    slots = (uchar **)PyMem_Malloc(allocate_size);
+/*
+fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
+                 allocate_size, redundancy);
+*/
+    if (slots == NULL)
+        return NULL;
+    /*
+    memset(slots, '\0', allocate_size);
+    */
+    data_slots = slots;
+    parity_slots = slots + redundancy;
+    len_data_slots = PySequence_Length(data_slots_obj);
+    len_parity_slots = PySequence_Length(parity_slots_obj);
+    len_slots = len_data_slots + len_parity_slots;
+/*
+fprintf(stderr, "len_slots = %d, len_data_slots = %d, len_parity_slots = %d\n",
+                 len_slots, len_data_slots, len_parity_slots);
+*/
+
+    for (i=0;i<len_data_slots;i++) {
+        slot_obj = PySequence_GetItem(data_slots_obj, i);
+        data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
+/*
+fprintf(stderr, "data_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
+*/
+    }
+/*
+fprintf(stderr, "\n");
+*/
+
+    for (i=0;i<len_parity_slots;i++) {
+        slot_obj = PySequence_GetItem(parity_slots_obj, i);
+        parity_slots[i] = (uchar *)PyByteArray_AS_STRING(slot_obj);
+/*
+fprintf(stderr, "parity_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
+*/
+    }
+/*
+fprintf(stderr, "\n");
+*/
+
+    _encode(parity_slots, data_slots, \
+            p2->vandermonde_matrix, redundancy, symbol_num, octets, \
+            p2->horizontal_vector, p2);
+
+/*
+fprintf(stderr, "after encode() ======================================\n");
+*/
+    for (i=0;i<len_data_slots;i++) {
+        slot_obj = PySequence_GetItem(data_slots_obj, i);
+        data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
+/*
+fprintf(stderr, "data_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
+*/
+    }
+/*
+fprintf(stderr, "\n");
+*/
+
+    for (i=0;i<len_parity_slots;i++) {
+        slot_obj = PySequence_GetItem(parity_slots_obj, i);
+        parity_slots[i] = (uchar *)PyByteArray_AS_STRING(slot_obj);
+/*
+fprintf(stderr, "parity_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
+*/
+    }
+/*
+fprintf(stderr, "\n");
+*/
+
+    PyMem_Free(slots);
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -500,7 +645,7 @@ Par2__mul_matrixes(Par2Object *self, PyObject *args)
         for (i=0;i<redundancy;i++){
             tmp = 0x0000;
             for (k=0;k<redundancy;k++){
-                muled = _mul(self, a_mt[j * redundancy + k], \
+                muled = _mul(p2, a_mt[j * redundancy + k], \
                                    b_mt[k * redundancy + i]);
                 tmp = _add(tmp, muled);
             }
@@ -559,6 +704,8 @@ Py_dump(Par2Object *self, PyObject *args)
 }
 
 static PyMethodDef Par2_methods[] = {
+    {"_encode", (PyCFunction )Par2__encode, \
+        METH_VARARGS, "_encode()"},
     {"_solve_inverse_matrix", (PyCFunction )Par2__solve_inverse_matrix, \
         METH_VARARGS, "_solve_inverse_matrix()"},
     {"_make_gf_and_gfi", (PyCFunction )Par2__make_gf_and_gfi, \
