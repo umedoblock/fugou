@@ -148,51 +148,51 @@ class Par2_abstract(metaclass=ABCMeta):
     @abstractmethod
     def _encode(self, parity_slots, data_slots,
                  redundancy, symbol_num, octets):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _pick_up_rows(self, slots):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _mul_matrixes(self, matrix, inverse_matrix):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _make_square_matrix(self, value=None):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _make_gf_and_gfi(self):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _make_vandermonde_matrix(self):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _mul(self, a, b):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _div(self, a, b):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _pow(self, a, x):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _add(self, a, b):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _solve_inverse_matrix(self, matrix):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _make_e_matrix(self):
-        pass
+        raise NotImplementedError()
 
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
