@@ -54,7 +54,9 @@ Par2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     Par2Object *self = NULL;
 
+/*
 fprintf(stderr, "Par2_new(type=%p, args=%p, kwds=%p)\n", type, args, kwds);
+*/
     self = (Par2Object *)type->tp_alloc(type, 0);
     if (self != NULL) {
 /*
@@ -195,7 +197,9 @@ Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
     par2_t *p2 = &self->par2;
     int ret;
 
+/*
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
+*/
     ret = _init_structure(p2, p2->bits, p2->redundancy);
     if (ret < 0){
         _view_structure(p2);
@@ -214,7 +218,9 @@ static void
 Par2_dealloc(Par2Object* self)
 {
     par2_t *p2 = &self->par2;
+/*
 fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
+*/
     PyMem_Free(p2->mem);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
