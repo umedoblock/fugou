@@ -146,8 +146,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 class Par2_abstract(metaclass=ABCMeta):
 
     @abstractmethod
-    def _encode(self, parity_slots, data_slots,
-                 redundancy, symbol_num, octets):
+    def _encode(self, parity_slots, data_slots, symbol_num):
         raise NotImplementedError()
 
     @abstractmethod
@@ -197,8 +196,9 @@ class Par2_abstract(metaclass=ABCMeta):
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
 
-    def _encode(self, parity_slots, data_slots,
-                 redundancy, symbol_num, octets):
+    def _encode(self, parity_slots, data_slots, symbol_num):
+        redundancy = self.redundancy
+        octets = self.octets
         vector = self._make_vector()
         parity = self._make_vector()
         for i in range(symbol_num):
@@ -354,7 +354,7 @@ class Par2_base(Par2_abstract):
             ret = self._mul(ret, a)
         return ret
 try:
-#   raise ImportError('test')
+    raise ImportError('test')
     from _par2 import _Par2
     class Par2_base(_Par2, Par2_abstract):
         pass
@@ -421,8 +421,7 @@ class Par2(Par2_base):
         parity_slots = self._make_part_or_parity_slots(slot_size)
         symbol_num = slot_size // self.octets
 
-        self._encode(parity_slots, data_slots,
-                     self.redundancy, symbol_num, self.octets)
+        self._encode(parity_slots, data_slots, symbol_num)
         parity_slots = self._bytearray2bytes_all(parity_slots)
 
         return parity_slots
@@ -461,8 +460,7 @@ class Par2(Par2_base):
         symbol_num = slot_size // self.octets
         decode_data = self._make_part_or_parity_slots(slot_size)
 
-        self._decode(decode_data, data_and_parity, inverse_matrix,
-                     self.redundancy, symbol_num, self.octets)
+        self._decode(decode_data, data_and_parity, inverse_matrix, symbol_num)
         decode_data = self._bytearray2bytes_all(decode_data)
 
         return decode_data
@@ -491,8 +489,9 @@ class Par2(Par2_base):
             print(message)
         print()
 
-    def _decode(self, decode_data, data_and_parity, inverse_matrix,
-                 redundancy, symbol_num, octets):
+    def _decode(self, decode_data, \
+                data_and_parity, inverse_matrix, symbol_num):
+        octets = self.octets
         vector = self._make_vector()
         vertical_data = self._make_vector()
         if Par2.C_EXTENSION:

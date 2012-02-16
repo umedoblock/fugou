@@ -240,17 +240,16 @@ Par2__encode(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
     PyObject *parity_slots_obj, *data_slots_obj, *slot_obj;
-    int redundancy, symbol_num, octets;
+    int symbol_num;
     int allocate_size, len_slots, len_data_slots, len_parity_slots;
     uchar **slots, **data_slots, **parity_slots;
     int i;
 
-    if (!PyArg_ParseTuple(args, "OOiii", \
-                          &parity_slots_obj, &data_slots_obj, \
-                          &redundancy, &symbol_num, &octets))
+    if (!PyArg_ParseTuple(args, "OOi", \
+                          &parity_slots_obj, &data_slots_obj, &symbol_num))
         return NULL;
 
-    allocate_size = sizeof(uchar *) * redundancy * 2;
+    allocate_size = sizeof(uchar *) * p2->redundancy * 2;
     slots = (uchar **)PyMem_Malloc(allocate_size);
 /*
 fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
@@ -262,11 +261,11 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
     memset(slots, '\0', allocate_size);
     */
     data_slots = slots;
-    parity_slots = slots + redundancy;
+    parity_slots = slots + p2->redundancy;
     len_data_slots = PySequence_Length(data_slots_obj);
     len_parity_slots = PySequence_Length(parity_slots_obj);
     len_slots = len_data_slots + len_parity_slots;
-    if (len_slots < redundancy * 2) {
+    if (len_slots < p2->redundancy * 2) {
         /* to avoid noisy compiler */
     }
 /*
