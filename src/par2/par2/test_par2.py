@@ -26,15 +26,15 @@ class TestPar2(unittest.TestCase):
         with self.assertRaises(KeyError):
             Par2(5)
 
-    def test_mul_and_div(self):
-        p4 = self.p4
-        for a in range(self.p4.w):
-            for n in range(p4.gf_max):
-                b = n + 1
-                mul = p4._mul(a, b)
-                c = p4._div(mul, b)
-                self.assertEqual(a, c)
-              # print(a, b, mul, c)
+  # def test_mul_and_div(self):
+  #     p4 = self.p4
+  #     for a in range(self.p4.w):
+  #         for n in range(p4.gf_max):
+  #             b = n + 1
+  #             mul = p4._mul(a, b)
+  #             c = p4._div(mul, b)
+  #             self.assertEqual(a, c)
+  #           # print(a, b, mul, c)
 
     def test__pow(self):
         redundancies = {4:15, 8:50, 16:50}

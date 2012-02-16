@@ -354,7 +354,7 @@ class Par2_base(Par2_abstract):
             ret = self._mul(ret, a)
         return ret
 try:
-    raise ImportError('test')
+#   raise ImportError('test')
     from _par2 import _Par2
     class Par2_base(_Par2, Par2_abstract):
         pass
@@ -510,6 +510,7 @@ class Par2(Par2_base):
                 else:
                     num = struct.unpack(self.format, num_bytes)[0]
                 vector[j] = num
+
             self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
             for j in range(self.redundancy):
                 if Par2.C_EXTENSION:
@@ -563,6 +564,7 @@ class Par2(Par2_base):
             for i in range(self.redundancy):
               # print('_mul_matrix_vector() =', matrix[j], pari[i])
                 tmp = self._mul(matrix[j][i], pari[i])
+              # print('_add({}, {})'.format(part, tmp))
                 part = self._add(part, tmp)
             answer[j] = part
 
