@@ -3,23 +3,24 @@
 
 #define Par2_MODULE
 
+typedef unsigned int uint;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
 
 typedef struct {
     int bits;
     int redundancy;
-    int object_size;
-    int allocate_size;
+    uint object_size;
+    uint allocate_size;
     int poly;
     int w;
     int gf_max;
     int digits; /* need at view_matrix() for debug. */
     int octets;
-    int gf_size;
-    int matrix_size;
-    int vertical_size;
-    int horizontal_size;
+    uint gf_size;
+    uint matrix_size;
+    uint vertical_size;
+    uint horizontal_size;
     char *mem;
     ushort *gf;
     ushort *gfi;
@@ -109,13 +110,13 @@ _init_structure(par2_t *p2, int bits, int redundancy)
     p2->gf_max = p2->w - 1;
     p2->digits = _calc_log10(p2->gf_max);
 
-    if (redundancy < 0) {
+    if (redundancy <= 0) {
         p2->redundancy = p2->gf_max;
     }
     else {
         p2->redundancy = redundancy;
     }
-    /* 2 <= self.redundancy <= self.gf_max */
+    /* 2 <= self.redundancy <= p2->gf_max */
     if (2 <= p2->redundancy && p2->redundancy <= p2->gf_max) {
         /* pass */
     }
@@ -141,14 +142,15 @@ _view_structure(par2_t *p2)
     fprintf(stderr, "\n");
     fprintf(stderr, "              bits = %d\n", p2->bits);
     fprintf(stderr, "        redundancy = %d\n", p2->redundancy);
-    fprintf(stderr, "       object_size = %d\n", p2->object_size);
-    fprintf(stderr, "     allocate_size = %d\n", p2->allocate_size);
+    fprintf(stderr, "       object_size = %u\n", p2->object_size);
+    fprintf(stderr, "     allocate_size = %u\n", p2->allocate_size);
     fprintf(stderr, "              poly = %d\n", p2->poly);
     fprintf(stderr, "                 w = %d\n", p2->w);
     fprintf(stderr, "            gf_max = %d\n", p2->gf_max);
     fprintf(stderr, "            digits = %d\n", p2->digits);
     fprintf(stderr, "            octets = %d\n", p2->octets);
-    fprintf(stderr, "       matrix_size = %d\n", p2->matrix_size);
+    fprintf(stderr, "           gf_size = %u\n", p2->gf_size);
+    fprintf(stderr, "       matrix_size = %u\n", p2->matrix_size);
     fprintf(stderr, "     vertical_size = %d\n", p2->vertical_size);
     fprintf(stderr, "   horizontal_size = %d\n", p2->horizontal_size);
     fprintf(stderr, "               mem = %p\n", p2->mem);
@@ -178,6 +180,9 @@ _allocate_memory(par2_t *p2)
     p2->object_size = sizeof(Par2Object) + p2->allocate_size;
 
     p2->mem = (char *)PyMem_Malloc(p2->allocate_size);
+    /*
+    _view_structure(p2);
+    */
     if (p2->mem == NULL)
         return -1;
 
@@ -210,6 +215,9 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
         _view_structure(p2);
         return -1;
     }
+    /*
+    _view_structure(p2);
+    */
 
     return 0;
 }
