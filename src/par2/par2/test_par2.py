@@ -20,7 +20,9 @@ class TestPar2(unittest.TestCase):
     def test_bits(self):
         Par2(4)
         Par2(8)
-      # Par2(16) too slowly
+        if Par2.C_EXTENSION:
+            # Par2(16)
+            pass
         with self.assertRaises(KeyError):
             Par2(5)
 
@@ -33,6 +35,31 @@ class TestPar2(unittest.TestCase):
                 c = p4._div(mul, b)
                 self.assertEqual(a, c)
               # print(a, b, mul, c)
+
+    def test__pow(self):
+        redundancies = {4:15, 8:50, 16:50}
+        for bit, redundancy in redundancies.items():
+            par2 = Par2(bit, redundancy)
+            vm = [None] * par2.redundancy
+
+            for j in range(par2.redundancy):
+                vm[j] = [None] * par2.redundancy
+                for i in range(par2.redundancy):
+                    vm[j][i] = par2._pow(i + 1, j)
+            if Par2.C_EXTENSION:
+                _vm = par2._get_vandermonde_matrix()
+                _vm = bytes_to_matrix(_vm, \
+                                      par2.redundancy, par2.horizontal_size)
+                vander_matrix = _vm
+            else:
+                vander_matrix = par2.vander_matrix
+
+          # print('vm =')
+          # pp.pprint(vm)
+          # print('vander_matrix =')
+          # pp.pprint(vander_matrix)
+
+            self.assertEqual(vander_matrix, vm)
 
     def test__mul_matrix_by_e_matrix(self):
         redundancies = {4:15, 8:50, 16:50}

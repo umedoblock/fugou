@@ -320,6 +320,37 @@ Par2__div(Par2Object *self, PyObject *args)
     return Py_BuildValue("H", c);
 }
 
+static ushort
+_pow(par2_t *p2, ushort a, ushort x)
+{
+    int i;
+    ushort c;
+
+    if (a == 0)
+        return 0;
+
+    if (x == 0 || a == 1)
+        return 1;
+
+    c = a;
+    for (i=0;i<x-1;i++)
+        c = _mul(p2, c, a);
+    return c;
+}
+
+static PyObject *
+Par2__pow(Par2Object *self, PyObject *args)
+{
+    ushort a, x, c;
+
+    if (!PyArg_ParseTuple(args, "HH", &a, &x))
+        return NULL;
+
+    c = _pow(&self->par2, a, x);
+
+    return Py_BuildValue("H", c);
+}
+
 static void
 _make_gf_and_gfi(par2_t *p2)
 {
@@ -843,6 +874,7 @@ static PyMethodDef Par2_methods[] = {
     {"_add", (PyCFunction )Par2__add, METH_VARARGS, "_add()"},
     {"_mul", (PyCFunction )Par2__mul, METH_VARARGS, "_mul()"},
     {"_div", (PyCFunction )Par2__div, METH_VARARGS, "_div()"},
+    {"_pow", (PyCFunction )Par2__pow, METH_VARARGS, "_pow()"},
     {"dump", (PyCFunction )Py_dump, METH_VARARGS, "dump()"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };

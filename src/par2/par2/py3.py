@@ -179,6 +179,10 @@ class Par2_abstract(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def _pow(self, a, x):
+        pass
+
+    @abstractmethod
     def _add(self, a, b):
         pass
 
@@ -342,8 +346,15 @@ class Par2_base(Par2_abstract):
     def _add(self, a, b):
         return a ^ b
 
+    def _pow(self, a, x):
+        if x == 0 or a == 1:
+            return 1
+        ret = a
+        for i in range(x - 1):
+            ret = self._mul(ret, a)
+        return ret
 try:
-#   raise ImportError('test')
+    raise ImportError('test')
     from _par2 import _Par2
     class Par2_base(_Par2, Par2_abstract):
         pass
@@ -584,13 +595,9 @@ class Par2(Par2_base):
 
     def _pow(self, a, x):
         if a == 0:
-            raise RuntimeError('cannot accept argment a is zero')
-        if x == 0 or a == 1:
-            return 1
-        ret = a
-        for i in range(x):
-            ret = self._mul(ret, a)
-        return ret
+            raise ValueError('cannot accept argment a is zero')
+
+        return super()._pow(a, x)
 
     def _make_part_or_parity_slots(self, slot_size):
         part_or_parity_slots = [None] * self.redundancy
