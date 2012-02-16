@@ -16,7 +16,7 @@ fmt = '{:' + str(digits) + 'd}, 0b{:b}'
 print('n_bits =', n_bits)
 print('galois_field =')
 
-for galois_field in range(1, poly):
+for galois_field in range(1, poly, 2):
 # galois_field = 25
     galois_field += poly
     # set LSB

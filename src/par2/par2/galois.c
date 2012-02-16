@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "galois_field =\n");
 
     s = (int *)malloc(sizeof(int) * w);
-    for (i=1;i<poly;i++){
+    for (i=1;i<poly;i+=2){
         galois_field = i;
         galois_field += poly;
         /*
