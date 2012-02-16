@@ -7,16 +7,20 @@ typedef unsigned short ushort;
 typedef unsigned char uchar;
 
 typedef struct {
-    int poly;
     int bits;
+    int redundancy;
+    int object_size;
+    int allocate_size;
+    int poly;
     int w;
     int gf_max;
     int digits; /* need at view_matrix() for debug. */
-    int redundancy;
     int octets;
+    int gf_size;
     int matrix_size;
     int vertical_size;
     int horizontal_size;
+    char *mem;
     ushort *gf;
     ushort *gfi;
     ushort *vandermonde_matrix;
@@ -28,7 +32,6 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     par2_t par2;
-    char *mem;
 } Par2Object;
 
 static PyMemberDef Par2_members[] = {
@@ -67,59 +70,142 @@ fprintf(stderr, "\n");
     return (PyObject *)self;
 }
 
+/* int(math.log(gf_max, 10)) + 1 */
 static int
-Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
+_calc_log10(int n)
 {
-    int gf_size = 0, matrix_size = 0;
-    int allocate_size = 0, horizontal_size = 0;
+    int digits = 0;
+
+    while (n > 0){
+        n /= 10;
+        digits++;
+    }
+
+    return digits;
+}
+
+static int
+_init_structure(par2_t *p2, int bits, int redundancy)
+{
+    switch (bits) {
+    case 4:
+        p2->poly = 19;
+        break;
+    case 8:
+        p2->poly = 285;
+        break;
+    case 16:
+        p2->poly = 65581;
+        break;
+    default:
+        /* raise KeyError("must chose 4, 8 or 16 for bits.") */
+        return -1;
+    }
+
+    p2->bits = bits;
+    p2->w = 1 << p2->bits;
+    p2->gf_max = p2->w - 1;
+    p2->digits = _calc_log10(p2->gf_max);
+
+    if (redundancy < 0) {
+        p2->redundancy = p2->gf_max;
+    }
+    else {
+        p2->redundancy = redundancy;
+    }
+    /* 2 <= self.redundancy <= self.gf_max */
+    if (2 <= p2->redundancy && p2->redundancy <= p2->gf_max) {
+        /* pass */
+    }
+    else {
+        /*
+        message = 'redundancy is {}. '.format(p2->redundancy)
+        message += 'redundancy must be '
+        message += '2 <= redundancy <= {}'.format(p2->gf_max)
+        raise Par2Error(message)
+        */
+        return -2;
+    }
+
+    /* octets = {4: 1, 8: 1, 16: 2} */
+    p2->octets = _calc_log10(p2->bits);
+
+    return 0;
+}
+
+static void
+_view_structure(par2_t *p2)
+{
+    fprintf(stderr, "\n");
+    fprintf(stderr, "              bits = %d\n", p2->bits);
+    fprintf(stderr, "        redundancy = %d\n", p2->redundancy);
+    fprintf(stderr, "       object_size = %d\n", p2->object_size);
+    fprintf(stderr, "     allocate_size = %d\n", p2->allocate_size);
+    fprintf(stderr, "              poly = %d\n", p2->poly);
+    fprintf(stderr, "                 w = %d\n", p2->w);
+    fprintf(stderr, "            gf_max = %d\n", p2->gf_max);
+    fprintf(stderr, "            digits = %d\n", p2->digits);
+    fprintf(stderr, "            octets = %d\n", p2->octets);
+    fprintf(stderr, "       matrix_size = %d\n", p2->matrix_size);
+    fprintf(stderr, "     vertical_size = %d\n", p2->vertical_size);
+    fprintf(stderr, "   horizontal_size = %d\n", p2->horizontal_size);
+    fprintf(stderr, "               mem = %p\n", p2->mem);
+    fprintf(stderr, "                gf = %p\n", p2->gf);
+    fprintf(stderr, "               gfi = %p\n", p2->gfi);
+    fprintf(stderr, "vandermonde_matrix = %p\n", p2->vandermonde_matrix);
+    fprintf(stderr, "    inverse_matrix = %p\n", p2->inverse_matrix);
+    fprintf(stderr, " horizontal_vector = %p\n", p2->horizontal_vector);
+}
+
+static int
+_allocate_memory(par2_t *p2)
+{
     char *mem;
 
-fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
-    gf_size = self->par2.w * sizeof(ushort);
-    matrix_size = \
-        self->par2.redundancy * self->par2.redundancy * sizeof(ushort);
-    self->par2.matrix_size = matrix_size;
-    horizontal_size = sizeof(ushort) * self->par2.redundancy;
-    self->par2.horizontal_size = horizontal_size;
+    p2->gf_size = p2->w * sizeof(ushort);
+    p2->matrix_size = p2->redundancy * p2->redundancy * sizeof(ushort);
+    p2->horizontal_size = p2->redundancy * sizeof(ushort);
     /*  need two matrixes.
         vandermonde_matrix, inverse_matrix
         need two vectors.
         vector, parity
      */
-    allocate_size = gf_size * 2 + matrix_size * 2 + horizontal_size * 2;
-    self->mem = PyMem_Malloc(allocate_size);
-/*
-fprintf(stderr, "gf_size = %d\n", gf_size);
-fprintf(stderr, "matrix_size = %d\n", matrix_size);
-fprintf(stderr, "horizontal_size = %d\n", horizontal_size);
-fprintf(stderr, "PyMem_Malloc(allocate_size=%d) = %p\n", \
-                                    allocate_size, self->mem);
-*/
-    if (self->mem == NULL)
+    p2->allocate_size = p2->gf_size * 2 + \
+                        p2->matrix_size * 2 + \
+                        p2->horizontal_size * 2;
+    p2->object_size = sizeof(Par2Object) + p2->allocate_size;
+
+    p2->mem = (char *)PyMem_Malloc(p2->allocate_size);
+    if (p2->mem == NULL)
         return -1;
 
-    mem = self->mem;
-    self->par2.gf = (ushort *)mem; mem += gf_size;
-    self->par2.gfi = (ushort *)mem; mem += gf_size;
-    self->par2.vandermonde_matrix = (ushort *)mem; mem += matrix_size;
-    self->par2.inverse_matrix = (ushort *)mem; mem += matrix_size;
-    self->par2.horizontal_vector = (ushort *)mem; mem += horizontal_size * 2;
+    mem = p2->mem;
+    p2->gf = (ushort *)mem; mem += p2->gf_size;
+    p2->gfi = (ushort *)mem; mem += p2->gf_size;
+    p2->vandermonde_matrix = (ushort *)mem; mem += p2->matrix_size;
+    p2->inverse_matrix = (ushort *)mem; mem += p2->matrix_size;
+    p2->horizontal_vector = (ushort *)mem; mem += p2->horizontal_size * 2;
 
-/*
-fprintf(stderr, "self->par2.poly=%d\n", self->par2.poly);
-fprintf(stderr, "self->par2.bits=%d\n", self->par2.bits);
-fprintf(stderr, "self->par2.w=%d\n", self->par2.w);
-fprintf(stderr, "self->par2.gf_max = %d\n", self->par2.gf_max);
-fprintf(stderr, "self->par2.digits = %d\n", self->par2.digits);
-fprintf(stderr, "self->par2.redundancy = %d\n", self->par2.redundancy);
-fprintf(stderr, "self->par2.octets = %d\n", self->par2.octets);
-fprintf(stderr, "self->par2.vertical_size = %d\n", self->par2.vertical_size);
+    return 0;
+}
 
-fprintf(stderr, "dir(self)=\n");
-PyObject_Dir((PyObject *)self);
+static int
+Par2_init(Par2Object *self, PyObject *args, PyObject *kwds)
+{
+    par2_t *p2 = &self->par2;
+    int ret;
 
-fprintf(stderr, "\n");
-*/
+fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
+    ret = _init_structure(p2, p2->bits, p2->redundancy);
+    if (ret < 0){
+        _view_structure(p2);
+        return -1;
+    }
+
+    if (_allocate_memory(p2) < 0) {
+        _view_structure(p2);
+        return -1;
+    }
 
     return 0;
 }
@@ -127,8 +213,9 @@ fprintf(stderr, "\n");
 static void
 Par2_dealloc(Par2Object* self)
 {
+    par2_t *p2 = &self->par2;
 fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
-    PyMem_Free(self->mem);
+    PyMem_Free(p2->mem);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -219,16 +306,12 @@ Par2__div(Par2Object *self, PyObject *args)
     return Py_BuildValue("H", c);
 }
 
-static PyObject *
-Par2__make_gf_and_gfi(Par2Object *self)
+static void
+_make_gf_and_gfi(par2_t *p2)
 {
     int i, bit_pattern = 1;
-    par2_t *p2 = &self->par2;
     ushort *gf = p2->gf, *gfi = p2->gfi;
 
-/*
-fprintf(stderr, "Par2__make_gf_and_gfi(self=%p)\n", self);
-*/
     for(i=0;i<p2->gf_max;i++){
         if (bit_pattern & p2->w)
             bit_pattern ^= p2->poly;
@@ -236,6 +319,15 @@ fprintf(stderr, "Par2__make_gf_and_gfi(self=%p)\n", self);
         gfi[i] = bit_pattern;
         bit_pattern <<= 1;
     }
+}
+
+static PyObject *
+Par2__make_gf_and_gfi(Par2Object *self)
+{
+/*
+fprintf(stderr, "Par2__make_gf_and_gfi(self=%p)\n", self);
+*/
+    _make_gf_and_gfi(&self->par2);
 
     Py_RETURN_NONE;
 }
@@ -261,16 +353,12 @@ fprintf(stderr, "Par2__get_vandermonde_matrix(self=%p)\n", self);
     return (PyObject *)vandermonde_matrix;
 }
 
-static PyObject *
-Par2__make_vandermonde_matrix(Par2Object *self)
+static void
+_make_vandermonde_matrix(par2_t *p2)
 {
-    par2_t *p2 = &self->par2;
     ushort *vm = p2->vandermonde_matrix;
     int i, j, redundancy = p2->redundancy;
 
-/*
-fprintf(stderr, "Par2__make_vandermonde_matrix(self=%p)\n", self);
-*/
     for(i=0;i<redundancy;i++)
         vm[i] = 1;
 
@@ -278,6 +366,17 @@ fprintf(stderr, "Par2__make_vandermonde_matrix(self=%p)\n", self);
         for(i=0;i<redundancy;i++)
             vm[j * redundancy + i] = \
                 _mul(p2, vm[(j-1) * redundancy + i], i + 1);
+}
+
+static PyObject *
+Par2__make_vandermonde_matrix(Par2Object *self)
+{
+    par2_t *p2 = &self->par2;
+
+/*
+fprintf(stderr, "Par2__make_vandermonde_matrix(self=%p)\n", self);
+*/
+    _make_vandermonde_matrix(p2);
 
     Py_RETURN_NONE;
 }
@@ -338,16 +437,14 @@ fprintf(stderr, "view_matrix(matrix=%p, redundancy=%d\n", matrix, redundancy);
 }
 
 static int
-_solve_inverse_matrix(ushort *inverse_matrix, ushort *matrix, \
-                      int redundancy, ushort *horizontal_vector, \
-                      Par2Object *self)
+_solve_inverse_matrix(par2_t *p2, ushort *inverse_matrix, ushort *matrix)
 {
     int i, j, k, swap;
+    int redundancy = p2->redundancy;
     int index, index_j, index_k, index_x, index_y, index_z;
-    int horizontal_size = redundancy * sizeof(ushort);
-    ushort *im = inverse_matrix, *mt = matrix, *hv = horizontal_vector;
+    int horizontal_size = p2->horizontal_size;
+    ushort *im = inverse_matrix, *mt = matrix, *hv = p2->horizontal_vector;
     ushort tmp, tmp1, tmp2, tmp3;
-    par2_t *p2 = &self->par2;
 
 /*
 view_matrix(matrix, redundancy);
@@ -526,6 +623,9 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
     len_data_slots = PySequence_Length(data_slots_obj);
     len_parity_slots = PySequence_Length(parity_slots_obj);
     len_slots = len_data_slots + len_parity_slots;
+    if (len_slots < redundancy * 2) {
+        /* to avoid noisy compiler */
+    }
 /*
 fprintf(stderr, "len_slots = %d, len_data_slots = %d, len_parity_slots = %d\n",
                  len_slots, len_data_slots, len_parity_slots);
@@ -595,7 +695,6 @@ static PyObject *
 Par2__solve_inverse_matrix(Par2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
-    int redundancy = p2->redundancy;
     int ret;
     PyBytesObject *inverse_matrix = NULL;
     Py_buffer matrix;
@@ -610,8 +709,7 @@ Par2__solve_inverse_matrix(Par2Object *self, PyObject *args)
         return NULL;
     im = (ushort *)PyBytes_AS_STRING(inverse_matrix);
 
-    ret = _solve_inverse_matrix(im, mt, redundancy, \
-                                p2->horizontal_vector, self);
+    ret = _solve_inverse_matrix(p2, im, mt);
     if (ret < 0){
         /* Par2RankError */
 fprintf(stderr, "Par2RankError\n");
@@ -621,25 +719,12 @@ fprintf(stderr, "Par2RankError\n");
     return (PyObject *)inverse_matrix;
 }
 
-static PyObject *
-Par2__mul_matrixes(Par2Object *self, PyObject *args)
+static void
+_mul_matrixes(par2_t *p2, ushort *ans, ushort *a_mt, ushort *b_mt)
 {
-    par2_t *p2 = &self->par2;
     int redundancy = p2->redundancy;
     int i, j, k;
-    PyBytesObject *answer = NULL, *a, *b;
-    ushort *ans, *a_mt, *b_mt, tmp, muled;
-
-    if (!PyArg_ParseTuple(args, "OO", &a, &b))
-        return NULL;
-
-    answer = Par2__make_square_matrix(self);
-    if (answer == NULL)
-        return NULL;
-    ans = (ushort *)PyBytes_AS_STRING(answer);
-
-    a_mt = (ushort *)PyBytes_AS_STRING(a);
-    b_mt = (ushort *)PyBytes_AS_STRING(b);
+    ushort tmp, muled;
 
     for (j=0;j<redundancy;j++){
         for (i=0;i<redundancy;i++){
@@ -652,6 +737,27 @@ Par2__mul_matrixes(Par2Object *self, PyObject *args)
             ans[j * redundancy + i] = tmp;
         }
     }
+}
+
+static PyObject *
+Par2__mul_matrixes(Par2Object *self, PyObject *args)
+{
+    par2_t *p2 = &self->par2;
+    PyBytesObject *answer = NULL, *a, *b;
+    ushort *ans, *a_mt, *b_mt;
+
+    if (!PyArg_ParseTuple(args, "OO", &a, &b))
+        return NULL;
+
+    answer = Par2__make_square_matrix(self);
+    if (answer == NULL)
+        return NULL;
+
+    ans = (ushort *)PyBytes_AS_STRING(answer);
+    a_mt = (ushort *)PyBytes_AS_STRING(a);
+    b_mt = (ushort *)PyBytes_AS_STRING(b);
+
+    _mul_matrixes(p2, ans, a_mt, b_mt);
 
     return (PyObject *)answer;
 }

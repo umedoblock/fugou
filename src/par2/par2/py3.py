@@ -368,7 +368,7 @@ class Par2(Par2_base):
         self.bits = bits
         self.w = 1 << self.bits
         self.gf_max = self.w - 1
-        self.digits = int(math.log(self.gf_max, 10)) + 2
+        self.digits = int(math.log(self.gf_max, 10)) + 1
         if not redundancy:
             self.redundancy = self.gf_max
         else:
@@ -474,7 +474,7 @@ class Par2(Par2_base):
     def view_matrix(self, matrix):
         if self.bits >= 8:
             return
-        fmt = ('{:' + str(self.digits) + 'x}') * self.redundancy
+        fmt = ('{:' + str(self.digits + 1) + 'x}') * self.redundancy
         for i in range(self.redundancy):
             message = fmt.format(*matrix[i])
             print(message)
