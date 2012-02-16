@@ -16,12 +16,13 @@ fmt = '{:' + str(digits) + 'd}, 0b{:b}'
 print('n_bits =', n_bits)
 print('galois_field =')
 
+possible = set()
 for galois_field in range(1, poly, 2):
 # galois_field = 25
     galois_field += poly
     # set LSB
-    possible = set()
     bit_pattern = 1
+    possible.clear()
 
     for n in range(field_max):
         if bit_pattern in possible:
