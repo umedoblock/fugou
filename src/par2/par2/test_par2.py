@@ -1,16 +1,17 @@
 # Copyright 2011 梅どぶろく(umedoblock)
 
 import unittest
+import struct
+import pprint
 import sys, os
 dname = os.path.dirname(os.path.abspath(__file__))
 # print('dname =', dname)
 libdir = os.path.join(dname, '..')
 # print('libdir =', libdir)
 sys.path.insert(0, libdir)
-from par2 import Par2
-from par2 import Par2Archive
-from par2 import TAIL_SIZE
-from par2 import Par2Error
+from par2 import *
+
+pp = pprint.PrettyPrinter(indent=4)
 
 class TestPar2(unittest.TestCase):
     def setUp(self):
@@ -38,43 +39,110 @@ class TestPar2(unittest.TestCase):
         for bits in (4, 8, 16):
             redundancy = redundancies[bits]
             par2 = Par2(bits, redundancy)
+            e_matrix = par2._make_e_matrix()
+
             matrix = []
             for i in range(par2.redundancy):
                 foo = [x % par2.w for x in range(i, par2.redundancy + i)]
                 matrix.append(foo)
-            e_matrix = par2._make_e_matrix()
+          # print('matrix =')
+          # pp = pprint.PrettyPrinter(indent=4)
+          # pp.pprint(matrix)
+
+            if Par2.C_EXTENSION:
+                matrix = matrix_to_bytes(matrix)
+          # print('len(matrix) =', len(matrix))
 
             muled_matrix = par2._mul_matrixes(matrix, e_matrix)
+          # print('len(muled_matrix) =', len(muled_matrix))
             self.assertEqual(matrix, muled_matrix)
 
             muled_matrix = par2._mul_matrixes(e_matrix, matrix)
             self.assertEqual(matrix, muled_matrix)
 
     def test__solve_inverse_matrix(self):
+        pp = pprint.PrettyPrinter(indent=4)
+
+        redundancies = {4:15}
         redundancies = {4:15, 8:50, 16:50}
         for bits in (4, 8, 16):
             redundancy = redundancies[bits]
             par2 = Par2(bits, redundancy)
 
-            matrix = par2.vander_matrix
-            inverse_matrix = par2._solve_inverse_matrix(matrix)
+            if Par2.C_EXTENSION:
+                matrix = par2._get_vandermonde_matrix()
+              # by = matrix
+              # mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size)
+              # print('mt is')
+              # pp.pprint(mt)
 
+              # im = bytes_to_matrix(inverse_matrix, par2.redundancy, \
+              #                      par2.horizontal_size)
+              # print('inverse_matrix =')
+              # pp.pprint(im)
+            else:
+                matrix = par2.vander_matrix
+              # print('matrix =')
+              # pp.pprint(matrix)
+                by = matrix_to_bytes(matrix)
+                mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size)
+              # print('mt =')
+              # pp.pprint(mt)
+                self.assertEqual(matrix, mt)
+
+            inverse_matrix = par2._solve_inverse_matrix(matrix)
+            if Par2.C_EXTENSION:
+                matrix = par2._get_vandermonde_matrix()
             maybe_e_matrix = par2._mul_matrixes(matrix, inverse_matrix)
 
             e_matrix = par2._make_e_matrix()
+          # print('e_matrix =')
+          # pp.pprint(e_matrix)
+
             self.assertEqual(e_matrix, maybe_e_matrix)
+
+          # print('e_matrix =')
+          # if Par2.C_EXTENSION:
+          #     e_matrix = \
+          #         bytes_to_matrix(e_matrix, \
+          #                         par2.redundancy, par2.horizontal_size)
+          # pp.pprint(e_matrix)
+
+          # print('maybe_e_matrix =')
+          # if Par2.C_EXTENSION:
+          #     maybe_e_matrix = \
+          #         bytes_to_matrix(maybe_e_matrix, \
+          #                         par2.redundancy, par2.horizontal_size)
+          # pp.pprint(maybe_e_matrix)
+
+          # print('matrix =')
+          # if Par2.C_EXTENSION:
+          #     matrix = \
+          #         bytes_to_matrix(matrix, \
+          #                         par2.redundancy, par2.horizontal_size)
+          # pp.pprint(matrix)
+
+          # print('inverse_matrix =')
+          # if Par2.C_EXTENSION:
+          #     inverse_matrix = \
+          #         bytes_to_matrix(inverse_matrix, \
+          #                         par2.redundancy, par2.horizontal_size)
+          # pp.pprint(inverse_matrix)
 
     def test_archive_p4(self):
         # make par2 archive
-        for bits in (4, 8, 16):
+        bits = (4,)
+        bits = (4, 8)
+        bits = (4, 8, 16)
+        for bit in bits:
             redundancy = 15
-            archive = Par2Archive(bits, redundancy)
+            archive = Par2Archive(bit, redundancy)
             self.assertEqual(list, type(archive.slots))
             self.assertEqual(redundancy * 2, len(archive.slots))
 
             # make test data
             # >>> int.from_bytes(b'\x01\x0f', 'big')
-            # 271 for bits is 4
+            # 271 for bit is 4
             tmp = [int.to_bytes(x % 16, 1, 'big') for x in range(0, 271)]
             data = b''.join(tmp)
             data_size = len(data)
@@ -106,10 +174,13 @@ class TestPar2(unittest.TestCase):
             self.assertTrue(archive.enable_decode())
             raw_data = archive.fix_up_data()
 
+          # print('archive.slots =')
+          # pp.pprint(archive.slots)
+
             # make expected data for assert
             expected_decode_data = [None] * redundancy
             data_size_bytes = \
-                int.to_bytes(data_size, TAIL_SIZE, 'big')
+                int.to_bytes(data_size, 8, 'big')
             pad = b'\x00' * padding_size
             data_pad = (data + pad + data_size_bytes)
             for i in range(redundancy):
@@ -132,7 +203,8 @@ class TestPar2(unittest.TestCase):
         tmp = [int.to_bytes(x % 16, 1, 'big') for x in range(0, 271)]
         data = b''.join(tmp)
         data_size = len(data)
-        parity_size, _, padding_size, _= archive.par2._calculate_size(data_size)
+        parity_size, _, padding_size, _= \
+            archive.par2._calculate_size(data_size)
 
         # take data
         archive.take_data(data)
