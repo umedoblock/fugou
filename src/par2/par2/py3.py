@@ -4,52 +4,18 @@ import math
 import copy
 import struct
 import pprint
-
 from sys import modules
-def do_unittest():
-    return 'unittest' in modules
 
-def have_par2_dummy():
-    return 'par2_dummy' in modules
+from par2.util import *
 
-if have_par2_dummy():
-    print('0 i have par2_dummy.')
-else:
-    print('1 i don\'t have par2_dummy.')
+def have_par2_c_extension():
+    return '_par2' in modules
 
-  # print('modules =')
-  # L0 = list(modules.keys())
-  # import re
-  # print([module for module in L0 if re.search(r'par2', module, re.I)])
-
-if do_unittest():
-    __all__ = [ \
-        'Par2', 'Par2Archive', 'Par2Error', \
-        'matrix_to_bytes', 'bytes_to_matrix', \
-        'Par2_base_PURE_PYTHON'
-    ]
-else:
-    __all__ = [ \
-        'Par2', 'Par2Archive', 'Par2Error', \
-        'matrix_to_bytes', 'bytes_to_matrix' \
-    ]
+__all__ = [ \
+    'Par2', 'Par2Archive', 'Par2Error', \
+]
 
 pp = pprint.PrettyPrinter(indent=4)
-
-def matrix_to_bytes(matrix):
-    elements = [None] * len(matrix)
-    for i, m in enumerate(matrix):
-        elements[i] = struct.pack('=' + 'H' * len(m), *m)
-    return b''.join(elements)
-
-def bytes_to_matrix(bys, redundancy, horizontal_size):
-    matrix = [None] * redundancy
-    for i in range(redundancy):
-        horizontal_bytes = bys[i*horizontal_size:(i+1)*horizontal_size]
-        vector = struct.unpack('=' + 'H' * redundancy, horizontal_bytes)
-        matrix[i] = list(vector)
-
-    return matrix
 
 class Par2Error(BaseException):
     pass
@@ -226,11 +192,14 @@ class Par2_abstract(metaclass=ABCMeta):
     def _make_e_matrix(self):
         raise NotImplementedError()
 
-class Par2_base(Par2_abstract):
+class Par2_:
     C_EXTENSION = False
 
     def _allocate_memory(self):
-        pass
+        # 2 means sizeof(unsigned short)
+        self.horizontal_size = 2 * self.redundancy
+        fmt = {4: 'B', 8: 'B', 16: 'H'}
+        self.format = '>{}'.format(fmt[self.bits])
 
     def _encode(self, parity_slots, data_slots, symbol_num):
         redundancy = self.redundancy
@@ -394,31 +363,11 @@ try:
 #   raise ImportError('test')
     from _par2 import _Par2
 
-    if do_unittest():
-        class Par2_base_C_EXTENSION(_Par2, Par2_abstract):
-            pass
-
-    class Par2_base(_Par2, Par2_abstract):
-        pass
-
 except ImportError as e:
     print('cannot import _Par2')
     print('reason: ', e.args[0])
 
-if do_unittest():
-    print('do_unittest() ====================================================')
-
-    if have_par2_dummy():
-        print('2 i have par2_dummy.')
-    else:
-        print('3 i don\'t have par2_dummy.')
-
-    class Par2_base_PURE_PYTHON(Par2_base):
-        pass
-
-print('Par2_base is {}'.format(Par2_base))
-
-class Par2(Par2_base):
+class Par2MixIn:
 
     def _init_self(self, bits, redundancy):
       # refs #22 and galois_{4,8,16}bits.log
@@ -451,12 +400,6 @@ class Par2(Par2_base):
       # print('Par2.__init__()')
         self._init_self(bits, redundancy)
         self._allocate_memory()
-
-        if not Par2.C_EXTENSION:
-            # 2 means sizeof(unsigned short)
-            self.horizontal_size = 2 * self.redundancy
-            fmt = {4: 'B', 8: 'B', 16: 'H'}
-            self.format = '>{}'.format(fmt[bits])
 
         self._make_gf_and_gfi()
         self._make_vandermonde_matrix()
@@ -586,6 +529,7 @@ class Par2(Par2_base):
         merged_slots = [None] * self.redundancy
         matrix = self._make_e_matrix()
         j = 0
+
         if Par2.C_EXTENSION:
             vander_matrix = self._get_vandermonde_matrix()
             vander_matrix = bytes_to_matrix(vander_matrix, \
@@ -678,6 +622,11 @@ class Par2(Par2_base):
         self.view_matrix(im)
         if stop:
             input()
+
+if have_par2_c_extension():
+    class Par2(Par2MixIn, _Par2): pass
+else:
+    class Par2(Par2MixIn, Par2_): pass
 
 if __name__ == '__main__':
     redundancy = 15

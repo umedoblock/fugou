@@ -1,7 +1,6 @@
 # Copyright 2011 梅どぶろく(umedoblock)
 
 import unittest
-import struct
 import pprint
 import sys, os
 dname = os.path.dirname(os.path.abspath(__file__))
@@ -13,6 +12,7 @@ sys.path.insert(0, libdir)
 pp = pprint.PrettyPrinter(indent=4)
 
 from par2 import *
+from par2.util import *
 
 class _TestPar2(unittest.TestCase):
 
@@ -25,15 +25,15 @@ class _TestPar2(unittest.TestCase):
         with self.assertRaises(KeyError):
             Par2(5)
 
-  # def test_mul_and_div(self):
-  #     p4 = self.p4
-  #     for a in range(self.p4.w):
-  #         for n in range(p4.gf_max):
-  #             b = n + 1
-  #             mul = p4._mul(a, b)
-  #             c = p4._div(mul, b)
-  #             self.assertEqual(a, c)
-  #           # print(a, b, mul, c)
+    def test_mul_and_div(self):
+        p4 = Par2(4)
+        for a in range(p4.w):
+            for n in range(p4.gf_max):
+                b = n + 1
+                mul = p4._mul(a, b)
+                c = p4._div(mul, b)
+                self.assertEqual(a, c)
+              # print(a, b, mul, c)
 
     def test__pow(self):
         redundancies = {4:15, 8:50, 16:50}
@@ -261,43 +261,6 @@ class _TestPar2(unittest.TestCase):
             self.assertEqual(bytes, type(dd))
             self.assertEqual(parity_size, len(dd))
             self.assertEqual(edd[i], dd)
-
-from sys import modules
-
-import par2_dummy
-
-if '_par2' in modules:
-    print(dir(modules['par2']))
-    del modules['par2']
-    print(dir(modules['par2.py3']))
-  # del modules['par2.py3']
-  # del modules['_par2']
-  # from par2 import *
-#   from par2 import Par2_base_PURE_PYTHON
-#   print('modules =')
-    L0 = list(modules.keys())
-    import re
-    for module in L0:
-        if re.search(r'par2', module, re.I):
-            print(module)
-#           del modules[module]
-
-    class Par2(Par2_base_PURE_PYTHON, Par2):
-        pass
-
-    class Par2Archive(Par2Archive):
-        def __init__(self, bits, redundancy=0, data=None, data_size=None):
-            print('\nPar2.C_EXTENSION 3 =', Par2.C_EXTENSION)
-            super().__init__(bits, redundancy, data, data_size)
-            self.par2 = Par2(bits, redundancy)
-
-    class TestPar2_PURE_PYTHON(_TestPar2):
-        print()
-
-      # print('par2.Par2.C_EXTENSION =', par2.Par2.C_EXTENSION)
-        print('\nPar2.C_EXTENSION 4 =', Par2.C_EXTENSION)
-        print()
-    #   Par2.__init__ = par2.Par2Archive.Par2
 
 if __name__ == '__main__':
     unittest.main()
