@@ -413,8 +413,7 @@ print('Par2_base is {}'.format(Par2_base))
 
 class Par2(Par2_base):
 
-    def __init__(self, bits, redundancy=0):
-      # print('Par2.__init__()')
+    def _init_self(self, bits, redundancy):
       # refs #22 and galois_{4,8,16}bits.log
       # poly = {4: 25, 8: 501, 16: 131053}
         poly = {4: 19, 8: 285, 16: 65581}
@@ -440,6 +439,10 @@ class Par2(Par2_base):
         octets = {4: 1, 8: 1, 16: 2}
         self.octets = octets[bits]
         self.vertical_size = self.redundancy * self.octets
+
+    def __init__(self, bits, redundancy=0):
+      # print('Par2.__init__()')
+        self._init_self(bits, redundancy)
 
         su = super(Par2, self)
         su.__init__()
