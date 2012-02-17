@@ -450,8 +450,8 @@ class Par2(Par2_base):
             fmt = {4: 'B', 8: 'B', 16: 'H'}
             self.format = '>{}'.format(fmt[bits])
 
-        su._make_gf_and_gfi()
-        su._make_vandermonde_matrix()
+        self._make_gf_and_gfi()
+        self._make_vandermonde_matrix()
 
     def encode(self, data_slots=None, data=b''):
         if not data_slots:
