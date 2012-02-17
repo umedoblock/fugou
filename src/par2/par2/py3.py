@@ -155,7 +155,7 @@ class Par2_abstract(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def _pick_up_rows(self, slots):
+    def _merge_slots(self, slots):
         raise NotImplementedError()
 
     @abstractmethod
@@ -492,7 +492,9 @@ class Par2(Par2_base):
         if not slot_size:
             raise()
 
-        data_and_parity, matrix = self._pick_up_rows(slots)
+        data_slots = slots[:self.redundancy]
+        parity_slots = slots[self.redundancy:]
+        merged_slots, matrix = self._merge_slots(data_slots, parity_slots)
       # print('matrix =')
       # pp.pprint(matrix)
         if Par2.C_EXTENSION:
@@ -502,7 +504,7 @@ class Par2(Par2_base):
         symbol_num = slot_size // self.octets
         decode_data = self._make_part_or_parity_slots(slot_size)
 
-        self._decode(decode_data, data_and_parity, inverse_matrix, symbol_num)
+        self._decode(decode_data, merged_slots, inverse_matrix, symbol_num)
         decode_data = self._bytearray2bytes_all(decode_data)
 
         return decode_data
@@ -531,8 +533,8 @@ class Par2(Par2_base):
             print(message)
         print()
 
-    def _pick_up_rows(self, slots):
-        data_and_parity = [None] * self.redundancy
+    def _merge_slots(self, data_slots, parity_slots):
+        merged_slots = [None] * self.redundancy
         matrix = self._make_e_matrix()
         j = 0
         if Par2.C_EXTENSION:
@@ -548,15 +550,15 @@ class Par2(Par2_base):
       # print('vander_matrix =')
       # pp.pprint(vander_matrix)
         for i in range(self.redundancy):
-            if slots[i]:
-                data_and_parity[i] = slots[i]
+            if data_slots[i]:
+                merged_slots[i] = data_slots[i]
             else:
-                while not slots[self.redundancy + j]:
+                while not parity_slots[j]:
                     j += 1
                 matrix[i] = vander_matrix[j]
-                data_and_parity[i] = slots[self.redundancy + j]
+                merged_slots[i] = parity_slots[j]
                 j += 1
-        return data_and_parity, matrix
+        return merged_slots, matrix
 
 # matrix_to_bytes(matrix):
 # bytes_to_matrix(bys, redundancy, horizontal_size):
