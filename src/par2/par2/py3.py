@@ -5,10 +5,34 @@ import copy
 import struct
 import pprint
 
-__all__ = [ \
-    'Par2', 'Par2Archive', 'Par2Error', \
-    'matrix_to_bytes', 'bytes_to_matrix' \
-]
+from sys import modules
+def do_unittest():
+    return 'unittest' in modules
+
+def have_par2_dummy():
+    return 'par2_dummy' in modules
+
+if have_par2_dummy():
+    print('0 i have par2_dummy.')
+else:
+    print('1 i don\'t have par2_dummy.')
+
+  # print('modules =')
+  # L0 = list(modules.keys())
+  # import re
+  # print([module for module in L0 if re.search(r'par2', module, re.I)])
+
+if do_unittest():
+    __all__ = [ \
+        'Par2', 'Par2Archive', 'Par2Error', \
+        'matrix_to_bytes', 'bytes_to_matrix', \
+        'Par2_base_PURE_PYTHON'
+    ]
+else:
+    __all__ = [ \
+        'Par2', 'Par2Archive', 'Par2Error', \
+        'matrix_to_bytes', 'bytes_to_matrix' \
+    ]
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -358,15 +382,32 @@ class Par2_base(Par2_abstract):
         for i in range(x - 1):
             ret = self._mul(ret, a)
         return ret
+
 try:
-#   raise ImportError('test')
+    raise ImportError('test')
     from _par2 import _Par2
+
+    if do_unittest():
+        class Par2_base_C_EXTENSION(_Par2, Par2_abstract):
+            pass
+
     class Par2_base(_Par2, Par2_abstract):
         pass
 
 except ImportError as e:
     print('cannot import _Par2')
     print('reason: ', e.args[0])
+
+if do_unittest():
+    print('do_unittest() ====================================================')
+
+    if have_par2_dummy():
+        print('2 i have par2_dummy.')
+    else:
+        print('3 i don\'t have par2_dummy.')
+
+    class Par2_base_PURE_PYTHON(Par2_base):
+        pass
 
 print('Par2_base is {}'.format(Par2_base))
 

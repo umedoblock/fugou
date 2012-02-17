@@ -9,13 +9,12 @@ dname = os.path.dirname(os.path.abspath(__file__))
 libdir = os.path.join(dname, '..')
 # print('libdir =', libdir)
 sys.path.insert(0, libdir)
-from par2 import *
 
 pp = pprint.PrettyPrinter(indent=4)
 
-class TestPar2(unittest.TestCase):
-    def setUp(self):
-        self.p4 = Par2(4, redundancy=15)
+from par2 import *
+
+class _TestPar2(unittest.TestCase):
 
     def test_bits(self):
         Par2(4)
@@ -262,6 +261,43 @@ class TestPar2(unittest.TestCase):
             self.assertEqual(bytes, type(dd))
             self.assertEqual(parity_size, len(dd))
             self.assertEqual(edd[i], dd)
+
+from sys import modules
+
+import par2_dummy
+
+if '_par2' in modules:
+    print(dir(modules['par2']))
+    del modules['par2']
+    print(dir(modules['par2.py3']))
+  # del modules['par2.py3']
+  # del modules['_par2']
+  # from par2 import *
+#   from par2 import Par2_base_PURE_PYTHON
+#   print('modules =')
+    L0 = list(modules.keys())
+    import re
+    for module in L0:
+        if re.search(r'par2', module, re.I):
+            print(module)
+#           del modules[module]
+
+    class Par2(Par2_base_PURE_PYTHON, Par2):
+        pass
+
+    class Par2Archive(Par2Archive):
+        def __init__(self, bits, redundancy=0, data=None, data_size=None):
+            print('\nPar2.C_EXTENSION 3 =', Par2.C_EXTENSION)
+            super().__init__(bits, redundancy, data, data_size)
+            self.par2 = Par2(bits, redundancy)
+
+    class TestPar2_PURE_PYTHON(_TestPar2):
+        print()
+
+      # print('par2.Par2.C_EXTENSION =', par2.Par2.C_EXTENSION)
+        print('\nPar2.C_EXTENSION 4 =', Par2.C_EXTENSION)
+        print()
+    #   Par2.__init__ = par2.Par2Archive.Par2
 
 if __name__ == '__main__':
     unittest.main()

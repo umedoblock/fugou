@@ -4,10 +4,21 @@ import sys
 
 major = sys.version_info.major
 
-__all__ = [ \
-    'Par2', 'Par2Archive', 'Par2Error', \
-    'matrix_to_bytes', 'bytes_to_matrix' \
-]
+from sys import modules
+def do_unittest():
+    return 'unittest' in modules
+
+if do_unittest():
+    __all__ = [ \
+        'Par2', 'Par2Archive', 'Par2Error', \
+        'matrix_to_bytes', 'bytes_to_matrix', \
+        'Par2_base_PURE_PYTHON'
+    ]
+else:
+    __all__ = [ \
+        'Par2', 'Par2Archive', 'Par2Error', \
+        'matrix_to_bytes', 'bytes_to_matrix' \
+    ]
 
 if major == 3:
     from par2.py3 import *
