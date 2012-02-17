@@ -217,44 +217,6 @@ class Par2_base(Par2_abstract):
                     struct.pack(self.format, parity[j])
         return parity_slots
 
-    def _decode(self, decode_data, \
-                data_and_parity, inverse_matrix, symbol_num):
-        octets = self.octets
-        vector = self._make_vector()
-        vertical_data = self._make_vector()
-        if Par2.C_EXTENSION:
-            inverse_matrix = bytes_to_matrix(inverse_matrix,
-                                             self.redundancy,
-                                             self.horizontal_size)
-
-        for i in range(symbol_num):
-            for j in range(self.redundancy):
-                num_bytes = data_and_parity[j][i*octets:(i+1)*octets]
-                if Par2.C_EXTENSION:
-                    fmt = {4: 'B', 8: 'B', 16: 'H'}
-                    format = '>{}'.format(fmt[self.bits])
-                    num = struct.unpack(format, num_bytes)[0]
-                else:
-                    num = struct.unpack(self.format, num_bytes)[0]
-                vector[j] = num
-
-            self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
-            for j in range(self.redundancy):
-                if Par2.C_EXTENSION:
-                    fmt = {4: 'B', 8: 'B', 16: 'H'}
-                    format = '>{}'.format(fmt[self.bits])
-                    decode_data[j][i*octets:(i+1)*octets] = \
-                        struct.pack(format, vertical_data[j])
-                else:
-                    decode_data[j][i*octets:(i+1)*octets] = \
-                        struct.pack(self.format, vertical_data[j])
-
-            if Par2.C_EXTENSION:
-                pass
-          #     matrix = par2._get_vandermonde_matrix()
-          #     bytes_to_matrix(matrix, \
-          #                     par2.redundancy, par2.horizontal_size)
-
     def _solve_inverse_matrix(self, matrix):
         matrix = copy.deepcopy(matrix)
         im = inverse_matrix = self._make_e_matrix()
@@ -486,6 +448,44 @@ class Par2(Par2_base):
         sp = self.par2.split(self.encode_data, self.slot_size)
         self.slots[:self.redundancy] = sp
         return sp
+
+    def _decode(self, decode_data, \
+                data_and_parity, inverse_matrix, symbol_num):
+        octets = self.octets
+        vector = self._make_vector()
+        vertical_data = self._make_vector()
+        if Par2.C_EXTENSION:
+            inverse_matrix = bytes_to_matrix(inverse_matrix,
+                                             self.redundancy,
+                                             self.horizontal_size)
+
+        for i in range(symbol_num):
+            for j in range(self.redundancy):
+                num_bytes = data_and_parity[j][i*octets:(i+1)*octets]
+                if Par2.C_EXTENSION:
+                    fmt = {4: 'B', 8: 'B', 16: 'H'}
+                    format = '>{}'.format(fmt[self.bits])
+                    num = struct.unpack(format, num_bytes)[0]
+                else:
+                    num = struct.unpack(self.format, num_bytes)[0]
+                vector[j] = num
+
+            self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
+            for j in range(self.redundancy):
+                if Par2.C_EXTENSION:
+                    fmt = {4: 'B', 8: 'B', 16: 'H'}
+                    format = '>{}'.format(fmt[self.bits])
+                    decode_data[j][i*octets:(i+1)*octets] = \
+                        struct.pack(format, vertical_data[j])
+                else:
+                    decode_data[j][i*octets:(i+1)*octets] = \
+                        struct.pack(self.format, vertical_data[j])
+
+            if Par2.C_EXTENSION:
+                pass
+          #     matrix = par2._get_vandermonde_matrix()
+          #     bytes_to_matrix(matrix, \
+          #                     par2.redundancy, par2.horizontal_size)
 
     def decode(self, slots):
         slot_size = min([len(slot) for slot in slots if slot and len(slot)])
