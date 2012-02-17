@@ -170,6 +170,10 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 class Par2_abstract(metaclass=ABCMeta):
 
     @abstractmethod
+    def _allocate_memory(self):
+        pass
+
+    @abstractmethod
     def _encode(self, parity_slots, data_slots, symbol_num):
         raise NotImplementedError()
 
@@ -224,6 +228,9 @@ class Par2_abstract(metaclass=ABCMeta):
 
 class Par2_base(Par2_abstract):
     C_EXTENSION = False
+
+    def _allocate_memory(self):
+        pass
 
     def _encode(self, parity_slots, data_slots, symbol_num):
         redundancy = self.redundancy
@@ -384,7 +391,7 @@ class Par2_base(Par2_abstract):
         return ret
 
 try:
-    raise ImportError('test')
+#   raise ImportError('test')
     from _par2 import _Par2
 
     if do_unittest():
@@ -443,9 +450,7 @@ class Par2(Par2_base):
     def __init__(self, bits, redundancy=0):
       # print('Par2.__init__()')
         self._init_self(bits, redundancy)
-
-        su = super(Par2, self)
-        su.__init__()
+        self._allocate_memory()
 
         if not Par2.C_EXTENSION:
             # 2 means sizeof(unsigned short)

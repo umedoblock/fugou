@@ -68,16 +68,28 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
         par2_view_structure(p2);
         return -1;
     }
+    p2->mem = NULL;
 
+    return 0;
+}
+
+static PyObject *
+Par2__allocate_memory(PyPar2Object *self)
+{
+    par2_t *p2 = &self->par2;
+
+/*
+fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
+*/
     if (par2_allocate_memory(p2) < 0) {
         par2_view_structure(p2);
-        return -1;
+        return NULL;
     }
     /*
     par2_view_structure(p2);
     */
 
-    return 0;
+    Py_RETURN_NONE;
 }
 
 static void
@@ -87,7 +99,8 @@ Par2_dealloc(PyPar2Object* self)
 /*
 fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
 */
-    par2_free_memory(p2);
+    if (p2->mem != NULL)
+        par2_free_memory(p2);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -397,6 +410,8 @@ Py_dump(PyPar2Object *self, PyObject *args)
 }
 
 static PyMethodDef Par2_methods[] = {
+    {"_allocate_memory", (PyCFunction )Par2__allocate_memory, \
+        METH_NOARGS, "_allocate_memory()"},
     {"_encode", (PyCFunction )Par2__encode, \
         METH_VARARGS, "_encode()"},
     {"_solve_inverse_matrix", (PyCFunction )Par2__solve_inverse_matrix, \
