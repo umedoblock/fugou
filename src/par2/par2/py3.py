@@ -624,9 +624,9 @@ class Par2MixIn:
             input()
 
 if have_par2_c_extension():
-    class Par2(Par2MixIn, _Par2): pass
+    class Par2(Par2MixIn, _Par2, Par2_abstract): pass
 else:
-    class Par2(Par2MixIn, Par2_): pass
+    class Par2(Par2MixIn, Par2_, Par2_abstract): pass
 
 if __name__ == '__main__':
     redundancy = 15
