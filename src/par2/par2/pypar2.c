@@ -230,8 +230,6 @@ static PyObject *
 Par2__make_e_matrix(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
-    int redundancy = p2->redundancy;
-    int i, matrix_size = 0;
     PyBytesObject *matrix = NULL;
     ushort *mt;
 
@@ -239,11 +237,8 @@ Par2__make_e_matrix(PyPar2Object *self)
     if (matrix == NULL)
         return NULL;
     mt = (ushort *)PyBytes_AS_STRING(matrix);
-    matrix_size = PyBytes_GET_SIZE(matrix);
-    memset(mt, '\0', matrix_size);
 
-    for(i=0;i<redundancy;i++)
-        mt[i * redundancy + i] = 1;
+    par2_make_e_matrix(p2, mt);
 
     return (PyObject *)matrix;
 }
@@ -377,6 +372,119 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
 }
 
 static PyObject *
+Par2__merge_slots(PyPar2Object *self, PyObject *args)
+{
+    par2_t *p2 = &self->par2;
+    int i, allocate_size;
+    int data_slot_index, parity_slot_index;
+    int len_slots, len_data_slots, len_parity_slots;
+    ushort *merged_matrix = NULL;
+    uchar **slots, **merged_slots, **data_slots, **parity_slots;
+
+    PyTupleObject *merged_slots_obj = NULL;
+    PyBytesObject *merged_matrix_obj = NULL;
+    PyListObject *data_slots_obj, *parity_slots_obj;
+    PyObject *slot_obj;
+
+    if (!PyArg_ParseTuple(args, "OO", \
+                          &data_slots_obj, &parity_slots_obj))
+        return NULL;
+
+    allocate_size = sizeof(uchar *) * p2->redundancy * 3;
+    slots = (uchar **)PyMem_Malloc(allocate_size);
+    if (slots == NULL)
+        return NULL;
+
+    data_slots = slots;
+    parity_slots = slots + p2->redundancy;
+    merged_slots = slots + p2->redundancy * 2;
+    len_data_slots = PySequence_Length((PyObject *)data_slots_obj);
+    len_parity_slots = PySequence_Length((PyObject *)parity_slots_obj);
+    len_slots = len_data_slots + len_parity_slots;
+    if (len_slots < p2->redundancy * 2) {
+        /* to avoid noisy compiler */
+    }
+
+    merged_matrix_obj = \
+        (PyBytesObject *)PyBytes_FromStringAndSize((const char *)NULL, \
+                                                    p2->matrix_size);
+
+    for (i=0;i<len_data_slots;i++) {
+        slot_obj = PySequence_GetItem((PyObject *)data_slots_obj, i);
+/*
+fprintf(stderr, "data_slots_obj[%d] = %p\n", i, PyBytes_AS_STRING(slot_obj));
+fprintf(stderr, "data_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0);
+fprintf(stderr, "\n");
+*/
+        if (PyObject_IsTrue(slot_obj)) {
+            data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
+        }
+        else{
+            data_slots[i] = NULL;
+        }
+    }
+    /*
+fprintf(stderr, "\n");
+    */
+
+    for (i=0;i<len_parity_slots;i++) {
+        slot_obj = PySequence_GetItem((PyObject *)parity_slots_obj, i);
+/*
+fprintf(stderr, "prity_slots_obj[%d] = %p\n", i, PyBytes_AS_STRING(slot_obj));
+fprintf(stderr, "parity_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0);
+fprintf(stderr, "\n");
+*/
+        if (PyObject_IsTrue(slot_obj)) {
+            parity_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
+        }
+        else{
+            parity_slots[i] = NULL;
+        }
+    }
+
+    merged_matrix = (ushort *)PyBytes_AS_STRING(merged_matrix_obj);
+    par2_merge_slots(p2, \
+                     merged_slots, merged_matrix, \
+                     data_slots, parity_slots);
+
+    merged_slots_obj = (PyTupleObject *)PyTuple_New(p2->redundancy);
+    for (i=0;i<p2->redundancy;i++) {
+        slot_obj = NULL;
+
+        data_slot_index = \
+            par2_get_index_of_slots(p2, data_slots, merged_slots[i]);
+        if (data_slot_index >= 0) {
+            slot_obj = PySequence_GetItem( \
+                            (PyObject *)data_slots_obj, data_slot_index);
+        }
+
+        parity_slot_index = \
+            par2_get_index_of_slots(p2, parity_slots, merged_slots[i]);
+        if (parity_slot_index >= 0) {
+            slot_obj = \
+                PySequence_GetItem( \
+                    (PyObject *)parity_slots_obj, parity_slot_index);
+        }
+
+        if (slot_obj == NULL)
+            return NULL;
+/*
+fprintf(stderr, "merged_slots_obj[%d] = %p\n", i, merged_slots[i]);
+fprintf(stderr, "merged_slots_obj[%d] =\n", i);
+PyObject_Print(slot_obj, stderr, 0);
+fprintf(stderr, "\n");
+*/
+        PyTuple_SetItem((PyObject *)merged_slots_obj, i, slot_obj);
+    }
+
+    PyMem_Free(slots);
+
+    return PyTuple_Pack(2, merged_slots_obj, merged_matrix_obj);
+}
+
+static PyObject *
 Par2__solve_inverse_matrix(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
@@ -448,6 +556,8 @@ static PyMethodDef Par2_methods[] = {
         METH_VARARGS, "_encode()"},
     {"_decode", (PyCFunction )Par2__decode, \
         METH_VARARGS, "_decode()"},
+    {"_merge_slots", (PyCFunction )Par2__merge_slots, \
+        METH_VARARGS, "_merge_slots()"},
     {"_solve_inverse_matrix", (PyCFunction )Par2__solve_inverse_matrix, \
         METH_VARARGS, "_solve_inverse_matrix()"},
     {"_make_gf_and_gfi", (PyCFunction )Par2__make_gf_and_gfi, \

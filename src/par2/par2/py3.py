@@ -154,6 +154,38 @@ class Par2_:
                 answer[j][i] = tmp
         return answer
 
+    def _merge_slots(self, data_slots, parity_slots):
+        merged_slots = [None] * self.redundancy
+        merged_matrix = self._make_e_matrix()
+        j = 0
+
+        if Par2.C_EXTENSION:
+            vandermonde_matrix = self._get_vandermonde_matrix()
+            vandermonde_matrix = bytes_to_matrix(vandermonde_matrix, \
+                                                 self.redundancy, \
+                                                 self.horizontal_size)
+            merged_matrix = bytes_to_matrix(merged_matrix, \
+                                            self.redundancy, \
+                                            self.horizontal_size)
+        else:
+            vandermonde_matrix = self.vandermonde_matrix
+      # print('vandermonde_matrix =')
+      # pp.pprint(vandermonde_matrix)
+        for i in range(self.redundancy):
+            if data_slots[i]:
+                merged_slots[i] = data_slots[i]
+            else:
+                while not parity_slots[j]:
+                    j += 1
+                merged_matrix[i] = vandermonde_matrix[j]
+                merged_slots[i] = parity_slots[j]
+                j += 1
+      # print('merged_slots =')
+      # pp.pprint(merged_slots)
+      # print('merged_matrix =')
+      # pp.pprint(merged_matrix)
+        return merged_slots, merged_matrix
+
     def _make_square_matrix(self, value=None):
         square_matrix = [None] * self.redundancy
         for i in range(self.redundancy):
@@ -308,10 +340,6 @@ class Par2MixIn:
         parity_slots = slots[self.redundancy:]
         merged_slots, merged_matrix = \
             self._merge_slots(data_slots, parity_slots)
-      # print('matrix =')
-      # pp.pprint(matrix)
-        if Par2.C_EXTENSION:
-            merged_matrix = matrix_to_bytes(merged_matrix)
 
         inverse_matrix = self._solve_inverse_matrix(merged_matrix)
         symbol_num = slot_size // self.octets
@@ -345,34 +373,6 @@ class Par2MixIn:
             message = fmt.format(*matrix[i])
             print(message)
         print()
-
-    def _merge_slots(self, data_slots, parity_slots):
-        merged_slots = [None] * self.redundancy
-        merged_matrix = self._make_e_matrix()
-        j = 0
-
-        if Par2.C_EXTENSION:
-            vandermonde_matrix = self._get_vandermonde_matrix()
-            vandermonde_matrix = bytes_to_matrix(vandermonde_matrix, \
-                                                 self.redundancy, \
-                                                 self.horizontal_size)
-            merged_matrix = bytes_to_matrix(merged_matrix, \
-                                            self.redundancy, \
-                                            self.horizontal_size)
-        else:
-            vandermonde_matrix = self.vandermonde_matrix
-      # print('vandermonde_matrix =')
-      # pp.pprint(vandermonde_matrix)
-        for i in range(self.redundancy):
-            if data_slots[i]:
-                merged_slots[i] = data_slots[i]
-            else:
-                while not parity_slots[j]:
-                    j += 1
-                merged_matrix[i] = vandermonde_matrix[j]
-                merged_slots[i] = parity_slots[j]
-                j += 1
-        return merged_slots, merged_matrix
 
 # matrix_to_bytes(matrix):
 # bytes_to_matrix(bys, redundancy, horizontal_size):
