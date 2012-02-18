@@ -159,16 +159,7 @@ class Par2_:
         merged_matrix = self._make_e_matrix()
         j = 0
 
-        if Par2.C_EXTENSION:
-            vandermonde_matrix = self._get_vandermonde_matrix()
-            vandermonde_matrix = bytes_to_matrix(vandermonde_matrix, \
-                                                 self.redundancy, \
-                                                 self.horizontal_size)
-            merged_matrix = bytes_to_matrix(merged_matrix, \
-                                            self.redundancy, \
-                                            self.horizontal_size)
-        else:
-            vandermonde_matrix = self.vandermonde_matrix
+        vandermonde_matrix = self.vandermonde_matrix
       # print('vandermonde_matrix =')
       # pp.pprint(vandermonde_matrix)
         for i in range(self.redundancy):
