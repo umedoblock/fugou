@@ -87,6 +87,16 @@ class Par2_:
           #     bytes_to_matrix(matrix, \
           #                     par2.redundancy, par2.horizontal_size)
 
+    def _mul_matrix_vector(self, answer, matrix, pari):
+        for j in range(self.redundancy):
+            part = 0
+            for i in range(self.redundancy):
+              # print('_mul_matrix_vector() =', matrix[j], pari[i])
+                tmp = self._mul(matrix[j][i], pari[i])
+              # print('_add({}, {})'.format(part, tmp))
+                part = self._add(part, tmp)
+            answer[j] = part
+
     def _solve_inverse_matrix(self, matrix):
         matrix = copy.deepcopy(matrix)
         im = inverse_matrix = self._make_e_matrix()
@@ -386,16 +396,6 @@ class Par2MixIn:
 
 # matrix_to_bytes(matrix):
 # bytes_to_matrix(bys, redundancy, horizontal_size):
-
-    def _mul_matrix_vector(self, answer, matrix, pari):
-        for j in range(self.redundancy):
-            part = 0
-            for i in range(self.redundancy):
-              # print('_mul_matrix_vector() =', matrix[j], pari[i])
-                tmp = self._mul(matrix[j][i], pari[i])
-              # print('_add({}, {})'.format(part, tmp))
-                part = self._add(part, tmp)
-            answer[j] = part
 
     def _calculate_size(self, data_size):
         if not 1 <= data_size <= DATA_SIZE_MAX:
