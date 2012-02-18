@@ -281,63 +281,28 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
     if (len_slots < p2->redundancy * 2) {
         /* to avoid noisy compiler */
     }
-/*
-fprintf(stderr, "len_slots = %d, len_data_slots = %d, len_parity_slots = %d\n",
-                 len_slots, len_data_slots, len_parity_slots);
-*/
 
     for (i=0;i<len_data_slots;i++) {
         slot_obj = PySequence_GetItem(data_slots_obj, i);
         data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
-/*
-fprintf(stderr, "data_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     for (i=0;i<len_parity_slots;i++) {
         slot_obj = PySequence_GetItem(parity_slots_obj, i);
         parity_slots[i] = (uchar *)PyByteArray_AS_STRING(slot_obj);
-/*
-fprintf(stderr, "parity_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     par2_encode(p2, parity_slots, data_slots, symbol_num);
 
-/*
-fprintf(stderr, "after encode() ======================================\n");
-*/
     for (i=0;i<len_data_slots;i++) {
         slot_obj = PySequence_GetItem(data_slots_obj, i);
         data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
-/*
-fprintf(stderr, "data_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     for (i=0;i<len_parity_slots;i++) {
         slot_obj = PySequence_GetItem(parity_slots_obj, i);
         parity_slots[i] = (uchar *)PyByteArray_AS_STRING(slot_obj);
-/*
-fprintf(stderr, "parity_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     PyMem_Free(slots);
 
@@ -355,9 +320,6 @@ Par2__decode(PyPar2Object *self, PyObject *args)
     uchar **slots, **decode_data_slots, **merged_slots;
     ushort *inverse_matrix;
     int i;
-    /*
-    self._decode(decode_data, merged_slots, inverse_matrix, symbol_num)
-    */
 
     if (!PyArg_ParseTuple(args, "OOOi", \
                           &decode_data_slots_obj, &merged_slots_obj, \
@@ -385,64 +347,29 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
     if (len_slots < p2->redundancy * 2) {
         /* to avoid noisy compiler */
     }
-/*
-fprintf(stderr, "len_slots = %d, len_data_slots = %d, len_parity_slots = %d\n",
-                 len_slots, len_data_slots, len_parity_slots);
-*/
 
     for (i=0;i<len_decode_data_slots;i++) {
         slot_obj = PySequence_GetItem(decode_data_slots_obj, i);
-/*
-fprintf(stderr, "decode_data_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
         decode_data_slots[i] = (uchar *)PyByteArray_AS_STRING(slot_obj);
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     for (i=0;i<len_merged_slots;i++) {
         slot_obj = PySequence_GetItem(merged_slots_obj, i);
-/*
-fprintf(stderr, "merged_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
         merged_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     par2_decode(p2, decode_data_slots, merged_slots, \
                     inverse_matrix, symbol_num);
 
-/*
-fprintf(stderr, "after encode() ======================================\n");
-*/
     for (i=0;i<len_decode_data_slots;i++) {
         slot_obj = PySequence_GetItem(decode_data_slots_obj, i);
         decode_data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
-/*
-fprintf(stderr, "decode_data_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     for (i=0;i<len_merged_slots;i++) {
         slot_obj = PySequence_GetItem(merged_slots_obj, i);
         merged_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
-/*
-fprintf(stderr, "merged_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0); fprintf(stderr, "\n");
-*/
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     PyMem_Free(slots);
 
