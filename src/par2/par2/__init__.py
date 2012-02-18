@@ -3,7 +3,8 @@
 import sys
 
 __all__ = [ \
-    'Par2', 'Par2Archive', 'Par2Error', \
+    'Par2', 'Par2Error', \
+    'Par2Archive', 'Par2ArchiveError'
 ]
 
 major = sys.version_info.major
@@ -14,6 +15,3 @@ elif major == 2:
     from par2.py2 import *
 else:
     raise('cannot use par2 in python{}'.format(major))
-
-print('major is {}'.format(major))
-print()

@@ -243,7 +243,7 @@ class _TestPar2(unittest.TestCase):
             (0, 1, 2, 3)) #parity
 
         self.assertFalse(archive.enable_decode())
-        with self.assertRaises(Par2Error) as raiz:
+        with self.assertRaises(Par2ArchiveError) as raiz:
             # fix up
             raw_data = archive.fix_up_data()
         args = raiz.exception.args
