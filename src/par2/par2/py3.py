@@ -5,6 +5,8 @@ import copy
 import struct
 import pprint
 from sys import modules
+import os
+import pickle
 
 from par2.const import *
 from par2.archive import *
@@ -190,6 +192,15 @@ class Par2_:
         return e
 
     def _make_gf_and_gfi(self):
+        path = 'gf_gfi_{}bits.pickle'.format(self.bits)
+        if os.path.exists(path):
+            print('os.path.exists({}) is True.'.format(path))
+            with open(path, 'rb') as f:
+                gf_gfi = pickle.load(f)
+                self.gf = gf_gfi['gf']
+                self.gfi = gf_gfi['gfi']
+            return
+
         self.gf = [None] * self.w
         self.gfi = [None] * self.w
 
@@ -200,6 +211,14 @@ class Par2_:
             self.gf[bit_pattern] = i
             self.gfi[i] = bit_pattern
             bit_pattern <<= 1
+
+        if not os.path.exists(path):
+            print('os.path.exists({}) is False.'.format(path))
+            with open(path, 'wb') as f:
+                gf_gfi = {}
+                gf_gfi['gf'] = self.gf
+                gf_gfi['gfi'] = self.gfi
+                pickle.dump(gf_gfi, f, pickle.HIGHEST_PROTOCOL)
 
     def _make_vandermonde_matrix(self):
         vandermonde_matrix = [None] * self.redundancy
