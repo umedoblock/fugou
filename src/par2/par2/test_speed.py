@@ -16,8 +16,8 @@ from par2 import Par2Archive
 def run():
     MB = 1
     data_size = MB * 1024 ** 2
-    KB = 128
-    data_size = KB * 1024 ** 1
+#   KB = 128
+#   data_size = KB * 1024 ** 1
     data = b'\00' * data_size
     mb = data_size / 1024 ** 2
 
