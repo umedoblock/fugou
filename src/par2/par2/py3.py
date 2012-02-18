@@ -50,7 +50,7 @@ class Par2_:
         return parity_slots
 
     def _decode(self, decode_data, \
-                data_and_parity, inverse_matrix, symbol_num):
+                merged_slots, inverse_matrix, symbol_num):
         octets = self.octets
         vector = self._make_vector()
         vertical_data = self._make_vector()
@@ -61,7 +61,7 @@ class Par2_:
 
         for i in range(symbol_num):
             for j in range(self.redundancy):
-                num_bytes = data_and_parity[j][i*octets:(i+1)*octets]
+                num_bytes = merged_slots[j][i*octets:(i+1)*octets]
                 if Par2.C_EXTENSION:
                     fmt = {4: 'B', 8: 'B', 16: 'H'}
                     format = '>{}'.format(fmt[self.bits])
