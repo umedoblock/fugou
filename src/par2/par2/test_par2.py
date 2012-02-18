@@ -19,9 +19,7 @@ class _TestPar2(unittest.TestCase):
     def test_bits(self):
         Par2(4)
         Par2(8)
-        if Par2.C_EXTENSION:
-            # Par2(16)
-            pass
+        Par2(16, 32)
         with self.assertRaises(KeyError):
             Par2(5)
 
