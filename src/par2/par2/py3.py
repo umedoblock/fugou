@@ -306,13 +306,14 @@ class Par2MixIn:
 
         data_slots = slots[:self.redundancy]
         parity_slots = slots[self.redundancy:]
-        merged_slots, matrix = self._merge_slots(data_slots, parity_slots)
+        merged_slots, merged_matrix = \
+            self._merge_slots(data_slots, parity_slots)
       # print('matrix =')
       # pp.pprint(matrix)
         if Par2.C_EXTENSION:
-            matrix = matrix_to_bytes(matrix)
+            merged_matrix = matrix_to_bytes(merged_matrix)
 
-        inverse_matrix = self._solve_inverse_matrix(matrix)
+        inverse_matrix = self._solve_inverse_matrix(merged_matrix)
         symbol_num = slot_size // self.octets
         decode_data = self._make_part_or_parity_slots(slot_size)
 
@@ -347,7 +348,7 @@ class Par2MixIn:
 
     def _merge_slots(self, data_slots, parity_slots):
         merged_slots = [None] * self.redundancy
-        matrix = self._make_e_matrix()
+        merged_matrix = self._make_e_matrix()
         j = 0
 
         if Par2.C_EXTENSION:
@@ -355,9 +356,9 @@ class Par2MixIn:
             vandermonde_matrix = bytes_to_matrix(vandermonde_matrix, \
                                                  self.redundancy, \
                                                  self.horizontal_size)
-            matrix = bytes_to_matrix(matrix, \
-                                     self.redundancy, \
-                                     self.horizontal_size)
+            merged_matrix = bytes_to_matrix(merged_matrix, \
+                                            self.redundancy, \
+                                            self.horizontal_size)
         else:
             vandermonde_matrix = self.vandermonde_matrix
       # print('vandermonde_matrix =')
@@ -368,10 +369,10 @@ class Par2MixIn:
             else:
                 while not parity_slots[j]:
                     j += 1
-                matrix[i] = vandermonde_matrix[j]
+                merged_matrix[i] = vandermonde_matrix[j]
                 merged_slots[i] = parity_slots[j]
                 j += 1
-        return merged_slots, matrix
+        return merged_slots, merged_matrix
 
 # matrix_to_bytes(matrix):
 # bytes_to_matrix(bys, redundancy, horizontal_size):
