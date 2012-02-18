@@ -371,12 +371,71 @@ fprintf(stderr, "PyMem_Malloc(allocate_size=%d), redundancy=%d\n",
     Py_RETURN_NONE;
 }
 
+static int _set_slots(uchar **slots, PyListObject *slots_obj, int len_slots)
+{
+    int i, count = 0;
+    PyObject *slot_obj;
+
+    for (i=0;i<len_slots;i++) {
+        slot_obj = PySequence_GetItem((PyObject *)slots_obj, i);
+        if (PyObject_IsTrue(slot_obj)) {
+            slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
+            count++;
+        }
+        else{
+            slots[i] = NULL;
+        }
+    }
+
+    return count;
+}
+
+static int _set_merged_slots(PyTupleObject *merged_slots_obj, \
+                             PyListObject *data_slots_obj, \
+                             PyListObject *parity_slots_obj, \
+                             uchar **merged_slots, \
+                             uchar **data_slots, \
+                             uchar **parity_slots, \
+                             par2_t *p2)
+{
+    PyObject *slot_obj;
+
+    int data_slot_index, parity_slot_index;
+    int i, count = 0;
+
+    for (i=0;i<p2->redundancy;i++) {
+        slot_obj = NULL;
+
+        data_slot_index = \
+            par2_get_index_of_slots(p2, data_slots, merged_slots[i]);
+        if (data_slot_index >= 0) {
+            slot_obj = PySequence_GetItem( \
+                            (PyObject *)data_slots_obj, data_slot_index);
+        }
+
+        parity_slot_index = \
+            par2_get_index_of_slots(p2, parity_slots, merged_slots[i]);
+        if (parity_slot_index >= 0) {
+            slot_obj = \
+                PySequence_GetItem( \
+                    (PyObject *)parity_slots_obj, parity_slot_index);
+        }
+
+        if (slot_obj == NULL)
+            break;
+
+        PyTuple_SetItem((PyObject *)merged_slots_obj, i, slot_obj);
+        count++;
+    }
+
+    return count;
+}
+
 static PyObject *
 Par2__merge_slots(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
-    int i, allocate_size;
-    int data_slot_index, parity_slot_index;
+    int allocate_size;
     int len_slots, len_data_slots, len_parity_slots;
     ushort *merged_matrix = NULL;
     uchar **slots, **merged_slots, **data_slots, **parity_slots;
@@ -384,7 +443,6 @@ Par2__merge_slots(PyPar2Object *self, PyObject *args)
     PyTupleObject *merged_slots_obj = NULL;
     PyBytesObject *merged_matrix_obj = NULL;
     PyListObject *data_slots_obj, *parity_slots_obj;
-    PyObject *slot_obj;
 
     if (!PyArg_ParseTuple(args, "OO", \
                           &data_slots_obj, &parity_slots_obj))
@@ -409,40 +467,8 @@ Par2__merge_slots(PyPar2Object *self, PyObject *args)
         (PyBytesObject *)PyBytes_FromStringAndSize((const char *)NULL, \
                                                     p2->matrix_size);
 
-    for (i=0;i<len_data_slots;i++) {
-        slot_obj = PySequence_GetItem((PyObject *)data_slots_obj, i);
-/*
-fprintf(stderr, "data_slots_obj[%d] = %p\n", i, PyBytes_AS_STRING(slot_obj));
-fprintf(stderr, "data_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0);
-fprintf(stderr, "\n");
-*/
-        if (PyObject_IsTrue(slot_obj)) {
-            data_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
-        }
-        else{
-            data_slots[i] = NULL;
-        }
-    }
-    /*
-fprintf(stderr, "\n");
-    */
-
-    for (i=0;i<len_parity_slots;i++) {
-        slot_obj = PySequence_GetItem((PyObject *)parity_slots_obj, i);
-/*
-fprintf(stderr, "prity_slots_obj[%d] = %p\n", i, PyBytes_AS_STRING(slot_obj));
-fprintf(stderr, "parity_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0);
-fprintf(stderr, "\n");
-*/
-        if (PyObject_IsTrue(slot_obj)) {
-            parity_slots[i] = (uchar *)PyBytes_AS_STRING(slot_obj);
-        }
-        else{
-            parity_slots[i] = NULL;
-        }
-    }
+    _set_slots(data_slots, data_slots_obj, len_data_slots);
+    _set_slots(parity_slots, parity_slots_obj, len_parity_slots);
 
     merged_matrix = (ushort *)PyBytes_AS_STRING(merged_matrix_obj);
     par2_merge_slots(p2, \
@@ -450,35 +476,14 @@ fprintf(stderr, "\n");
                      data_slots, parity_slots);
 
     merged_slots_obj = (PyTupleObject *)PyTuple_New(p2->redundancy);
-    for (i=0;i<p2->redundancy;i++) {
-        slot_obj = NULL;
 
-        data_slot_index = \
-            par2_get_index_of_slots(p2, data_slots, merged_slots[i]);
-        if (data_slot_index >= 0) {
-            slot_obj = PySequence_GetItem( \
-                            (PyObject *)data_slots_obj, data_slot_index);
-        }
-
-        parity_slot_index = \
-            par2_get_index_of_slots(p2, parity_slots, merged_slots[i]);
-        if (parity_slot_index >= 0) {
-            slot_obj = \
-                PySequence_GetItem( \
-                    (PyObject *)parity_slots_obj, parity_slot_index);
-        }
-
-        if (slot_obj == NULL)
-            return NULL;
-/*
-fprintf(stderr, "merged_slots_obj[%d] = %p\n", i, merged_slots[i]);
-fprintf(stderr, "merged_slots_obj[%d] =\n", i);
-PyObject_Print(slot_obj, stderr, 0);
-fprintf(stderr, "\n");
-*/
-        PyTuple_SetItem((PyObject *)merged_slots_obj, i, slot_obj);
-    }
-
+    _set_merged_slots(merged_slots_obj, \
+                      data_slots_obj, \
+                      parity_slots_obj, \
+                      merged_slots, \
+                      data_slots, \
+                      parity_slots, \
+                      p2);
     PyMem_Free(slots);
 
     return PyTuple_Pack(2, merged_slots_obj, merged_matrix_obj);
