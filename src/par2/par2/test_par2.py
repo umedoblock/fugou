@@ -49,16 +49,16 @@ class _TestPar2(unittest.TestCase):
                 _vm = par2._get_vandermonde_matrix()
                 _vm = bytes_to_matrix(_vm, \
                                       par2.redundancy, par2.horizontal_size)
-                vander_matrix = _vm
+                vandermonde_matrix = _vm
             else:
-                vander_matrix = par2.vander_matrix
+                vandermonde_matrix = par2.vandermonde_matrix
 
           # print('vm =')
           # pp.pprint(vm)
-          # print('vander_matrix =')
-          # pp.pprint(vander_matrix)
+          # print('vandermonde_matrix =')
+          # pp.pprint(vandermonde_matrix)
 
-            self.assertEqual(vander_matrix, vm)
+            self.assertEqual(vandermonde_matrix, vm)
 
     def test__mul_matrix_by_e_matrix(self):
         redundancies = {4:15, 8:50, 16:50}
@@ -107,7 +107,7 @@ class _TestPar2(unittest.TestCase):
               # print('inverse_matrix =')
               # pp.pprint(im)
             else:
-                matrix = par2.vander_matrix
+                matrix = par2.vandermonde_matrix
               # print('matrix =')
               # pp.pprint(matrix)
                 by = matrix_to_bytes(matrix)

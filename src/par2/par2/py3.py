@@ -43,7 +43,7 @@ class Par2_:
                 num_bytes = data_slots[j][i*octets:(i+1)*octets]
                 num = struct.unpack(self.format, num_bytes)[0]
                 vector[j] = num
-            self._mul_matrix_vector(parity, self.vander_matrix, vector)
+            self._mul_matrix_vector(parity, self.vandermonde_matrix, vector)
             for j in range(redundancy):
                 parity_slots[j][i*octets:(i+1)*octets] = \
                     struct.pack(self.format, parity[j])
@@ -180,14 +180,14 @@ class Par2_:
             bit_pattern <<= 1
 
     def _make_vandermonde_matrix(self):
-        vander_matrix = [None] * self.redundancy
-        vm = vander_matrix
+        vandermonde_matrix = [None] * self.redundancy
+        vm = vandermonde_matrix
         vm[0] = [1] * self.redundancy
         for j in range(1, self.redundancy):
             vm[j] = [None] * self.redundancy
             for i in range(self.redundancy):
                 vm[j][i] = self._mul(vm[j-1][i], i + 1)
-        self.vander_matrix = vm
+        self.vandermonde_matrix = vm
       # self.view_matrix(vm)
 
     def _mul(self, a, b):
@@ -351,24 +351,24 @@ class Par2MixIn:
         j = 0
 
         if Par2.C_EXTENSION:
-            vander_matrix = self._get_vandermonde_matrix()
-            vander_matrix = bytes_to_matrix(vander_matrix, \
-                                            self.redundancy, \
-                                            self.horizontal_size)
+            vandermonde_matrix = self._get_vandermonde_matrix()
+            vandermonde_matrix = bytes_to_matrix(vandermonde_matrix, \
+                                                 self.redundancy, \
+                                                 self.horizontal_size)
             matrix = bytes_to_matrix(matrix, \
                                      self.redundancy, \
                                      self.horizontal_size)
         else:
-            vander_matrix = self.vander_matrix
-      # print('vander_matrix =')
-      # pp.pprint(vander_matrix)
+            vandermonde_matrix = self.vandermonde_matrix
+      # print('vandermonde_matrix =')
+      # pp.pprint(vandermonde_matrix)
         for i in range(self.redundancy):
             if data_slots[i]:
                 merged_slots[i] = data_slots[i]
             else:
                 while not parity_slots[j]:
                     j += 1
-                matrix[i] = vander_matrix[j]
+                matrix[i] = vandermonde_matrix[j]
                 merged_slots[i] = parity_slots[j]
                 j += 1
         return merged_slots, matrix
