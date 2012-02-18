@@ -28,10 +28,7 @@ class Par2_:
     C_EXTENSION = False
 
     def _allocate_memory(self):
-        # 2 means sizeof(unsigned short)
-        self.horizontal_size = 2 * self.redundancy
-        fmt = {4: 'B', 8: 'B', 16: 'H'}
-        self.format = '>{}'.format(fmt[self.bits])
+        pass
 
     def _encode(self, parity_slots, data_slots, symbol_num):
         redundancy = self.redundancy
@@ -41,12 +38,13 @@ class Par2_:
         for i in range(symbol_num):
             for j in range(redundancy):
                 num_bytes = data_slots[j][i*octets:(i+1)*octets]
-                num = struct.unpack(self.format, num_bytes)[0]
+                num = int.from_bytes(num_bytes, 'big')
                 vector[j] = num
             self._mul_matrix_vector(parity, self.vandermonde_matrix, vector)
             for j in range(redundancy):
+                num = parity[j]
                 parity_slots[j][i*octets:(i+1)*octets] = \
-                    struct.pack(self.format, parity[j])
+                    int.to_bytes(num, octets, 'big')
         return parity_slots
 
     def _decode(self, decode_data, \
@@ -58,13 +56,14 @@ class Par2_:
         for i in range(symbol_num):
             for j in range(self.redundancy):
                 num_bytes = merged_slots[j][i*octets:(i+1)*octets]
-                num = struct.unpack(self.format, num_bytes)[0]
+                num = int.from_bytes(num_bytes, 'big')
                 vector[j] = num
 
             self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
             for j in range(self.redundancy):
+                num = vertical_data[j]
                 decode_data[j][i*octets:(i+1)*octets] = \
-                    struct.pack(self.format, vertical_data[j])
+                    int.to_bytes(num, octets, 'big')
 
     def _mul_matrix_vector(self, answer, matrix, pari):
         for j in range(self.redundancy):
@@ -276,6 +275,8 @@ class Par2MixIn:
         octets = {4: 1, 8: 1, 16: 2}
         self.octets = octets[bits]
         self.vertical_size = self.redundancy * self.octets
+        # 2 means sizeof(unsigned short)
+        self.horizontal_size = 2 * self.redundancy
 
     def __init__(self, bits, redundancy=0):
       # print('Par2.__init__()')
@@ -314,8 +315,7 @@ class Par2MixIn:
             ValueError(msg.format(TAIL_SIZE * 8))
         self.data_size = data_size
         self._set_size(data_size)
-        fmt = {4: '>I', 8: '>Q'}
-        tail_bytes = struct.pack(fmt[TAIL_SIZE], data_size)
+        tail_bytes = int.to_bytes(data_size, self.octets, 'big')
         self.encode_data = \
             data + self._padding(self.padding_size) + tail_bytes
         sp = self.par2.split(self.encode_data, self.slot_size)
@@ -344,8 +344,7 @@ class Par2MixIn:
     def cat(self, decode_data):
         semi_raw_data = b''.join(decode_data)
         tail_bytes = semi_raw_data[-TAIL_SIZE:]
-        fmt = {4: '>I', 8: '>Q'}
-        data_size = struct.unpack(fmt[TAIL_SIZE], tail_bytes)[0]
+        data_size = int.from_bytes(tail_bytes, 'big')
       # print('data_size =', data_size, 'in cat()')
         raw_data = semi_raw_data[:data_size]
         return raw_data
@@ -364,9 +363,6 @@ class Par2MixIn:
             message = fmt.format(*matrix[i])
             print(message)
         print()
-
-# matrix_to_bytes(matrix):
-# bytes_to_matrix(bys, redundancy, horizontal_size):
 
     def _calculate_size(self, data_size):
         if not 1 <= data_size <= DATA_SIZE_MAX:
