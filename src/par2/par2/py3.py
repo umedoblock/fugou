@@ -54,38 +54,17 @@ class Par2_:
         octets = self.octets
         vector = self._make_vector()
         vertical_data = self._make_vector()
-        if Par2.C_EXTENSION:
-            inverse_matrix = bytes_to_matrix(inverse_matrix,
-                                             self.redundancy,
-                                             self.horizontal_size)
 
         for i in range(symbol_num):
             for j in range(self.redundancy):
                 num_bytes = merged_slots[j][i*octets:(i+1)*octets]
-                if Par2.C_EXTENSION:
-                    fmt = {4: 'B', 8: 'B', 16: 'H'}
-                    format = '>{}'.format(fmt[self.bits])
-                    num = struct.unpack(format, num_bytes)[0]
-                else:
-                    num = struct.unpack(self.format, num_bytes)[0]
+                num = struct.unpack(self.format, num_bytes)[0]
                 vector[j] = num
 
             self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
             for j in range(self.redundancy):
-                if Par2.C_EXTENSION:
-                    fmt = {4: 'B', 8: 'B', 16: 'H'}
-                    format = '>{}'.format(fmt[self.bits])
-                    decode_data[j][i*octets:(i+1)*octets] = \
-                        struct.pack(format, vertical_data[j])
-                else:
-                    decode_data[j][i*octets:(i+1)*octets] = \
-                        struct.pack(self.format, vertical_data[j])
-
-            if Par2.C_EXTENSION:
-                pass
-          #     matrix = par2._get_vandermonde_matrix()
-          #     bytes_to_matrix(matrix, \
-          #                     par2.redundancy, par2.horizontal_size)
+                decode_data[j][i*octets:(i+1)*octets] = \
+                    struct.pack(self.format, vertical_data[j])
 
     def _mul_matrix_vector(self, answer, matrix, pari):
         for j in range(self.redundancy):
