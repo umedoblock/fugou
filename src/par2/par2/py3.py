@@ -269,9 +269,9 @@ except ImportError as e:
 class Par2MixIn:
 
     def _init_self(self, bits, redundancy):
-      # refs #22 and galois_{4,8,16}bits.log
-      # poly = {4: 25, 8: 501, 16: 131053}
-        poly = {4: 19, 8: 285, 16: 65581}
+      # refs #22 and galois_{4,8,16,24}bits.log
+      # poly = {4: 25, 8: 361, 16: 87749, 24: 16777435}
+        poly = {4: 19, 8: 285, 16: 65581, 24: 16777243}
         try:
             self.poly = poly[bits]
         except KeyError:
@@ -291,11 +291,13 @@ class Par2MixIn:
             message += 'redundancy must be '
             message += '2 <= redundancy <= {}'.format(self.gf_max)
             raise Par2Error(message)
-        octets = {4: 1, 8: 1, 16: 2}
+        octets = {4: 1, 8: 1, 16: 2, 24: 3}
         self.octets = octets[bits]
         self.vertical_size = self.redundancy * self.octets
+        code_size_ = {4: 2, 8: 2, 16: 2, 24: 4}
+        self.code_size = code_size_[self.bits]
         # 2 means sizeof(unsigned short)
-        self.horizontal_size = 2 * self.redundancy
+        self.horizontal_size = self.code_size * self.redundancy
 
     def __init__(self, bits, redundancy=0):
       # print('Par2.__init__()')

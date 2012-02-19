@@ -20,21 +20,29 @@ class _TestPar2(unittest.TestCase):
         Par2(4)
         Par2(8)
         Par2(16, 32)
+        Par2(24, 32)
         with self.assertRaises(KeyError):
             Par2(5)
 
     def test_mul_and_div(self):
-        p4 = Par2(4)
-        for a in range(p4.w):
-            for n in range(p4.gf_max):
-                b = n + 1
-                mul = p4._mul(a, b)
-                c = p4._div(mul, b)
-                self.assertEqual(a, c)
-              # print(a, b, mul, c)
+        bitss = (4,)
+        bitss = (4, 8, 16)
+        bitss = (4, 8, 16, 24)
+        bitss = (4, 8)
+        for bits in bitss:
+          # print('bits =', bits)
+            par2 = Par2(bits)
+            for a in range(par2.w):
+                for n in range(par2.gf_max):
+                    b = n + 1
+                    mul = par2._mul(a, b)
+                    c = par2._div(mul, b)
+                    self.assertEqual(a, c)
+                  # print(a, b, mul, c)
 
     def test__pow(self):
         redundancies = {4:15, 8:50, 16:50}
+        redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
         for bit, redundancy in redundancies.items():
             par2 = Par2(bit, redundancy)
             vm = [None] * par2.redundancy
@@ -59,9 +67,9 @@ class _TestPar2(unittest.TestCase):
             self.assertEqual(vandermonde_matrix, vm)
 
     def test__mul_matrix_by_e_matrix(self):
-        redundancies = {4:15, 8:50, 16:50}
-        for bits in (4, 8, 16):
-            redundancy = redundancies[bits]
+        redundancies = {24: 50}
+        redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
+        for bits, redundancy in redundancies.items():
             par2 = Par2(bits, redundancy)
             e_matrix = par2._make_e_matrix()
 
@@ -74,7 +82,7 @@ class _TestPar2(unittest.TestCase):
           # pp.pprint(matrix)
 
             if Par2.C_EXTENSION:
-                matrix = matrix_to_bytes(matrix)
+                matrix = matrix_to_bytes(matrix, par2.code_size)
           # print('len(matrix) =', len(matrix))
 
             muled_matrix = par2._mul_matrixes(matrix, e_matrix)
@@ -84,13 +92,46 @@ class _TestPar2(unittest.TestCase):
             muled_matrix = par2._mul_matrixes(e_matrix, matrix)
             self.assertEqual(matrix, muled_matrix)
 
+    def test___matrix_to_bytes_bytes_to_matrix(self):
+        pp = pprint.PrettyPrinter(indent=4)
+
+        redundancies = {8: 5}
+        redundancies = {16: 5}
+        redundancies = {24: 4}
+        redundancies = {24: 10}
+        redundancies = {4: 10, 8:10, 16:10}
+        redundancies = {4: 4}
+        redundancies = {4: 15, 8:50, 16:50, 24: 50}
+        for bits, redundancy in redundancies.items():
+            par2 = Par2(bits, redundancy)
+
+          # print('bits = {}, redundancy = {}'.format(bits, redundancy))
+            matrix = par2.vandermonde_matrix
+          # print('matrix =')
+          # pp.pprint(matrix)
+            by = matrix_to_bytes(matrix, par2.code_size)
+          # print('bytes =')
+          # pp.pprint(by)
+            mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size, \
+                                     par2.code_size)
+          # print('mt =')
+          # pp.pprint(mt)
+            self.assertEqual(matrix, mt)
+
+            by2 = matrix_to_bytes(mt, par2.code_size)
+            self.assertEqual(by, by2)
+
     def test__solve_inverse_matrix(self):
         pp = pprint.PrettyPrinter(indent=4)
 
-        redundancies = {4:15}
         redundancies = {4:15, 8:50, 16:50}
-        for bits in (4, 8, 16):
-            redundancy = redundancies[bits]
+        redundancies = {24: 10}
+        redundancies = {4: 15}
+        redundancies = {8: 5}
+        redundancies = {16: 5}
+        redundancies = {24: 50}
+        redundancies = {4:15, 8:50, 16:50, 24: 50}
+        for bits, redundancy in redundancies.items():
             par2 = Par2(bits, redundancy)
 
             if Par2.C_EXTENSION:
@@ -108,8 +149,10 @@ class _TestPar2(unittest.TestCase):
                 matrix = par2.vandermonde_matrix
               # print('matrix =')
               # pp.pprint(matrix)
-                by = matrix_to_bytes(matrix)
-                mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size)
+                by = matrix_to_bytes(matrix, par2.code_size)
+                mt = bytes_to_matrix( \
+                        by, par2.redundancy, par2.horizontal_size, \
+                        par2.code_size)
               # print('mt =')
               # pp.pprint(mt)
                 self.assertEqual(matrix, mt)
@@ -158,6 +201,7 @@ class _TestPar2(unittest.TestCase):
         bits = (4,)
         bits = (4, 8)
         bits = (4, 8, 16)
+        bits = (4, 8, 16, 24)
         for bit in bits:
             redundancy = 15
             archive = Par2Archive(bit, redundancy)
