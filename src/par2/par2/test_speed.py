@@ -14,14 +14,23 @@ from par2 import Par2
 from par2 import Par2Archive
 
 def run():
-    MB = 1
-    data_size = MB * 1024 ** 2
-#   KB = 128
-#   data_size = KB * 1024 ** 1
+    MB = 0
+    KB = 256
+
+    mega = MB * 1024 ** 2
+    kilo = KB * 1024 ** 1
+    data_size = mega + kilo
     data = b'\00' * data_size
+
     mb = data_size / 1024 ** 2
 
-    for bits in (8, 16):
+    print('mega = {}, kilo = {}, data_size = {}, mb = {}'. \
+            format(mega, kilo, data_size, mb))
+
+    bitss = (8, 16)
+    bitss = (24,)
+    bitss = (8, 16, 24)
+    for bits in bitss:
         print('{} bits symbol {:f} MB memory encode/decode speed'.
                 format(bits, mb))
         for redundancy in (15,):
