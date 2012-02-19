@@ -25,6 +25,7 @@ static PyMemberDef Par2_members[] = {
     {"digits", T_INT, offsetof(PyPar2Object, par2.digits), 0, ""},
     {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
     {"octets", T_INT, offsetof(PyPar2Object, par2.octets), 0, ""},
+    {"code_size", T_INT, offsetof(PyPar2Object, par2.code_size), 0, ""},
     {"vertical_size", T_INT, offsetof(PyPar2Object, par2.vertical_size), 0, ""},
     {"horizontal_size", T_INT, \
         offsetof(PyPar2Object, par2.horizontal_size), 0, ""},
@@ -85,6 +86,7 @@ fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
         par2_view_structure(p2);
         return NULL;
     }
+    p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
     /*
     par2_view_structure(p2);
     */
@@ -216,12 +218,9 @@ static PyBytesObject *
 Par2__make_square_matrix(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
-    int redundancy = p2->redundancy;
-    int matrix_size = 0;
     PyBytesObject *matrix = NULL;
 
-    matrix_size = sizeof(ushort) * redundancy * redundancy;
-    matrix = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, matrix_size);
+    matrix = (PyBytesObject *)PyBytes_FromStringAndSize(NULL, p2->matrix_size);
 
     return matrix;
 }
