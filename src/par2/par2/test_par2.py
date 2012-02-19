@@ -13,17 +13,75 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from par2 import *
 from par2.util import *
+from par2.const import *
 
 class _TestPar2(unittest.TestCase):
 
-    def test_bits(self):
-        Par2(4)
-        Par2(8)
-        Par2(16, 32)
+    def test_bits_and_redundancy(self):
+        p4 = Par2(4, 2)
+        self.assertEqual(2, p4.redundancy)
+        p4 = Par2(4, 10)
+        self.assertEqual(10, p4.redundancy)
+        p4 = Par2(4, (1 << 4) - 1)
+        self.assertEqual((1 << 4) - 1, p4.redundancy)
+
+        p8 = Par2(8, 2)
+        self.assertEqual(2, p8.redundancy)
+        p8 = Par2(8, 122)
+        self.assertEqual(122, p8.redundancy)
+        p8 = Par2(8, (1 << 8) - 1)
+        self.assertEqual((1 << 8) - 1, p8.redundancy)
+
         if Par2.C_EXTENSION:
-            Par2(24, 32)
+            p16 = Par2(16, 2)
+            self.assertEqual(2, p16.redundancy)
+            p16 = Par2(16, 1000)
+            self.assertEqual(1000, p16.redundancy)
+            p16 = Par2(16, MAX_REDUNDANCY)
+            self.assertEqual(MAX_REDUNDANCY, p16.redundancy)
+
+            p24 = Par2(24, 2)
+            self.assertEqual(2, p24.redundancy)
+            p24 = Par2(24, 1234)
+            self.assertEqual(1234, p24.redundancy)
+            p24 = Par2(24, MAX_REDUNDANCY)
+            self.assertEqual(MAX_REDUNDANCY, p24.redundancy)
+
+    def test_exception(self):
         with self.assertRaises(KeyError):
-            Par2(5)
+            Par2(5, 10)
+
+        redundancies = (-1, 0, 1, 1 << 4)
+        for redundancy in redundancies:
+            with self.assertRaises(Par2Error) as raiz:
+                Par2(4, redundancy)
+            args = raiz.exception.args
+            self.assertEqual(('redundancy must be '
+                              '2 <= redundancy <= 15'), args[0])
+
+        redundancies = (-1, 0, 1, 1 << 8)
+        for redundancy in redundancies:
+            with self.assertRaises(Par2Error) as raiz:
+                Par2(8, redundancy)
+            args = raiz.exception.args
+            self.assertEqual(('redundancy must be '
+                              '2 <= redundancy <= 255'), args[0])
+
+        redundancies = (-1, 0, 1, MAX_REDUNDANCY + 1, 1 << 16)
+        for redundancy in redundancies:
+            with self.assertRaises(Par2Error) as raiz:
+                Par2(16, redundancy)
+            args = raiz.exception.args
+            self.assertEqual(('redundancy must be '
+                              '2 <= redundancy <= 8192'), args[0])
+
+        redundancies = (-1, 0, 1, MAX_REDUNDANCY + 1, 1 << 24)
+        for redundancy in redundancies:
+            with self.assertRaises(Par2Error) as raiz:
+                Par2(24, redundancy)
+            args = raiz.exception.args
+            self.assertEqual(('redundancy must be '
+                              '2 <= redundancy <= 8192'), args[0])
 
     def test_mul_and_div(self):
         bitss = (4,)
@@ -31,8 +89,8 @@ class _TestPar2(unittest.TestCase):
         bitss = (4, 8, 16, 24)
         bitss = (4, 8, 16)
         dic = {\
-            4: {'redundancy': None, 'w': None, 'gf_max': None},
-            8: {'redundancy': None, 'w': None, 'gf_max': None},
+            4: {'redundancy': 10, 'w': None, 'gf_max': None},
+            8: {'redundancy': 100, 'w': None, 'gf_max': None},
             16: {'redundancy': 50, 'w': 50, 'gf_max': 50},
             24: {'redundancy': 50, 'w': 50, 'gf_max': 50}
         }
@@ -59,11 +117,11 @@ class _TestPar2(unittest.TestCase):
                     mul = par2._mul(a, b)
                     c = par2._div(mul, b)
                   # print('a, c =', a, c)
-#                   if count == 68070:
-#                       print('count =', count)
-#                       print(a, b, mul, c)
+                  # if count == 68070:
+                  #     print('count =', count)
+                  #     print(a, b, mul, c)
                     self.assertEqual(a, c)
-                    count += 1
+                  # count += 1
 
     def test__pow(self):
         redundancies = {4: 4, 8: 4}
@@ -73,8 +131,8 @@ class _TestPar2(unittest.TestCase):
         for bit, redundancy in redundancies.items():
             par2 = Par2(bit, redundancy)
             vm = [None] * par2.redundancy
-#           print('bits =', bit, 'redundancy =', redundancy, \
-#                 'code_size =', par2.code_size)
+          # print('bits =', bit, 'redundancy =', redundancy, \
+          #       'code_size =', par2.code_size)
 
             for j in range(par2.redundancy):
                 vm[j] = [None] * par2.redundancy

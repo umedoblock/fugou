@@ -280,16 +280,16 @@ class Par2MixIn:
         self.w = 1 << self.bits
         self.gf_max = self.w - 1
         self.digits = int(math.log(self.gf_max, 10)) + 1
-        if not redundancy:
-            self.redundancy = self.gf_max
-        else:
-            self.redundancy = redundancy
-        if 2 <= self.redundancy <= self.gf_max:
-            pass
-        else:
-            message = 'redundancy is {}. '.format(self.redundancy)
-            message += 'redundancy must be '
-            message += '2 <= redundancy <= {}'.format(self.gf_max)
+
+        self.redundancy = redundancy
+        if self.redundancy < 2 or self.redundancy > MAX_REDUNDANCY or \
+           self.redundancy > self.gf_max:
+            if self.bits in (4, 8):
+                max_redundancy = self.gf_max
+            else:
+                max_redundancy = MAX_REDUNDANCY
+            message = 'redundancy must be '
+            message += '2 <= redundancy <= {}'.format(max_redundancy)
             raise Par2Error(message)
         octets = {4: 1, 8: 1, 16: 2, 24: 3}
         self.octets = octets[bits]
@@ -299,7 +299,7 @@ class Par2MixIn:
         # 2 means sizeof(unsigned short)
         self.horizontal_size = self.code_size * self.redundancy
 
-    def __init__(self, bits, redundancy=0):
+    def __init__(self, bits, redundancy):
       # print('Par2.__init__()')
         self._init_self(bits, redundancy)
         self._allocate_memory()

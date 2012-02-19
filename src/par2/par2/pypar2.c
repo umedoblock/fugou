@@ -78,13 +78,25 @@ static PyObject *
 Par2__allocate_memory(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
-
+    int ret;
 /*
 fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
 */
-    if (par2_allocate_memory(p2) < 0) {
+    ret = par2_allocate_memory(p2);
+    if (ret < 0) {
         par2_view_structure(p2);
-        return NULL;
+        if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "numerous redundancy");
+            return NULL;
+        }
+        else if (ret == PAR2_MALLOC_ERROR)
+            return PyErr_NoMemory();
+        else {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "unknown return code");
+            return NULL;
+        }
     }
     p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
     /*
