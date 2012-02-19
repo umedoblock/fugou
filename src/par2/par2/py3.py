@@ -194,7 +194,7 @@ class Par2_:
     def _make_gf_and_gfi(self):
         path = 'gf_gfi_{}bits.pickle'.format(self.bits)
         if os.path.exists(path):
-            print('os.path.exists({}) is True.'.format(path))
+          # print('os.path.exists({}) is True.'.format(path))
             with open(path, 'rb') as f:
                 gf_gfi = pickle.load(f)
                 self.gf = gf_gfi['gf']
@@ -213,7 +213,7 @@ class Par2_:
             bit_pattern <<= 1
 
         if not os.path.exists(path):
-            print('os.path.exists({}) is False.'.format(path))
+          # print('os.path.exists({}) is False.'.format(path))
             with open(path, 'wb') as f:
                 gf_gfi = {}
                 gf_gfi['gf'] = self.gf
