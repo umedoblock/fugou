@@ -118,39 +118,64 @@ fprintf(stderr, "Par2_free(self=%p)\n", self);
 static PyObject *
 Par2__add(PyPar2Object *self, PyObject *args)
 {
-    ushort a, b, c;
+    par2_t *p2 = &self->par2;
+    ushort a = 0, b = 0, c = 0;
+    uint a32 = 0, b32 = 0, c32 = 0;
 
-    if (!PyArg_ParseTuple(args, "HH", &a, &b))
-        return NULL;
-
-    c = par2_add(a, b);
-
-    return Py_BuildValue("H", c);
+    if (p2->code_size == 2) {
+        if (!PyArg_ParseTuple(args, "HH", &a, &b))
+            return NULL;
+        c = par2_add(a, b);
+        return Py_BuildValue("H", c);
+    }
+    else {
+        if (!PyArg_ParseTuple(args, "II", &a32, &b32))
+            return NULL;
+        c32 = par2_add(a32, b32);
+        return Py_BuildValue("I", c32);
+    }
 }
 
 static PyObject *
 Par2__mul(PyPar2Object *self, PyObject *args)
 {
-    ushort a, b, c;
+    par2_t *p2 = &self->par2;
+    ushort a = 0, b = 0, c = 0;
+    uint a32 = 0, b32 = 0, c32 = 0;
 
-    if (!PyArg_ParseTuple(args, "HH", &a, &b))
-        return NULL;
-
-    c = par2_mul(&self->par2, a, b);
-    return Py_BuildValue("H", c);
+    if (p2->code_size == 2) {
+        if (!PyArg_ParseTuple(args, "HH", &a, &b))
+            return NULL;
+        c = par2_mul(p2, a, b);
+        return Py_BuildValue("H", c);
+    }
+    else {
+        if (!PyArg_ParseTuple(args, "II", &a32, &b32))
+            return NULL;
+        c32 = par2_mul32(p2, a32, b32);
+        return Py_BuildValue("I", c32);
+    }
 }
 
 static PyObject *
 Par2__div(PyPar2Object *self, PyObject *args)
 {
-    ushort a, b, c;
+    par2_t *p2 = &self->par2;
+    ushort a = 0, b = 0, c = 0;
+    uint a32 = 0, b32 = 0, c32 = 0;
 
-    if (!PyArg_ParseTuple(args, "HH", &a, &b))
-        return NULL;
-
-    c = par2_div(&self->par2, a, b);
-
-    return Py_BuildValue("H", c);
+    if (p2->code_size == 2) {
+        if (!PyArg_ParseTuple(args, "HH", &a, &b))
+            return NULL;
+        c = par2_div(p2, a, b);
+        return Py_BuildValue("H", c);
+    }
+    else {
+        if (!PyArg_ParseTuple(args, "II", &a32, &b32))
+            return NULL;
+        c32 = par2_div32(p2, a32, b32);
+        return Py_BuildValue("I", c32);
+    }
 }
 /*
 */
@@ -158,14 +183,22 @@ Par2__div(PyPar2Object *self, PyObject *args)
 static PyObject *
 Par2__pow(PyPar2Object *self, PyObject *args)
 {
-    ushort a, x, c;
+    par2_t *p2 = &self->par2;
+    ushort a = 0, x = 0, c = 0;
+    uint a32 = 0, x32 = 0, c32 = 0;
 
-    if (!PyArg_ParseTuple(args, "HH", &a, &x))
-        return NULL;
-
-    c = par2_pow(&self->par2, a, x);
-
-    return Py_BuildValue("H", c);
+    if (p2->code_size == 2) {
+        if (!PyArg_ParseTuple(args, "HH", &a, &x))
+            return NULL;
+        c = par2_pow(p2, a, x);
+        return Py_BuildValue("H", c);
+    }
+    else {
+        if (!PyArg_ParseTuple(args, "II", &a32, &x32))
+            return NULL;
+        c32 = par2_pow32(p2, a32, x32);
+        return Py_BuildValue("I", c32);
+    }
 }
 
 static PyObject *

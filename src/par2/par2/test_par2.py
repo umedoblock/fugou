@@ -20,32 +20,61 @@ class _TestPar2(unittest.TestCase):
         Par2(4)
         Par2(8)
         Par2(16, 32)
-        Par2(24, 32)
+        if Par2.C_EXTENSION:
+            Par2(24, 32)
         with self.assertRaises(KeyError):
             Par2(5)
 
     def test_mul_and_div(self):
         bitss = (4,)
-        bitss = (4, 8, 16)
-        bitss = (4, 8, 16, 24)
         bitss = (4, 8)
-        for bits in bitss:
+        bitss = (4, 8, 16, 24)
+        bitss = (4, 8, 16)
+        dic = {\
+            4: {'redundancy': None, 'w': None, 'gf_max': None},
+            8: {'redundancy': None, 'w': None, 'gf_max': None},
+            16: {'redundancy': 50, 'w': 50, 'gf_max': 50},
+            24: {'redundancy': 50, 'w': 50, 'gf_max': 50}
+        }
+        count = 0
+        for bits, attrs in dic.items():
+            redundancy = attrs['redundancy']
           # print('bits =', bits)
-            par2 = Par2(bits)
-            for a in range(par2.w):
-                for n in range(par2.gf_max):
+            par2 = Par2(bits, redundancy)
+          # print('gf =')
+          # _gf = bytes_to_matrix(par2.gf, \
+          #                       par2.redundancy, par2.horizontal_size,
+          #                       par2.code_size)
+          # pp.pprint(_gf)
+          # print('gfi =')
+          # _gfi = bytes_to_matrix(par2.gfi, \
+          #                       par2.redundancy, par2.horizontal_size,
+          #                       par2.code_size)
+          # pp.pprint(_gfi)
+            w = attrs['w'] or par2.w
+            gf_max = attrs['gf_max'] or par2.gf_max
+            for a in range(w):
+                for n in range(gf_max):
                     b = n + 1
                     mul = par2._mul(a, b)
                     c = par2._div(mul, b)
+                  # print('a, c =', a, c)
+#                   if count == 68070:
+#                       print('count =', count)
+#                       print(a, b, mul, c)
                     self.assertEqual(a, c)
-                  # print(a, b, mul, c)
+                    count += 1
 
     def test__pow(self):
-        redundancies = {4:15, 8:50, 16:50}
+        redundancies = {4: 4, 8: 4}
+        redundancies = {4: 15, 8: 50, 16: 50}
+        redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
         for bit, redundancy in redundancies.items():
             par2 = Par2(bit, redundancy)
             vm = [None] * par2.redundancy
+#           print('bits =', bit, 'redundancy =', redundancy, \
+#                 'code_size =', par2.code_size)
 
             for j in range(par2.redundancy):
                 vm[j] = [None] * par2.redundancy
@@ -53,8 +82,10 @@ class _TestPar2(unittest.TestCase):
                     vm[j][i] = par2._pow(i + 1, j)
             if Par2.C_EXTENSION:
                 _vm = par2._get_vandermonde_matrix()
+        #       print('_vm =', _vm)
                 _vm = bytes_to_matrix(_vm, \
-                                      par2.redundancy, par2.horizontal_size)
+                                      par2.redundancy, par2.horizontal_size,
+                                      par2.code_size)
                 vandermonde_matrix = _vm
             else:
                 vandermonde_matrix = par2.vandermonde_matrix
@@ -67,6 +98,7 @@ class _TestPar2(unittest.TestCase):
             self.assertEqual(vandermonde_matrix, vm)
 
     def test__mul_matrix_by_e_matrix(self):
+        redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
         for bits, redundancy in redundancies.items():
@@ -98,15 +130,23 @@ class _TestPar2(unittest.TestCase):
         redundancies = {8: 5}
         redundancies = {16: 5}
         redundancies = {24: 4}
-        redundancies = {24: 10}
         redundancies = {4: 10, 8:10, 16:10}
         redundancies = {4: 4}
+        redundancies = {4: 15, 8: 50, 16: 50}
+        redundancies = {24: 10}
         redundancies = {4: 15, 8:50, 16:50, 24: 50}
         for bits, redundancy in redundancies.items():
             par2 = Par2(bits, redundancy)
 
           # print('bits = {}, redundancy = {}'.format(bits, redundancy))
-            matrix = par2.vandermonde_matrix
+            if par2.C_EXTENSION:
+                _vm = par2._get_vandermonde_matrix()
+                _vm = bytes_to_matrix(_vm, \
+                                      par2.redundancy, par2.horizontal_size,
+                                      par2.code_size)
+                matrix = _vm
+            else:
+                matrix = par2.vandermonde_matrix
           # print('matrix =')
           # pp.pprint(matrix)
             by = matrix_to_bytes(matrix, par2.code_size)
@@ -130,7 +170,8 @@ class _TestPar2(unittest.TestCase):
         redundancies = {8: 5}
         redundancies = {16: 5}
         redundancies = {24: 50}
-        redundancies = {4:15, 8:50, 16:50, 24: 50}
+        redundancies = {4: 15, 8: 50, 16: 50}
+        redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
         for bits, redundancy in redundancies.items():
             par2 = Par2(bits, redundancy)
 
