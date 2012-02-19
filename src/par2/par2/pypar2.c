@@ -137,7 +137,6 @@ Par2__mul(PyPar2Object *self, PyObject *args)
         return NULL;
 
     c = par2_mul(&self->par2, a, b);
-
     return Py_BuildValue("H", c);
 }
 
@@ -184,7 +183,7 @@ static PyObject *
 Par2__get_vandermonde_matrix(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
-    ushort *vm;
+    ptr_t vm;
     PyBytesObject *vandermonde_matrix = NULL;
 
 /*
@@ -194,9 +193,9 @@ fprintf(stderr, "Par2__get_vandermonde_matrix(self=%p)\n", self);
         (PyBytesObject *)PyBytes_FromStringAndSize(NULL, p2->matrix_size);
     if (vandermonde_matrix == NULL)
         return NULL;
-    vm = (ushort *)PyBytes_AS_STRING(vandermonde_matrix);
+    vm.ptr = (void *)PyBytes_AS_STRING(vandermonde_matrix);
 
-    memcpy(vm, p2->vandermonde_matrix, p2->matrix_size);
+    memcpy(vm.ptr, p2->vandermonde_matrix.ptr, p2->matrix_size);
 
     return (PyObject *)vandermonde_matrix;
 }
@@ -230,12 +229,12 @@ Par2__make_e_matrix(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
     PyBytesObject *matrix = NULL;
-    ushort *mt;
+    ptr_t mt;
 
     matrix = Par2__make_square_matrix(self);
     if (matrix == NULL)
         return NULL;
-    mt = (ushort *)PyBytes_AS_STRING(matrix);
+    mt.ptr = (void *)PyBytes_AS_STRING(matrix);
 
     par2_make_e_matrix(p2, mt);
 
@@ -312,7 +311,7 @@ Par2__decode(PyPar2Object *self, PyObject *args)
     int allocate_size, symbol_num;
     int len_slots, len_decode_data_slots, len_merged_slots;
     uchar **slots, **decode_data_slots, **merged_slots;
-    ushort *inverse_matrix;
+    ptr_t inverse_matrix;
     int i;
 
     if (!PyArg_ParseTuple(args, "OOOi", \
@@ -320,7 +319,7 @@ Par2__decode(PyPar2Object *self, PyObject *args)
                           &inverse_matrix_obj, &symbol_num))
         return NULL;
 
-    inverse_matrix = (ushort *)PyBytes_AS_STRING(inverse_matrix_obj);
+    inverse_matrix.ptr = (char *)PyBytes_AS_STRING(inverse_matrix_obj);
 
     allocate_size = sizeof(uchar *) * p2->redundancy * 2;
     slots = (uchar **)PyMem_Malloc(allocate_size);
@@ -436,7 +435,7 @@ Par2__merge_slots(PyPar2Object *self, PyObject *args)
     par2_t *p2 = &self->par2;
     int allocate_size;
     int len_slots, len_data_slots, len_parity_slots;
-    ushort *merged_matrix = NULL;
+    ptr_t merged_matrix;
     uchar **slots, **merged_slots, **data_slots, **parity_slots;
 
     PyTupleObject *merged_slots_obj = NULL;
@@ -469,7 +468,7 @@ Par2__merge_slots(PyPar2Object *self, PyObject *args)
     _set_slots(data_slots, data_slots_obj, len_data_slots);
     _set_slots(parity_slots, parity_slots_obj, len_parity_slots);
 
-    merged_matrix = (ushort *)PyBytes_AS_STRING(merged_matrix_obj);
+    merged_matrix.ptr = (void *)PyBytes_AS_STRING(merged_matrix_obj);
     par2_merge_slots(p2, \
                      merged_slots, merged_matrix, \
                      data_slots, parity_slots);
@@ -495,16 +494,16 @@ Par2__solve_inverse_matrix(PyPar2Object *self, PyObject *args)
     int ret;
     PyBytesObject *inverse_matrix = NULL;
     Py_buffer matrix;
-    ushort *mt, *im;
+    ptr_t mt, im;
 
     if (!PyArg_ParseTuple(args, "y*", &matrix))
         return NULL;
-    mt = (ushort *)matrix.buf;
+    mt.ptr = (char *)matrix.buf;
 
     inverse_matrix = (PyBytesObject *)Par2__make_e_matrix(self);
     if (inverse_matrix == NULL)
         return NULL;
-    im = (ushort *)PyBytes_AS_STRING(inverse_matrix);
+    im.ptr = (char *)PyBytes_AS_STRING(inverse_matrix);
 
     ret = par2_solve_inverse_matrix(p2, im, mt);
     if (ret < 0){
@@ -521,7 +520,7 @@ Par2__mul_matrixes(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
     PyBytesObject *answer = NULL, *a, *b;
-    ushort *ans, *a_mt, *b_mt;
+    ptr_t ans, a_mt, b_mt;
 
     if (!PyArg_ParseTuple(args, "OO", &a, &b))
         return NULL;
@@ -530,9 +529,9 @@ Par2__mul_matrixes(PyPar2Object *self, PyObject *args)
     if (answer == NULL)
         return NULL;
 
-    ans = (ushort *)PyBytes_AS_STRING(answer);
-    a_mt = (ushort *)PyBytes_AS_STRING(a);
-    b_mt = (ushort *)PyBytes_AS_STRING(b);
+    ans.ptr = (char *)PyBytes_AS_STRING(answer);
+    a_mt.ptr = (char *)PyBytes_AS_STRING(a);
+    b_mt.ptr = (char *)PyBytes_AS_STRING(b);
 
     par2_mul_matrixes(p2, ans, a_mt, b_mt);
 
