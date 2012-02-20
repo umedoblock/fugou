@@ -18,14 +18,14 @@ typedef struct {
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
-    {"poly", T_INT, offsetof(PyPar2Object, par2.poly), 0, ""},
-    {"bits", T_INT, offsetof(PyPar2Object, par2.bits), 0, ""},
-    {"w", T_INT, offsetof(PyPar2Object, par2.w), 0, ""},
-    {"gf_max", T_INT, offsetof(PyPar2Object, par2.gf_max), 0, ""},
+    {"poly", T_INT, offsetof(PyPar2Object, par2.reed_solomon.poly), 0, ""},
+    {"bits", T_INT, offsetof(PyPar2Object, par2.reed_solomon.bits), 0, ""},
+    {"w", T_INT, offsetof(PyPar2Object, par2.reed_solomon.w), 0, ""},
+    {"gf_max", T_INT, offsetof(PyPar2Object, par2.reed_solomon.gf_max), 0, ""},
     {"digits", T_INT, offsetof(PyPar2Object, par2.digits), 0, ""},
     {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
-    {"octets", T_INT, offsetof(PyPar2Object, par2.octets), 0, ""},
-    {"code_size", T_INT, offsetof(PyPar2Object, par2.code_size), 0, ""},
+    {"octets", T_INT, offsetof(PyPar2Object, par2.reed_solomon.octets), 0, ""},
+    {"code_size", T_INT, offsetof(PyPar2Object, par2.reed_solomon.code_size), 0, ""},
     {"vertical_size", T_INT, offsetof(PyPar2Object, par2.vertical_size), 0, ""},
     {"horizontal_size", T_INT, \
         offsetof(PyPar2Object, par2.horizontal_size), 0, ""},
@@ -59,12 +59,13 @@ static int
 Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds)
 {
     par2_t *p2 = &self->par2;
+    reed_solomon_t *rds = &p2->reed_solomon;
     int ret;
 
 /*
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 */
-    ret = par2_init_structure(p2, p2->bits, p2->redundancy);
+    ret = par2_init_structure(p2, rds->bits, p2->redundancy);
     if (ret < 0){
         par2_view_structure(p2);
         return -1;
@@ -131,10 +132,11 @@ static PyObject *
 Par2__add(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
+    reed_solomon_t *rds = &p2->reed_solomon;
     ushort a = 0, b = 0, c = 0;
     uint a32 = 0, b32 = 0, c32 = 0;
 
-    if (p2->code_size == 2) {
+    if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &b))
             return NULL;
         c = par2_add(a, b);
@@ -152,10 +154,11 @@ static PyObject *
 Par2__mul(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
+    reed_solomon_t *rds = &p2->reed_solomon;
     ushort a = 0, b = 0, c = 0;
     uint a32 = 0, b32 = 0, c32 = 0;
 
-    if (p2->code_size == 2) {
+    if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &b))
             return NULL;
         c = par2_mul(p2, a, b);
@@ -173,10 +176,11 @@ static PyObject *
 Par2__div(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
+    reed_solomon_t *rds = &p2->reed_solomon;
     ushort a = 0, b = 0, c = 0;
     uint a32 = 0, b32 = 0, c32 = 0;
 
-    if (p2->code_size == 2) {
+    if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &b))
             return NULL;
         c = par2_div(p2, a, b);
@@ -196,10 +200,11 @@ static PyObject *
 Par2__pow(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
+    reed_solomon_t *rds = &p2->reed_solomon;
     ushort a = 0, x = 0, c = 0;
     uint a32 = 0, x32 = 0, c32 = 0;
 
-    if (p2->code_size == 2) {
+    if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &x))
             return NULL;
         c = par2_pow(p2, a, x);
