@@ -161,13 +161,13 @@ Par2__mul(PyPar2Object *self, PyObject *args)
     if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &b))
             return NULL;
-        c = par2_mul(p2, a, b);
+        c = par2_mul(rds, a, b);
         return Py_BuildValue("H", c);
     }
     else {
         if (!PyArg_ParseTuple(args, "II", &a32, &b32))
             return NULL;
-        c32 = par2_mul32(p2, a32, b32);
+        c32 = par2_mul32(rds, a32, b32);
         return Py_BuildValue("I", c32);
     }
 }
@@ -183,13 +183,13 @@ Par2__div(PyPar2Object *self, PyObject *args)
     if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &b))
             return NULL;
-        c = par2_div(p2, a, b);
+        c = par2_div(rds, a, b);
         return Py_BuildValue("H", c);
     }
     else {
         if (!PyArg_ParseTuple(args, "II", &a32, &b32))
             return NULL;
-        c32 = par2_div32(p2, a32, b32);
+        c32 = par2_div32(rds, a32, b32);
         return Py_BuildValue("I", c32);
     }
 }
@@ -207,13 +207,13 @@ Par2__pow(PyPar2Object *self, PyObject *args)
     if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &x))
             return NULL;
-        c = par2_pow(p2, a, x);
+        c = par2_pow(rds, a, x);
         return Py_BuildValue("H", c);
     }
     else {
         if (!PyArg_ParseTuple(args, "II", &a32, &x32))
             return NULL;
-        c32 = par2_pow32(p2, a32, x32);
+        c32 = par2_pow32(rds, a32, x32);
         return Py_BuildValue("I", c32);
     }
 }
@@ -221,10 +221,12 @@ Par2__pow(PyPar2Object *self, PyObject *args)
 static PyObject *
 Par2__make_gf_and_gfi(PyPar2Object *self)
 {
+    par2_t *p2 = &self->par2;
+    reed_solomon_t *rds = &p2->reed_solomon;
 /*
 fprintf(stderr, "Par2__make_gf_and_gfi(self=%p)\n", self);
 */
-    par2_make_gf_and_gfi(&self->par2);
+    par2_make_gf_and_gfi(rds);
 
     Py_RETURN_NONE;
 }
