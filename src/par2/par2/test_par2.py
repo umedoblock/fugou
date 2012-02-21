@@ -1,5 +1,6 @@
 # Copyright 2011 梅どぶろく(umedoblock)
 
+import gc
 import unittest
 import pprint
 import sys, os
@@ -18,6 +19,7 @@ from par2.const import *
 class _TestPar2(unittest.TestCase):
 
     def test_bits_and_redundancy(self):
+        pass
         p4 = Par2(4, 2)
         self.assertEqual(2, p4.redundancy)
         p4 = Par2(4, 10)
@@ -404,4 +406,5 @@ class _TestPar2(unittest.TestCase):
             self.assertEqual(edd[i], dd)
 
 if __name__ == '__main__':
+  # gc.set_debug(gc.DEBUG_LEAK)
     unittest.main()
