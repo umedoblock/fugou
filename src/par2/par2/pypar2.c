@@ -19,7 +19,7 @@ typedef struct {
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
     {"poly", T_INT, offsetof(PyPar2Object, par2.reed_solomon.poly), 0, ""},
-    {"bits", T_INT, offsetof(PyPar2Object, par2.reed_solomon.bits), 0, ""},
+    {"bits", T_INT, offsetof(PyPar2Object, par2.bits), 0, ""},
     {"w", T_INT, offsetof(PyPar2Object, par2.reed_solomon.w), 0, ""},
     {"gf_max", T_INT, offsetof(PyPar2Object, par2.reed_solomon.gf_max), 0, ""},
     {"digits", T_INT, offsetof(PyPar2Object, par2.digits), 0, ""},
@@ -79,10 +79,19 @@ static PyObject *
 Par2__allocate_memory(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
+    reed_solomon_t *rds;
     int ret;
+    char msg[80];
 /*
 fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
 */
+    rds = par2_get_reed_solomon(p2->bits);
+    if (rds == NULL){
+        sprintf(msg, "unknown bits %d", p2->bits);
+        PyErr_SetString(PyExc_RuntimeError, msg);
+        return NULL;
+    }
+
     ret = par2_allocate_memory(p2);
     if (ret < 0) {
         par2_view_structure(p2);
@@ -99,6 +108,9 @@ fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
             return NULL;
         }
     }
+
+    p2->reed_solomon.gf.ptr = rds->gf.ptr;
+    p2->reed_solomon.gfi.ptr = rds->gfi.ptr;
     p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
     /*
     par2_view_structure(p2);
