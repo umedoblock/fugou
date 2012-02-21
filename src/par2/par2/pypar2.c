@@ -709,11 +709,14 @@ typedef int (*traverseproc)(PyObject *, visitproc, void *);
 typedef void (*freefunc)(void *);
 */
 
+static int
+BigBang_init(PyBigBangObject *self, PyObject *args, PyObject *kwds);
+
 static PyObject *
 BigBang_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyBigBangObject *self = NULL;
-    int done;
+    int ret;
 
 fprintf(stderr, "big baaaaaaaaaaaaaaaaaaaaaaaaaaan "
                 "dokaaaaaaaaaaaaaaaaaaaaaaaaaaaan !!!!!!!!!!!\n");
@@ -722,23 +725,14 @@ fprintf(stderr, "BigBang_new(type=%p, args=%p, kwds=%p)\n", type, args, kwds);
 */
     self = (PyBigBangObject *)type->tp_alloc(type, 0);
     if (self != NULL) {
+        ret = BigBang_init(self, args, kwds);
+        if (ret == PAR2_MALLOC_ERROR) {
+            Py_DECREF(self);
+            self = NULL;
+        }
 /*
 fprintf(stderr, "self = %p\n", self);
 */
-        done = par2_big_bang();
-        if (done == PAR2_MALLOC_ERROR){
-            fprintf(stderr, "par2_big_bang() failed.\n");
-            /*
-            par2_big_bang_view(universe);
-            */
-            Py_DECREF(self);
-            return BIG_MOUTH;
-        }
-        else {
-            /*
-            fprintf(stderr, "par2_big_bang() huge explosion!!!.\n");
-            */
-        }
     }
 /*
 fprintf(stderr, "\n");
@@ -750,10 +744,24 @@ fprintf(stderr, "\n");
 static int
 BigBang_init(PyBigBangObject *self, PyObject *args, PyObject *kwds)
 {
-fprintf(stderr, "BigBang_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
+    int done;
+
 /*
-    universe->mem = NULL;
+fprintf(stderr, "BigBang_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 */
+        done = par2_big_bang();
+        if (done == PAR2_MALLOC_ERROR){
+            fprintf(stderr, "par2_big_bang() failed.\n");
+            /*
+            */
+            return PAR2_MALLOC_ERROR;
+        }
+        else {
+            par2_view_big_bang();
+            /*
+            fprintf(stderr, "par2_big_bang() huge explosion!!!.\n");
+            */
+        }
 
     return 0;
 }
