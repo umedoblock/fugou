@@ -715,12 +715,16 @@ BigBang_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     PyBigBangObject *self = NULL;
     int done;
 
-fprintf(stderr, "BigBang_new(type=%p, args=%p, kwds=%p)\n", type, args, kwds);
+fprintf(stderr, "big baaaaaaaaaaaaaaaaaaaaaaaaaaan "
+                "dokaaaaaaaaaaaaaaaaaaaaaaaaaaaan !!!!!!!!!!!\n");
 /*
+fprintf(stderr, "BigBang_new(type=%p, args=%p, kwds=%p)\n", type, args, kwds);
 */
     self = (PyBigBangObject *)type->tp_alloc(type, 0);
     if (self != NULL) {
+/*
 fprintf(stderr, "self = %p\n", self);
+*/
         done = par2_big_bang();
         if (done == PAR2_MALLOC_ERROR){
             fprintf(stderr, "par2_big_bang() failed.\n");
@@ -731,11 +735,13 @@ fprintf(stderr, "self = %p\n", self);
             return BIG_MOUTH;
         }
         else {
+            /*
             fprintf(stderr, "par2_big_bang() huge explosion!!!.\n");
+            */
         }
     }
-fprintf(stderr, "\n");
 /*
+fprintf(stderr, "\n");
 */
 
     return (PyObject *)self;
@@ -773,7 +779,7 @@ fprintf(stderr, "BigBang_dealloc(self=%p)\n", self);
 
 static PyTypeObject PyBigBangType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_BigBang._BigBang",             /* tp_name */
+    "_bigbang._BigBang",             /* tp_name */
     sizeof(PyBigBangObject),             /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)BigBang_dealloc, /* tp_dealloc */
@@ -813,27 +819,6 @@ static PyTypeObject PyBigBangType = {
     (freefunc)BigBang_free,                /* tp_free Low-level free-memory routine */
 };
 
-/*
-typedef struct PyModuleDef{
-  PyModuleDef_Base m_base;
-  const char* m_name;
-  const char* m_doc;
-  Py_ssize_t m_size;
-  PyMethodDef *m_methods;
-  inquiry m_reload;
-  traverseproc m_traverse;
-  inquiry m_clear;
-  freefunc m_free;
-}PyModuleDef;
-
-typedef struct {
-    PyObject_HEAD
-    PyObject *md_dict;
-    struct PyModuleDef *md_def;
-    void *md_state;
-} PyModuleObject;
-*/
-
 PyMODINIT_FUNC
 PyInit__par2(void)
 {
@@ -844,42 +829,24 @@ PyInit__par2(void)
 
     if (PyType_Ready(&PyBigBangType) < 0)
         return NULL;
-fprintf(stderr, "after PyType_Ready()\n");
-fprintf(stderr, "PyBigBangType = %p\n", &PyBigBangType);
-_PyObject_Dump((PyObject *)&PyBigBangType);
-fprintf(stderr, "\n");
-/*
-*/
-
     if (PyType_Ready(&PyPar2Type) < 0)
         return NULL;
+    /* _PyObject_Dump((PyObject *)&PyPar2Type); */
 
-fprintf(stderr, "before par2 module create\n");
     m = (PyObject *)PyModule_Create(&Par2_module);
     if (m == NULL) {
         return NULL;
     }
-fprintf(stderr, "PyModule_Create() Par2 succeed ()\n");
-fprintf(stderr, "m = %p\n", m);
-_PyObject_Dump((PyObject *)m);
-fprintf(stderr, "\n");
 
     PyDict_SetItemString(PyPar2Type.tp_dict, "C_EXTENSION", Py_True);
 
-fprintf(stderr, "before PyModule_Add()\n");
-fprintf(stderr, "PyBigBangType = %p\n", &PyBigBangType);
-_PyObject_Dump((PyObject *)&PyBigBangType);
-fprintf(stderr, "\n");
-    // Py_INCREF(&PyBigBangType);
+    Py_INCREF(&PyBigBangType);
     PyModule_AddObject(m, "_BigBang", (PyObject *)&PyBigBangType);
-    Py_DECREF(&PyBigBangType);
-    Py_DECREF(&PyBigBangType);
-    Py_DECREF(&PyBigBangType);
-fprintf(stderr, "PyModule_AddObject()\n");
-fprintf(stderr, "PyBigBangType = %p\n", &PyBigBangType);
-_PyObject_Dump((PyObject *)&PyBigBangType);
-fprintf(stderr, "\n");
     /*
+    fprintf(stderr, "PyModule_AddObject()\n");
+    fprintf(stderr, "PyBigBangType = %p\n", &PyBigBangType);
+    _PyObject_Dump((PyObject *)&PyBigBangType);
+    fprintf(stderr, "\n");
     */
 
     Py_INCREF(&PyPar2Type);
@@ -887,46 +854,19 @@ fprintf(stderr, "\n");
 
     type = &PyBigBangType;
     big_bang_obj = (PyBigBangObject *)type->tp_new(type, NULL, NULL);
-fprintf(stderr, "tp_new()\n");
-fprintf(stderr, "big_bang_obj = %p\n", big_bang_obj);
-_PyObject_Dump((PyObject *)big_bang_obj);
-fprintf(stderr, "\n");
 
     PyDict_SetItemString(PyPar2Type.tp_dict, "big_bang_obj",
                         (PyObject *)big_bang_obj);
-fprintf(stderr, "PyDict_SetItemString()\n");
-fprintf(stderr, "big_bang_obj = %p\n", big_bang_obj);
-_PyObject_Dump((PyObject *)big_bang_obj);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "PyPar2Type.tp_dict = %p\n", PyPar2Type.tp_dict);
-_PyObject_Dump((PyObject *)PyPar2Type.tp_dict);
-fprintf(stderr, "\n");
+    Py_DECREF(big_bang_obj);
 
 /*
-fprintf(stderr, "Py_DECREF(PyPar2Type.tp_dict)\n");
-Py_DECREF(PyPar2Type.tp_dict);
-fprintf(stderr, "\n");
+PyDict_DelItemString(PyPar2Type.tp_dict, "big_bang_obj");
 */
-
-Py_DECREF(big_bang_obj);
-fprintf(stderr, "Py_DECREF()\n");
-/*
-*/
-fprintf(stderr, "big_bang_obj = %p\n", big_bang_obj);
-_PyObject_Dump((PyObject *)big_bang_obj);
-fprintf(stderr, "\n");
-
-    /*
-Py_DECREF(big_bang_obj);
-    */
-fprintf(stderr, "Par2__init() done.\n");
 
 /*
 fprintf(stderr, "PyPar2Type.tp_dict = %p\n", PyPar2Type.tp_dict);
 _PyObject_Dump((PyObject *)PyPar2Type.tp_dict);
 fprintf(stderr, "\n");
-Py_DECREF(PyPar2Type.tp_dict);
 */
     return m;
 }
