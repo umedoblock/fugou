@@ -304,7 +304,6 @@ class Par2MixIn:
         self._init_self(bits, redundancy)
         self._allocate_memory()
 
-        self._make_gf_and_gfi()
         self._make_vandermonde_matrix()
 
     def encode(self, data_slots=None, data=b''):
