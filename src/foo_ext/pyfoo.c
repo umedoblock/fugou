@@ -4,6 +4,12 @@
 #define Foo_MODULE
 
 char c_extension[] = "C_EXTENSION pyfoo.c";
+/*
+static PyMemberDef module_members[] = {
+    {"__dict__", T_OBJECT, offsetof(PyModuleObject, md_dict), READONLY},
+    {0}
+};
+*/
 
 typedef struct {
     PyObject_HEAD
