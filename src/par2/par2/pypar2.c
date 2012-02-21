@@ -824,7 +824,6 @@ PyInit__par2(void)
 {
     /* PyModuleObject *m; */
     PyObject *m;
-    PyTypeObject *type;
     PyBigBangObject *big_bang_obj;
 
     if (PyType_Ready(&PyBigBangType) < 0)
@@ -852,8 +851,7 @@ PyInit__par2(void)
     Py_INCREF(&PyPar2Type);
     PyModule_AddObject(m, "_Par2", (PyObject *)&PyPar2Type);
 
-    type = &PyBigBangType;
-    big_bang_obj = (PyBigBangObject *)type->tp_new(type, NULL, NULL);
+    big_bang_obj = (PyBigBangObject *)BigBang_new(&PyBigBangType, NULL, NULL);
 
     PyDict_SetItemString(PyPar2Type.tp_dict, "big_bang_obj",
                         (PyObject *)big_bang_obj);
