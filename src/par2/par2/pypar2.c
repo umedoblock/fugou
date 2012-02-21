@@ -751,15 +751,15 @@ fprintf(stderr, "BigBang_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 */
         done = par2_big_bang();
         if (done == PAR2_MALLOC_ERROR){
-            fprintf(stderr, "par2_big_bang() failed.\n");
             /*
+            fprintf(stderr, "par2_big_bang() failed.\n");
             */
             return PAR2_MALLOC_ERROR;
         }
         else {
-            par2_view_big_bang();
             /*
             fprintf(stderr, "par2_big_bang() huge explosion!!!.\n");
+            par2_view_big_bang();
             */
         }
 
