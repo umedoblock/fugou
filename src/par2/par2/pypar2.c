@@ -62,8 +62,8 @@ Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds)
     reed_solomon_t *rds = &p2->reed_solomon;
     int ret;
 
-/*
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
+/*
 */
     ret = par2_init_structure(p2, rds->bits, p2->redundancy);
     if (ret < 0){
@@ -122,8 +122,8 @@ fprintf(stderr, "Par2_dealloc(self=%p)\n", self);
 static void
 Par2_free(PyPar2Object* self)
 {
-/*
 fprintf(stderr, "Par2_free(self=%p)\n", self);
+/*
 */
     PyObject_Free(self);
 }
