@@ -22,7 +22,6 @@ static PyMemberDef Par2_members[] = {
     {"bits", T_INT, offsetof(PyPar2Object, par2.bits), 0, ""},
     {"w", T_INT, offsetof(PyPar2Object, par2.reed_solomon.w), 0, ""},
     {"gf_max", T_INT, offsetof(PyPar2Object, par2.reed_solomon.gf_max), 0, ""},
-    {"digits", T_INT, offsetof(PyPar2Object, par2.digits), 0, ""},
     {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
     {"octets", T_INT, offsetof(PyPar2Object, par2.reed_solomon.octets), 0, ""},
     {"code_size", T_INT, offsetof(PyPar2Object, par2.reed_solomon.code_size), 0, ""},
@@ -65,7 +64,7 @@ Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds)
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 /*
 */
-    ret = par2_init_structure(p2, rds->bits, p2->redundancy);
+    ret = par2_init_p2(p2, p2->redundancy, rds);
     if (ret < 0){
         par2_view_structure(p2);
         return -1;
@@ -92,12 +91,12 @@ fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
         return NULL;
     }
 
-    ret = par2_allocate_memory(p2);
+    ret = par2_init_p2(p2, p2->redundancy, rds);
     if (ret < 0) {
         par2_view_structure(p2);
         if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "numerous redundancy");
+            sprintf(msg, "numerous redundancy %d", p2->redundancy);
+            PyErr_SetString(PyExc_RuntimeError, msg);
             return NULL;
         }
         else if (ret == PAR2_MALLOC_ERROR)
