@@ -93,31 +93,15 @@ class _TestPar2(unittest.TestCase):
                               format(redundancy), args[0])
 
     def test_mul_and_div(self):
-        bitss = (4,)
-        bitss = (4, 8)
-        bitss = (4, 8, 16, 24)
-        bitss = (4, 8, 16)
         dic = {\
             4: {'redundancy': 10, 'w': None, 'gf_max': None},
             8: {'redundancy': 100, 'w': None, 'gf_max': None},
             16: {'redundancy': 50, 'w': 50, 'gf_max': 50},
             24: {'redundancy': 50, 'w': 50, 'gf_max': 50}
         }
-        count = 0
         for bits, attrs in dic.items():
             redundancy = attrs['redundancy']
-          # print('bits =', bits)
             par2 = Par2(bits, redundancy)
-          # print('gf =')
-          # _gf = bytes_to_matrix(par2.gf, \
-          #                       par2.redundancy, par2.horizontal_size,
-          #                       par2.code_size)
-          # pp.pprint(_gf)
-          # print('gfi =')
-          # _gfi = bytes_to_matrix(par2.gfi, \
-          #                       par2.redundancy, par2.horizontal_size,
-          #                       par2.code_size)
-          # pp.pprint(_gfi)
             w = attrs['w'] or par2.w
             gf_max = attrs['gf_max'] or par2.gf_max
             for a in range(w):
@@ -125,12 +109,7 @@ class _TestPar2(unittest.TestCase):
                     b = n + 1
                     mul = par2._mul(a, b)
                     c = par2._div(mul, b)
-                  # print('a, c =', a, c)
-                  # if count == 68070:
-                  #     print('count =', count)
-                  #     print(a, b, mul, c)
                     self.assertEqual(a, c)
-                  # count += 1
 
     def test__pow(self):
         redundancies = {4: 4, 8: 4}
@@ -140,13 +119,12 @@ class _TestPar2(unittest.TestCase):
         for bit, redundancy in redundancies.items():
             par2 = Par2(bit, redundancy)
             vm = [None] * par2.redundancy
-          # print('bits =', bit, 'redundancy =', redundancy, \
-          #       'code_size =', par2.code_size)
 
             for j in range(par2.redundancy):
                 vm[j] = [None] * par2.redundancy
                 for i in range(par2.redundancy):
                     vm[j][i] = par2._pow(i + 1, j)
+
             if Par2.C_EXTENSION:
                 _vm = par2._get_vandermonde_matrix()
         #       print('_vm =', _vm)
@@ -244,15 +222,6 @@ class _TestPar2(unittest.TestCase):
 
             if Par2.C_EXTENSION:
                 matrix = par2._get_vandermonde_matrix()
-              # by = matrix
-              # mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size)
-              # print('mt is')
-              # pp.pprint(mt)
-
-              # im = bytes_to_matrix(inverse_matrix, par2.redundancy, \
-              #                      par2.horizontal_size)
-              # print('inverse_matrix =')
-              # pp.pprint(im)
             else:
                 matrix = par2.vandermonde_matrix
               # print('matrix =')
@@ -275,34 +244,6 @@ class _TestPar2(unittest.TestCase):
           # pp.pprint(e_matrix)
 
             self.assertEqual(e_matrix, maybe_e_matrix)
-
-          # print('e_matrix =')
-          # if Par2.C_EXTENSION:
-          #     e_matrix = \
-          #         bytes_to_matrix(e_matrix, \
-          #                         par2.redundancy, par2.horizontal_size)
-          # pp.pprint(e_matrix)
-
-          # print('maybe_e_matrix =')
-          # if Par2.C_EXTENSION:
-          #     maybe_e_matrix = \
-          #         bytes_to_matrix(maybe_e_matrix, \
-          #                         par2.redundancy, par2.horizontal_size)
-          # pp.pprint(maybe_e_matrix)
-
-          # print('matrix =')
-          # if Par2.C_EXTENSION:
-          #     matrix = \
-          #         bytes_to_matrix(matrix, \
-          #                         par2.redundancy, par2.horizontal_size)
-          # pp.pprint(matrix)
-
-          # print('inverse_matrix =')
-          # if Par2.C_EXTENSION:
-          #     inverse_matrix = \
-          #         bytes_to_matrix(inverse_matrix, \
-          #                         par2.redundancy, par2.horizontal_size)
-          # pp.pprint(inverse_matrix)
 
     def test_archive_p4(self):
         # make par2 archive
