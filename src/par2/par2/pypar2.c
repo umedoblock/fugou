@@ -6,6 +6,8 @@
 #define Par2_MODULE
 
 static PyTypeObject PyPar2Type;
+PyObject *pypar2_Error;
+PyObject *pypar2_Par2Error;
 
 typedef struct {
     PyObject_HEAD
@@ -18,38 +20,35 @@ typedef struct {
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
-    {"poly", T_INT, offsetof(PyPar2Object, par2.reed_solomon.poly), 0, ""},
     {"bits", T_INT, offsetof(PyPar2Object, par2.bits), 0, ""},
-    {"w", T_INT, offsetof(PyPar2Object, par2.reed_solomon.w), 0, ""},
-    {"gf_max", T_INT, offsetof(PyPar2Object, par2.reed_solomon.gf_max), 0, ""},
     {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
-    {"octets", T_INT, offsetof(PyPar2Object, par2.reed_solomon.octets), 0, ""},
-    {"code_size", T_INT, offsetof(PyPar2Object, par2.reed_solomon.code_size), 0, ""},
     {"vertical_size", T_INT, offsetof(PyPar2Object, par2.vertical_size), 0, ""},
     {"horizontal_size", T_INT, \
         offsetof(PyPar2Object, par2.horizontal_size), 0, ""},
     {NULL}  // Sentinel
 };
 
+static int
+Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds);
+
 static PyObject *
 Par2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyPar2Object *self = NULL;
+    int ret = -1;
 
 /*
 fprintf(stderr, "Par2_new(type=%p, args=%p, kwds=%p)\n", type, args, kwds);
+fprintf(stderr, "\n");
 */
     self = (PyPar2Object *)type->tp_alloc(type, 0);
     if (self != NULL) {
-/*
-fprintf(stderr, "self = %p\n", self);
-fprintf(stderr, "type->tp_init = %p\n", type->tp_init);
-fprintf(stderr, "self->mem = %p\n", self->mem);
-*/
+        ret = Par2_init(self, args, kwds);
+        if (ret < 0) {
+            Py_DECREF(self);
+            self = NULL;
+        }
     }
-/*
-fprintf(stderr, "\n");
-*/
 
     return (PyObject *)self;
 }
@@ -58,18 +57,42 @@ static int
 Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = &p2->reed_solomon;
-    int ret;
+    reed_solomon_t *rds = NULL;
+    int ret, bits = -1, redundancy = -1, max_redundancy = -1;
+    char *kwlist[] = {"bits", "redundancy", NULL};
 
-fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 /*
+fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 */
-    ret = par2_init_p2(p2, p2->redundancy, rds);
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii",
+                                     kwlist, &bits, &redundancy))
+        return -1;
+
+    ret = par2_init_p2(p2, redundancy, bits);
     if (ret < 0){
-        par2_view_structure(p2);
+        if (ret == PAR2_INVALID_BITS_ERROR)
+            PyErr_Format(pypar2_Par2Error,
+                "must chose 4, 8 or 16 for bits.");
+        else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
+            if (bits == 4 || bits == 8) {
+                rds = p2->rds;
+                max_redundancy = rds->gf_max;
+            }
+            else {
+                max_redundancy = PAR2_MAX_REDUNDANCY;
+            }
+            PyErr_Format(pypar2_Par2Error,
+                "redundancy(=%d) must be 2 <= redundancy <= %d.",
+                redundancy, max_redundancy);
+        }
+        else
+            PyErr_Format(pypar2_Par2Error,
+                "unknown return code that is %d.", ret);
+        /*
+        par2_view_p2(p2);
+        */
         return -1;
     }
-    p2->mem = NULL;
 
     return 0;
 }
@@ -87,32 +110,33 @@ fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
     rds = par2_get_reed_solomon(p2->bits);
     if (rds == NULL){
         sprintf(msg, "unknown bits %d", p2->bits);
-        PyErr_SetString(PyExc_RuntimeError, msg);
+        PyErr_SetString(pypar2_Par2Error, msg);
         return NULL;
     }
 
+    /*
     ret = par2_init_p2(p2, p2->redundancy, rds);
+    */
+    ret = 0;
     if (ret < 0) {
-        par2_view_structure(p2);
+        par2_view_p2(p2);
         if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
             sprintf(msg, "numerous redundancy %d", p2->redundancy);
-            PyErr_SetString(PyExc_RuntimeError, msg);
+            PyErr_SetString(pypar2_Par2Error, msg);
             return NULL;
         }
         else if (ret == PAR2_MALLOC_ERROR)
             return PyErr_NoMemory();
         else {
-            PyErr_SetString(PyExc_RuntimeError,
+            PyErr_SetString(pypar2_Par2Error,
                             "unknown return code");
             return NULL;
         }
     }
 
-    p2->reed_solomon.gf.ptr = rds->gf.ptr;
-    p2->reed_solomon.gfi.ptr = rds->gfi.ptr;
     p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
     /*
-    par2_view_structure(p2);
+    par2_view_p2(p2);
     */
 
     Py_RETURN_NONE;
@@ -143,7 +167,7 @@ static PyObject *
 Par2__add(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = &p2->reed_solomon;
+    reed_solomon_t *rds = p2->rds;
     ushort a = 0, b = 0, c = 0;
     uint a32 = 0, b32 = 0, c32 = 0;
 
@@ -165,7 +189,7 @@ static PyObject *
 Par2__mul(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = &p2->reed_solomon;
+    reed_solomon_t *rds = p2->rds;
     ushort a = 0, b = 0, c = 0;
     uint a32 = 0, b32 = 0, c32 = 0;
 
@@ -187,7 +211,7 @@ static PyObject *
 Par2__div(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = &p2->reed_solomon;
+    reed_solomon_t *rds = p2->rds;
     ushort a = 0, b = 0, c = 0;
     uint a32 = 0, b32 = 0, c32 = 0;
 
@@ -211,7 +235,7 @@ static PyObject *
 Par2__pow(PyPar2Object *self, PyObject *args)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = &p2->reed_solomon;
+    reed_solomon_t *rds = p2->rds;
     ushort a = 0, x = 0, c = 0;
     uint a32 = 0, x32 = 0, c32 = 0;
 
@@ -233,11 +257,10 @@ static PyObject *
 Par2__make_gf_and_gfi(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = &p2->reed_solomon;
 /*
 fprintf(stderr, "Par2__make_gf_and_gfi(self=%p)\n", self);
 */
-    par2_make_gf_and_gfi(rds);
+    par2_make_gf_and_gfi(p2->rds);
 
     Py_RETURN_NONE;
 }
@@ -842,7 +865,7 @@ PyMODINIT_FUNC
 PyInit__par2(void)
 {
     /* PyModuleObject *m; */
-    PyObject *m;
+    PyObject *m, *dict;
     PyBigBangObject *big_bang_obj;
 
     if (PyType_Ready(&PyBigBangType) < 0)
@@ -876,14 +899,38 @@ PyInit__par2(void)
                         (PyObject *)big_bang_obj);
     Py_DECREF(big_bang_obj);
 
+    dict = PyModule_GetDict(m);
+    if (dict == NULL) {
+        goto error;
+    }
 /*
 PyDict_DelItemString(PyPar2Type.tp_dict, "big_bang_obj");
 */
+        // PyErr_NewException("_par2.Par2Error", PyExc_Exception, NULL);
+    pypar2_Error =
+        PyErr_NewException("_par2.Error", PyExc_BaseException, NULL);
+    if (pypar2_Error == NULL)
+        goto error;
+    PyDict_SetItemString(dict, "Error", pypar2_Error);
+
+    pypar2_Par2Error =
+        PyErr_NewException("_par2.Par2Error", pypar2_Error, NULL);
+    if (pypar2_Par2Error == NULL) {
+        goto error;                                                                 }
+    PyDict_SetItemString(dict, "Par2Error", pypar2_Par2Error);
 
 /*
 fprintf(stderr, "PyPar2Type.tp_dict = %p\n", PyPar2Type.tp_dict);
 _PyObject_Dump((PyObject *)PyPar2Type.tp_dict);
 fprintf(stderr, "\n");
 */
+
+error:
+    if (PyErr_Occurred()) {
+        PyErr_SetString(PyExc_ImportError, "Par2: init failed");
+        Py_DECREF(m);
+        m = NULL;
+    }
+
     return m;
 }

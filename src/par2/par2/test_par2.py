@@ -15,6 +15,7 @@ pp = pprint.PrettyPrinter(indent=4)
 from par2 import *
 from par2.util import *
 from par2.const import *
+import par2
 
 class _TestPar2(unittest.TestCase):
 
@@ -50,40 +51,46 @@ class _TestPar2(unittest.TestCase):
             self.assertEqual(MAX_REDUNDANCY, p24.redundancy)
 
     def test_exception(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(Par2Error) as raiz:
             Par2(5, 10)
+        args = raiz.exception.args
+        self.assertEqual('must chose 4, 8 or 16 for bits.', args[0])
 
         redundancies = (-1, 0, 1, 1 << 4)
         for redundancy in redundancies:
             with self.assertRaises(Par2Error) as raiz:
                 Par2(4, redundancy)
             args = raiz.exception.args
-            self.assertEqual(('redundancy must be '
-                              '2 <= redundancy <= 15'), args[0])
+            self.assertEqual(('redundancy(={}) must be '
+                              '2 <= redundancy <= 15.').
+                              format(int(redundancy)), args[0])
 
         redundancies = (-1, 0, 1, 1 << 8)
         for redundancy in redundancies:
             with self.assertRaises(Par2Error) as raiz:
                 Par2(8, redundancy)
             args = raiz.exception.args
-            self.assertEqual(('redundancy must be '
-                              '2 <= redundancy <= 255'), args[0])
+            self.assertEqual(('redundancy(={}) must be '
+                              '2 <= redundancy <= 255.').
+                              format(redundancy), args[0])
 
         redundancies = (-1, 0, 1, MAX_REDUNDANCY + 1, 1 << 16)
         for redundancy in redundancies:
             with self.assertRaises(Par2Error) as raiz:
                 Par2(16, redundancy)
             args = raiz.exception.args
-            self.assertEqual(('redundancy must be '
-                              '2 <= redundancy <= 8192'), args[0])
+            self.assertEqual(('redundancy(={}) must be '
+                              '2 <= redundancy <= 8192.').
+                              format(redundancy), args[0])
 
         redundancies = (-1, 0, 1, MAX_REDUNDANCY + 1, 1 << 24)
         for redundancy in redundancies:
             with self.assertRaises(Par2Error) as raiz:
                 Par2(24, redundancy)
             args = raiz.exception.args
-            self.assertEqual(('redundancy must be '
-                              '2 <= redundancy <= 8192'), args[0])
+            self.assertEqual(('redundancy(={}) must be '
+                              '2 <= redundancy <= 8192.').
+                              format(redundancy), args[0])
 
     def test_mul_and_div(self):
         bitss = (4,)

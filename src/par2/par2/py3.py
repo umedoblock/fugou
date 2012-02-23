@@ -23,9 +23,6 @@ __all__ = [ \
 
 pp = pprint.PrettyPrinter(indent=4)
 
-class Par2Error(BaseException):
-    pass
-
 class Par2_:
     C_EXTENSION = False
 
@@ -260,11 +257,15 @@ class Par2_:
         return ret
 
 try:
+    import _par2
     from _par2 import _Par2
+    from _par2 import Par2Error
 
 except ImportError as e:
     print('cannot import _Par2')
     print('reason: ', e.args[0])
+    class Par2Error(BaseException):
+        pass
 
 class Par2MixIn:
 
@@ -272,10 +273,10 @@ class Par2MixIn:
       # refs #22 and galois_{4,8,16,24}bits.log
       # poly = {4: 25, 8: 361, 16: 87749, 24: 16777435}
         poly = {4: 19, 8: 285, 16: 65581, 24: 16777243}
-        try:
-            self.poly = poly[bits]
-        except KeyError:
-            raise KeyError("must chose 4, 8 or 16 for bits.")
+        if not bits in poly:
+            raise RuntimeError("must chose 4, 8 or 16 for bits.")
+
+        self.poly = poly[bits]
         self.bits = bits
         self.w = 1 << self.bits
         self.gf_max = self.w - 1
@@ -288,8 +289,8 @@ class Par2MixIn:
                 max_redundancy = self.gf_max
             else:
                 max_redundancy = MAX_REDUNDANCY
-            message = 'redundancy must be '
-            message += '2 <= redundancy <= {}'.format(max_redundancy)
+            message = 'redundancy(={}) must be '.format(redundancy)
+            message += '2 <= redundancy <= {}.'.format(max_redundancy)
             raise Par2Error(message)
         octets = {4: 1, 8: 1, 16: 2, 24: 3}
         self.octets = octets[bits]
@@ -300,7 +301,6 @@ class Par2MixIn:
         self.horizontal_size = self.code_size * self.redundancy
 
     def __init__(self, bits, redundancy):
-      # print('Par2.__init__()')
         self._init_self(bits, redundancy)
         self._allocate_memory()
 
