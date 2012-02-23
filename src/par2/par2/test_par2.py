@@ -47,8 +47,8 @@ class _TestPar2(unittest.TestCase):
             self.assertEqual(2, p24.redundancy)
             p24 = Par2(24, 1234)
             self.assertEqual(1234, p24.redundancy)
-            p24 = Par2(24, MAX_REDUNDANCY)
-            self.assertEqual(MAX_REDUNDANCY, p24.redundancy)
+          # p24 = Par2(24, MAX_REDUNDANCY)
+          # self.assertEqual(MAX_REDUNDANCY, p24.redundancy)
 
     def test_exception(self):
         with self.assertRaises(Par2Error) as raiz:
