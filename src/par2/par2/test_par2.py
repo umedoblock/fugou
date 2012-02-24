@@ -20,7 +20,6 @@ import par2
 class _TestPar2(unittest.TestCase):
 
     def test_bits_and_redundancy(self):
-        pass
         p4 = Par2(4, 2)
         self.assertEqual(2, p4.redundancy)
         p4 = Par2(4, 10)
@@ -54,7 +53,7 @@ class _TestPar2(unittest.TestCase):
         with self.assertRaises(Par2Error) as raiz:
             Par2(5, 10)
         args = raiz.exception.args
-        self.assertEqual('must chose 4, 8 or 16 for bits.', args[0])
+        self.assertEqual('must chose 4, 8, 16 or 24 for bits.', args[0])
 
         redundancies = (-1, 0, 1, 1 << 4)
         for redundancy in redundancies:
@@ -116,8 +115,8 @@ class _TestPar2(unittest.TestCase):
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
-        for bit, redundancy in redundancies.items():
-            par2 = Par2(bit, redundancy)
+        for bits, redundancy in redundancies.items():
+            par2 = Par2(bits, redundancy)
             vm = [None] * par2.redundancy
 
             for j in range(par2.redundancy):
@@ -186,7 +185,7 @@ class _TestPar2(unittest.TestCase):
           # print('bits = {}, redundancy = {}'.format(bits, redundancy))
             if par2.C_EXTENSION:
                 _vm = par2._get_vandermonde_matrix()
-                _vm = bytes_to_matrix(_vm, \
+                _vm = bytes_to_matrix(_vm,
                                       par2.redundancy, par2.horizontal_size,
                                       par2.code_size)
                 matrix = _vm
@@ -197,7 +196,7 @@ class _TestPar2(unittest.TestCase):
             by = matrix_to_bytes(matrix, par2.code_size)
           # print('bytes =')
           # pp.pprint(by)
-            mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size, \
+            mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size,
                                      par2.code_size)
           # print('mt =')
           # pp.pprint(mt)
@@ -227,8 +226,8 @@ class _TestPar2(unittest.TestCase):
               # print('matrix =')
               # pp.pprint(matrix)
                 by = matrix_to_bytes(matrix, par2.code_size)
-                mt = bytes_to_matrix( \
-                        by, par2.redundancy, par2.horizontal_size, \
+                mt = bytes_to_matrix(
+                        by, par2.redundancy, par2.horizontal_size,
                         par2.code_size)
               # print('mt =')
               # pp.pprint(mt)
@@ -247,19 +246,22 @@ class _TestPar2(unittest.TestCase):
 
     def test_archive_p4(self):
         # make par2 archive
-        bits = (4,)
-        bits = (4, 8)
-        bits = (4, 8, 16)
-        bits = (4, 8, 16, 24)
-        for bit in bits:
-            redundancy = 15
-            archive = Par2Archive(bit, redundancy)
+        redundancies = {4:15, 8:50, 16:50}
+        redundancies = {24: 10}
+        redundancies = {4: 15}
+        redundancies = {8: 5}
+        redundancies = {16: 5}
+        redundancies = {24: 50}
+        redundancies = {4: 15, 8: 50, 16: 50}
+        redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
+        for bits, redundancy in redundancies.items():
+            archive = Par2Archive(bits, redundancy)
             self.assertEqual(list, type(archive.slots))
             self.assertEqual(redundancy * 2, len(archive.slots))
 
             # make test data
             # >>> int.from_bytes(b'\x01\x0f', 'big')
-            # 271 for bit is 4
+            # 271 for bits is 4
             tmp = [int.to_bytes(x % 16, 1, 'big') for x in range(0, 271)]
             data = b''.join(tmp)
             data_size = len(data)
@@ -303,7 +305,7 @@ class _TestPar2(unittest.TestCase):
             for i in range(redundancy):
                 index = i * parity_size
                 expected_decode_data[i] = data_pad[index:index+parity_size]
-            self.assertDecodeData(archive.par2, expected_decode_data, \
+            self.assertDecodeData(archive.par2, expected_decode_data,
                                     archive.decode_data, data_size)
 
             self.assertEqual(data_size, len(raw_data))
@@ -320,7 +322,7 @@ class _TestPar2(unittest.TestCase):
         tmp = [int.to_bytes(x % 16, 1, 'big') for x in range(0, 271)]
         data = b''.join(tmp)
         data_size = len(data)
-        parity_size, _, padding_size, _= \
+        parity_size, _, padding_size, _ = \
             archive.par2._calculate_size(data_size)
 
         # take data
@@ -330,7 +332,7 @@ class _TestPar2(unittest.TestCase):
         archive.make_parities()
 
         archive._assign_nones(
-            (0, 1, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14), #part
+            (0, 1, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14), #data
             (0, 1, 2, 3)) #parity
 
         self.assertFalse(archive.enable_decode())

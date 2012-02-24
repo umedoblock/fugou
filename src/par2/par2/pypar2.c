@@ -72,7 +72,7 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
     if (ret < 0){
         if (ret == PAR2_INVALID_BITS_ERROR)
             PyErr_Format(pypar2_Par2Error,
-                "must chose 4, 8 or 16 for bits.");
+                "must chose 4, 8, 16 or 24 for bits.");
         else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
             if (bits == 4 || bits == 8) {
                 rds = p2->rds;
