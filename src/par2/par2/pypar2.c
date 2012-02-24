@@ -281,7 +281,7 @@ fprintf(stderr, "Par2__get_vandermonde_matrix(self=%p)\n", self);
         return NULL;
     vm.ptr = (void *)PyBytes_AS_STRING(vandermonde_matrix);
 
-    memcpy(vm.ptr, p2->vandermonde_matrix.ptr, p2->matrix_size);
+    Py_MEMCPY(vm.ptr, p2->vandermonde_matrix.ptr, p2->matrix_size);
 
     return (PyObject *)vandermonde_matrix;
 }
