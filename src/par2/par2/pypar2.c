@@ -174,13 +174,13 @@ Par2__add(PyPar2Object *self, PyObject *args)
     if (rds->code_size == 2) {
         if (!PyArg_ParseTuple(args, "HH", &a, &b))
             return NULL;
-        c = par2_add(a, b);
+        c = par2_ADD(a, b);
         return Py_BuildValue("H", c);
     }
     else {
         if (!PyArg_ParseTuple(args, "II", &a32, &b32))
             return NULL;
-        c32 = par2_add(a32, b32);
+        c32 = par2_ADD(a32, b32);
         return Py_BuildValue("I", c32);
     }
 }
