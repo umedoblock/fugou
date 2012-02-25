@@ -19,6 +19,51 @@ import par2
 
 class _TestPar2(unittest.TestCase):
 
+    def test_invalid_rank_matrix(self):
+        mt0 = [ [0, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1] ]
+        mt1 = [ [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 0] ]
+        mt2 = [ [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 0, 1, 1] ]
+        mt3 = [ [1, 0, 0, 1],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [1, 0, 1, 1] ]
+        mt4 = [ [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1] ]
+        mt5 = [ [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0] ]
+        mts = [mt0, mt1, mt2, mt3, mt4, mt5]
+
+        redundancies = {4: 4, 8: 4, 16: 4, 24: 4}
+        for bits, redundancy in redundancies.items():
+            par2 = Par2(bits, redundancy)
+
+            for mt in mts:
+                if Par2.C_EXTENSION:
+                    mt = matrix_to_bytes(mt, par2.code_size)
+
+                matrix = mt
+
+                with self.assertRaises(Par2Error) as raiz:
+                    inverse_matrix = par2._solve_inverse_matrix(matrix)
+                args = raiz.exception.args
+                tup = (par2.bits, par2.redundancy)
+                message = ('cannot make inverse_matrix. '
+                           'bits = {}, redundancy = {}.').format(*tup)
+                self.assertEqual(message, args[0])
+
     def test_bits_and_redundancy(self):
         p4 = Par2(4, 2)
         self.assertEqual(2, p4.redundancy)

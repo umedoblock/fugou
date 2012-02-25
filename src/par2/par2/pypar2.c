@@ -606,10 +606,19 @@ Par2__solve_inverse_matrix(PyPar2Object *self, PyObject *args)
     im.ptr = (char *)PyBytes_AS_STRING(inverse_matrix);
 
     ret = par2_solve_inverse_matrix(p2, im, mt);
-    if (ret < 0){
-        /* Par2RankError */
-fprintf(stderr, "Par2RankError\n");
-        return NULL;
+    if (ret < 0) {
+        Py_DECREF(inverse_matrix);
+        inverse_matrix = NULL;
+        if (ret == PAR2_RANK_ERROR){
+            /* Par2Error */
+            PyErr_Format(pypar2_Par2Error,
+                "cannot make inverse_matrix. bits = %d, redundancy = %d.",
+                                             p2->bits, p2->redundancy);
+        }
+        else {
+            PyErr_Format(pypar2_Par2Error,
+                "unknown return code %d in solve_inverse_matrix().", ret);
+        }
     }
 
     return (PyObject *)inverse_matrix;

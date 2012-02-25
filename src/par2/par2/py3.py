@@ -204,9 +204,9 @@ class Par2_:
                         break
                 if not swap:
                     message = \
-                        ('cannot make inverse_matrix. redundancy = {}, ',
-                         'gf_max = {}').format(self.redundancy, self.gf_max)
-                    raise Par2RankError(message)
+                        ('cannot make inverse_matrix. bits = {}, '
+                         'redundancy = {}.').format(self.bits, self.redundancy)
+                    raise Par2Error(message)
 
             if matrix[k][k] != 1:
                 tmp = matrix[k][k]
