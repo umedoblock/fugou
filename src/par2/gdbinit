@@ -1,0 +1,22 @@
+# break importdl.c:52 if strcmp(name, "_par2") == 0
+# ~/src/Python-3.2.2/Python/dynload_aix.c [157/183行][85%]
+break _PyImport_GetDynLoadFunc if strcmp(shortname, "_par2") == 0
+# break _PyImport_GetDynLoadFunc if strcmp(shortname, "_bisect") != 0 && \
+#                                   strcmp(shortname, "_heapq") != 0 && \
+#                                   strcmp(shortname, "time") != 0 && \
+#                                   strcmp(shortname, "math") != 0 && \
+#                                   strcmp(shortname, "_struct") != 0 && \
+#                                   strcmp(shortname, "_pickle") != 0
+
+run par2/test_par2.py _TestPar2.test_invalid_rank_matrix
+
+info break
+info sharedlibrary
+
+finish
+
+# 以下の実行結果を p p0 で確認できる。
+# p0 = _PyImport_GetDynLoadFunc(name, shortname, pathname, fp);
+# ここ以下より pypar2.c に対して break point を設定できる。
+# break Par2_new
+# break Par2_init
