@@ -19,41 +19,5 @@ class Par2_abstract(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def _mul_matrixes(self, matrix, inverse_matrix):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _make_square_matrix(self, value=None):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _make_gf_and_gfi(self):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _make_vandermonde_matrix(self):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _mul(self, a, b):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _div(self, a, b):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _pow(self, a, x):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _add(self, a, b):
-        raise NotImplementedError()
-
-    @abstractmethod
     def _solve_inverse_matrix(self, matrix):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _make_e_matrix(self):
         raise NotImplementedError()

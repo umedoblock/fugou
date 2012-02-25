@@ -8,26 +8,138 @@ from sys import modules
 import os
 import pickle
 
+try:
+    import _par2
+    from _par2 import _Par2
+    from _par2 import Par2Error
+
+except ImportError as e:
+    print('cannot import _Par2')
+    print('reason: ', e.args[0])
+    class Par2Error(BaseException):
+        pass
+
 from par2.const import *
 from par2.archive import *
 from par2.abst import Par2_abstract
 from par2.util import *
-
-def have_par2_c_extension():
-    return '_par2' in modules
 
 __all__ = [ \
     'Par2', 'Par2Error', \
     'Par2Archive', 'Par2ArchiveError'
 ]
 
+def have_par2_c_extension():
+    return '_par2' in modules
+
 pp = pprint.PrettyPrinter(indent=4)
+
+class ReedSolomon(object):
+
+    @classmethod
+    def get_reed_solomon(cls, bits):
+        return cls.rds[bits]
+
+    @classmethod
+    def BigBang(cls):
+        print('BigBang()')
+
+        if hasattr(cls, 'rds'):
+            return
+        cls.rds = {}
+
+      # /* bits      poly  octets   code_size */
+        dokkaan = (
+            ( 4,       19,      1,          2),
+            ( 8,      285,      1,          2),
+            (16,    65581,      2,          2),
+            (24, 16777243,      3,          4),
+        )
+
+        for bits, poly, octets, code_size in dokkaan:
+            rds = ReedSolomon(bits, poly, octets, code_size)
+            cls.rds[bits] = rds
+        print('BigBang() done.')
+
+    def __init__(self, bits, poly, octets, code_size):
+        self._init_attr(bits, poly, octets, code_size)
+        self._make_gf_and_gfi()
+
+    def _init_attr(self, bits, poly, octets, code_size):
+        self.bits = bits
+        self.poly = poly
+        self.octets = octets
+        self.code_size = code_size
+
+        self.w = 1 << self.bits
+        self.gf_max = self.w - 1
+        self.gf_size = self.w * self.code_size
+
+    def _make_gf_and_gfi(self):
+        path = 'gf_gfi_{}bits.pickle'.format(self.bits)
+        if os.path.exists(path):
+            print('os.path.exists({}) is True.'.format(path))
+            with open(path, 'rb') as f:
+                gf_gfi = pickle.load(f)
+                self.gf = gf_gfi['gf']
+                self.gfi = gf_gfi['gfi']
+            return
+
+        self.gf = [None] * self.w
+        self.gfi = [None] * self.w
+
+        bit_pattern = 1
+        for i in range(self.gf_max):
+            if bit_pattern & self.w:
+                bit_pattern ^= self.poly
+            self.gf[bit_pattern] = i
+            self.gfi[i] = bit_pattern
+            bit_pattern <<= 1
+
+        if not os.path.exists(path):
+            print('os.path.exists({}) is False.'.format(path))
+            with open(path, 'wb') as f:
+                gf_gfi = {}
+                gf_gfi['gf'] = self.gf
+                gf_gfi['gfi'] = self.gfi
+                pickle.dump(gf_gfi, f, pickle.HIGHEST_PROTOCOL)
+
+    def _mul(self, a, b):
+        if a == 0 or b == 0:
+            return 0
+      # print('a =', a, 'b =', b)
+        c = self.gf[a] + self.gf[b]
+        if c < self.gf_max:
+            return self.gfi[c]
+        return self.gfi[c - self.gf_max]
+
+    def _div(self, a, b):
+        if a == 0:
+            return 0
+        c = self.gf[a] - self.gf[b]
+        if c >= 0:
+            return self.gfi[c]
+        return self.gfi[c + self.gf_max]
+
+    def _add(self, a, b):
+        return a ^ b
+
+    def _pow(self, a, x):
+        if x == 0 or a == 1:
+            return 1
+        ret = a
+        for i in range(x - 1):
+            ret = self._mul(ret, a)
+        return ret
 
 class Par2_:
     C_EXTENSION = False
 
+    if not have_par2_c_extension():
+        ReedSolomon.BigBang()
+
     def _allocate_memory(self):
-        pass
+        self.rds = ReedSolomon.get_reed_solomon(self.bits)
 
     def _encode(self, parity_slots, data_slots, symbol_num):
         redundancy = self.redundancy
@@ -69,9 +181,9 @@ class Par2_:
             part = 0
             for i in range(self.redundancy):
               # print('_mul_matrix_vector() =', matrix[j], pari[i])
-                tmp = self._mul(matrix[j][i], pari[i])
+                tmp = self.rds._mul(matrix[j][i], pari[i])
               # print('_add({}, {})'.format(part, tmp))
-                part = self._add(part, tmp)
+                part = self.rds._add(part, tmp)
             answer[j] = part
 
     def _solve_inverse_matrix(self, matrix):
@@ -99,8 +211,8 @@ class Par2_:
             if matrix[k][k] != 1:
                 tmp = matrix[k][k]
                 for i in range(self.redundancy):
-                    matrix[k][i] = self._div(matrix[k][i], tmp)
-                    im[k][i] = self._div(im[k][i], tmp)
+                    matrix[k][i] = self.rds._div(matrix[k][i], tmp)
+                    im[k][i] = self.rds._div(im[k][i], tmp)
 
             for j in range(k + 1, self.redundancy):
                 foo = matrix[j][k]
@@ -108,14 +220,14 @@ class Par2_:
                     continue
                 for i in range(self.redundancy):
                     tmp1 = matrix[k][i]
-                    tmp2 = self._mul(foo, tmp1)
+                    tmp2 = self.rds._mul(foo, tmp1)
                     tmp3 = matrix[j][i]
-                    matrix[j][i] = self._add(tmp3, tmp2)
+                    matrix[j][i] = self.rds._add(tmp3, tmp2)
 
                     im1 = im[k][i]
-                    im2 = self._mul(foo, im1)
+                    im2 = self.rds._mul(foo, im1)
                     im3 = im[j][i]
-                    im[j][i] = self._add(im3, im2)
+                    im[j][i] = self.rds._add(im3, im2)
       # print('前進完了') # moving front done
 
         for k in range(self.redundancy - 1):
@@ -132,9 +244,9 @@ class Par2_:
               #     matrix[y][i] = self._add(tmp3, tmp2)
 
                     im1 = im[z][i]
-                    im2 = self._mul(foo, im1)
+                    im2 = self.rds._mul(foo, im1)
                     im3 = im[y][i]
-                    im[y][i] = self._add(im3, im2)
+                    im[y][i] = self.rds._add(im3, im2)
       # print()
 
         return inverse_matrix
@@ -147,8 +259,8 @@ class Par2_:
                 tmp = 0
                 # bb = [b[h][i] for h in range(self.redundancy)]
                 for k in range(self.redundancy):
-                    muled = self._mul(a[j][k], b[k][i])
-                    tmp = self._add(tmp, muled)
+                    muled = self.rds._mul(a[j][k], b[k][i])
+                    tmp = self.rds._add(tmp, muled)
                 answer[j][i] = tmp
         return answer
 
@@ -188,35 +300,6 @@ class Par2_:
       # self.view_matrix(e)
         return e
 
-    def _make_gf_and_gfi(self):
-        path = 'gf_gfi_{}bits.pickle'.format(self.bits)
-        if os.path.exists(path):
-          # print('os.path.exists({}) is True.'.format(path))
-            with open(path, 'rb') as f:
-                gf_gfi = pickle.load(f)
-                self.gf = gf_gfi['gf']
-                self.gfi = gf_gfi['gfi']
-            return
-
-        self.gf = [None] * self.w
-        self.gfi = [None] * self.w
-
-        bit_pattern = 1
-        for i in range(self.gf_max):
-            if bit_pattern & self.w:
-                bit_pattern ^= self.poly
-            self.gf[bit_pattern] = i
-            self.gfi[i] = bit_pattern
-            bit_pattern <<= 1
-
-        if not os.path.exists(path):
-          # print('os.path.exists({}) is False.'.format(path))
-            with open(path, 'wb') as f:
-                gf_gfi = {}
-                gf_gfi['gf'] = self.gf
-                gf_gfi['gfi'] = self.gfi
-                pickle.dump(gf_gfi, f, pickle.HIGHEST_PROTOCOL)
-
     def _make_vandermonde_matrix(self):
         vandermonde_matrix = [None] * self.redundancy
         vm = vandermonde_matrix
@@ -224,48 +307,9 @@ class Par2_:
         for j in range(1, self.redundancy):
             vm[j] = [None] * self.redundancy
             for i in range(self.redundancy):
-                vm[j][i] = self._mul(vm[j-1][i], i + 1)
+                vm[j][i] = self.rds._mul(vm[j-1][i], i + 1)
         self.vandermonde_matrix = vm
       # self.view_matrix(vm)
-
-    def _mul(self, a, b):
-        if a == 0 or b == 0:
-            return 0
-      # print('a =', a, 'b =', b)
-        c = self.gf[a] + self.gf[b]
-        if c < self.gf_max:
-            return self.gfi[c]
-        return self.gfi[c - self.gf_max]
-
-    def _div(self, a, b):
-        if a == 0:
-            return 0
-        c = self.gf[a] - self.gf[b]
-        if c >= 0:
-            return self.gfi[c]
-        return self.gfi[c + self.gf_max]
-
-    def _add(self, a, b):
-        return a ^ b
-
-    def _pow(self, a, x):
-        if x == 0 or a == 1:
-            return 1
-        ret = a
-        for i in range(x - 1):
-            ret = self._mul(ret, a)
-        return ret
-
-try:
-    import _par2
-    from _par2 import _Par2
-    from _par2 import Par2Error
-
-except ImportError as e:
-    print('cannot import _Par2')
-    print('reason: ', e.args[0])
-    class Par2Error(BaseException):
-        pass
 
 class Par2MixIn:
 
@@ -274,7 +318,7 @@ class Par2MixIn:
       # poly = {4: 25, 8: 361, 16: 87749, 24: 16777435}
         poly = {4: 19, 8: 285, 16: 65581, 24: 16777243}
         if not bits in poly:
-            raise RuntimeError("must chose 4, 8 or 16 for bits.")
+            raise Par2Error('must chose 4, 8, 16 or 24 for bits.')
 
         self.poly = poly[bits]
         self.bits = bits
@@ -297,7 +341,6 @@ class Par2MixIn:
         self.vertical_size = self.redundancy * self.octets
         code_size_ = {4: 2, 8: 2, 16: 2, 24: 4}
         self.code_size = code_size_[self.bits]
-        # 2 means sizeof(unsigned short)
         self.horizontal_size = self.code_size * self.redundancy
 
     def __init__(self, bits, redundancy):

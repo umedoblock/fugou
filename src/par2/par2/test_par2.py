@@ -92,6 +92,9 @@ class _TestPar2(unittest.TestCase):
                               format(redundancy), args[0])
 
     def test_mul_and_div(self):
+        if Par2.C_EXTENSION:
+            return
+
         dic = {\
             4: {'redundancy': 10, 'w': None, 'gf_max': None},
             8: {'redundancy': 100, 'w': None, 'gf_max': None},
@@ -106,11 +109,14 @@ class _TestPar2(unittest.TestCase):
             for a in range(w):
                 for n in range(gf_max):
                     b = n + 1
-                    mul = par2._mul(a, b)
-                    c = par2._div(mul, b)
+                    mul = par2.rds._mul(a, b)
+                    c = par2.rds._div(mul, b)
                     self.assertEqual(a, c)
 
     def test__pow(self):
+        if Par2.C_EXTENSION:
+            return
+
         redundancies = {4: 4, 8: 4}
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {24: 50}
@@ -122,7 +128,7 @@ class _TestPar2(unittest.TestCase):
             for j in range(par2.redundancy):
                 vm[j] = [None] * par2.redundancy
                 for i in range(par2.redundancy):
-                    vm[j][i] = par2._pow(i + 1, j)
+                    vm[j][i] = par2.rds._pow(i + 1, j)
 
             if Par2.C_EXTENSION:
                 _vm = par2._get_vandermonde_matrix()
