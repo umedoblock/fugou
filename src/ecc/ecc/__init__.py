@@ -4,8 +4,6 @@ try:
 except ImportError as e:
     print('cannot import _gcdext')
     print('reason: ', e.args[0])
-    class eccError(BaseException):
-        pass
 
 __all__ = [
     'EC', 'ECPoint', 'gcdext',
