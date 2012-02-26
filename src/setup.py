@@ -34,6 +34,9 @@ module_par2 = \
                         'par2/par2/libpar2.c'
                        ])
 
+module_gcdext = \
+    Extension('_gcdext', sources = ['ecc/ecc/_gcdext.c'])
+
 module_montgomery = \
     Extension('_montgomery', sources = ['montgomery/pymontgomery.c'])
 
@@ -62,4 +65,6 @@ setup(  name = 'fugou',
         author_email = 'umedoblock@gmail.com',
         url = 'empty',
         description = 'This is a gcdext() package',
-        ext_modules = [module_montgomery, module_camellia, module_par2])
+        ext_modules = [
+            module_montgomery, module_gcdext, module_camellia, module_par2
+        ])
