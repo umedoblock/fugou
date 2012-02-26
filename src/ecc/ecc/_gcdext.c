@@ -5,11 +5,20 @@ static PyObject *
 Py_gcdext(PyObject *self, PyObject *args)
 {
     PyObject *a = NULL, *b = NULL;
+    PyObject *gcd = Py_None, *x = Py_None, *y = Py_None;
 
     if (!PyArg_ParseTuple(args, "OO", &a, &b))
         return NULL;
 
-    Py_RETURN_NONE;
+fprintf(stderr, "a =\n");
+PyObject_Print(a, stderr, 0);
+fprintf(stderr, "\n");
+
+fprintf(stderr, "b =\n");
+PyObject_Print(b, stderr, 0);
+fprintf(stderr, "\n");
+
+    return PyTuple_Pack(3, gcd, x, y);
 }
 
 static PyMethodDef gcdext_methods[] = {
