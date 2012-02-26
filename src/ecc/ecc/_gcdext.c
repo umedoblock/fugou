@@ -11,21 +11,13 @@ Py_gcdext(PyObject *self, PyObject *args)
     PyObject *x2 = Py_None, *y2 = Py_None, *z2 = Py_None;
     PyObject *zero = Py_None, *one = Py_None, *tmp = Py_None;
     PyObject *div = Py_None, *div_ = Py_None, *div_z2 = Py_None;
-    int ret = -1, count = 0;
+    int ret = -1;
 
 #ifdef Py_REF_DEBUG
 fprintf(stderr, "_Py_RefTotal = %d gcdext() start.\n", _Py_GetRefTotal());
 #endif
     if (!PyArg_ParseTuple(args, "OO", &a, &b))
         return NULL;
-
-fprintf(stderr, "a =\n");
-PyObject_Print(a, stderr, 0);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "b =\n");
-PyObject_Print(b, stderr, 0);
-fprintf(stderr, "\n");
 
     zero = Py_BuildValue("i", 0);
     one = Py_BuildValue("i", 1);
@@ -43,31 +35,6 @@ fprintf(stderr, "\n");
     x1 = Py_BuildValue("i", 0);
     y1 = Py_BuildValue("i", 1);
     z1 = Py_BuildValue("O", b);
-
-fprintf(stderr, "gcd =\n");
-_PyObject_Dump(gcd);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "x =\n");
-_PyObject_Dump(x);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "y =\n");
-_PyObject_Dump(y);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "x1 =\n");
-_PyObject_Dump(x1);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "y1 =\n");
-_PyObject_Dump(y1);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "z1 =\n");
-_PyObject_Dump(z1);
-fprintf(stderr, "\n");
-fprintf(stderr, "------------------------------------------\n");
 
 /*
     while z1 > 0:
@@ -92,18 +59,6 @@ fprintf(stderr, "------------------------------------------\n");
         y2 = PyNumber_Subtract(y, div_);
         Py_DECREF(div_);
 
-fprintf(stderr, "div_z2 =\n");
-_PyObject_Dump(div_z2);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "div =\n");
-_PyObject_Dump(div);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "z2 =\n");
-_PyObject_Dump(z2);
-fprintf(stderr, "\n");
-
         Py_DECREF(div);
 
     /*  x, y, gcd = x1, y1, z1 */
@@ -111,8 +66,6 @@ fprintf(stderr, "\n");
         x = x1, y = y1, gcd = z1;
     /*  x1, y1, z1 = x2, y2, z2 */
         x1 = x2, y1 = y2, z1 = z2;
-
-        count++;
     }
     if (ret < 0)
         goto err;
@@ -157,24 +110,6 @@ err:
     Py_DECREF(z1);
     Py_DECREF(one);
     Py_DECREF(zero);
-
-fprintf(stderr, "gcd =\n");
-_PyObject_Dump(gcd);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "x =\n");
-_PyObject_Dump(x);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "y =\n");
-_PyObject_Dump(y);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "z1 =\n");
-_PyObject_Dump(z1);
-fprintf(stderr, "\n");
-
-fprintf(stderr, "count = %d\n", count);
 
 #ifdef Py_REF_DEBUG
 fprintf(stderr, "_Py_RefTotal = %d gcdext() done.\n", _Py_GetRefTotal());
