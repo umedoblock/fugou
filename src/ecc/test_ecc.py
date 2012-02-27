@@ -7,10 +7,10 @@ class TestECC(unittest.TestCase):
     def test_ecp_on_different_ec(self):
         ec0 = EC(2, -1, 7, 11)
         ec1 = EC(19, 77, 307, 331)
+        self.assertFalse(ec0 == ec1)
+
         ecp0 = ECPoint(3, 2, ec0)
         ecp1 = ECPoint(7, 89, ec1)
-
-        self.assertFalse(ec0 == ec1)
         with self.assertRaises(ECPointError) as raiz:
             ecp0 == ecp1
         message = '''
