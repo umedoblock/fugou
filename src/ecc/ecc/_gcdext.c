@@ -1,7 +1,7 @@
 #include "Python.h"
 #include "structmember.h"
 
-/* return (gcd, a, b), gcd = a * x - b * y */
+/* gcdext(a, b) return (gcd, x, y) that satisfy gcd = a * x - b * y */
 static PyObject *
 Py_gcdext(PyObject *self, PyObject *args)
 {
@@ -121,7 +121,8 @@ fprintf(stderr, "_Py_RefTotal = %d gcdext() done.\n", _Py_GetRefTotal());
 }
 
 static PyMethodDef gcdext_methods[] = {
-    {"gcdext", (PyCFunction )Py_gcdext, METH_VARARGS, "gcdext()"},
+    {"gcdext", (PyCFunction )Py_gcdext, METH_VARARGS,
+        "gcdext(a, b) return (gcd, x, y) that satisfy gcd = a * x - b * y"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
 
