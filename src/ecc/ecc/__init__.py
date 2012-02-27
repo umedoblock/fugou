@@ -130,8 +130,7 @@ class ECPoint(Point):
         return obj
 
     def __add__(self, other):
-        if self.ec != other.ec:
-            raise ECPointError('\n{} is not\n{}.'.format(self.ec, other.ec))
+        self._check_other_on_ec(other)
 
         if self.is_infinity or other.is_infinity:
             if self.is_infinity:
@@ -162,8 +161,7 @@ class ECPoint(Point):
         return ecp
 
     def __eq__(self, other):
-        if self.ec != other.ec:
-            raise ECPointError('\n{} is not\n{}.'.format(self.ec, other.ec))
+        self._check_other_on_ec(other)
 
         x_eq = (self.x % self.ec.prime) == (other.x % other.ec.prime)
         y_eq = (self.y % self.ec.prime) == (other.y % other.ec.prime)
@@ -181,6 +179,10 @@ class ECPoint(Point):
             return '0'
         else:
             return super().__str__()
+
+    def _check_other_on_ec(self, other):
+        if self.ec != other.ec:
+            raise ECPointError('\n{} is not\n{}.'.format(self.ec, other.ec))
 
 class ECPointError(BaseException):
     pass
