@@ -1,3 +1,8 @@
+# author: 梅どぶろく(umedoblock)
+# quote: 妖精現実フェアリアル
+# http://deztec.jp/x/05/faireal/23-index.html
+# Copyright 平成24年(2012)
+
 try:
     from _gcdext import gcdext
 
@@ -6,7 +11,8 @@ except ImportError as e:
     print('reason: ', e.args[0])
 
 __all__ = [
-    'EC', 'ECPoint', 'gcdext',
+    'Point', 'EC', 'ECPoint', 'gcdext',
+    'ECPointError'
 ]
 
 from sys import modules
@@ -42,17 +48,58 @@ if not have_gcdext_c_extension():
 
         return gcd, x, y
 
-class EC(object):
-    def __init__(self, g, p, a, b):
-        self.g = g
-        self.p = p
-        self.a = a
-        self.b = b
-class ECPoint(object):
-    def __init__(self, ec, x, y):
-        self.ec = ec
+class Point(object):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    def is_on(self, ec):
+        return ec.exists_with(self)
+
+    def constructs(self, ec):
+        return ec.exists_with(self)
+
+    def __str__(self):
+        return '({}, {})'.format(self.x, self.y)
+
+class EC(object):
+    def __init__(self, a, b, prime, order):
+        self.a = a
+        self.b = b
+        self.prime = prime
+        self.order = order
+
+    def exists_with(self, point):
+        left = point.y ** 2
+        right = point.x ** 3 + self.a * point.x + self.b
+        left %= self.prime
+        right %= self.prime
+        return left == right
+
+    def __str__(self):
+        if self.a > 0:
+            sign_a = '+'
+        else:
+            sign_a = '-'
+        abs_a = abs(self.a)
+        if self.b > 0:
+            sign_b = '+'
+        else:
+            sign_b = '-'
+        abs_b = abs(self.b)
+
+        a = '{} {} * x'.format(sign_a, abs_a)
+        b = '{} {}'.format(sign_b, abs_b)
+
+        return 'y ^ 2 = x ^ 3 {} {} (mod {})'.format(a, b, self.prime)
+
+class ECPoint(Point):
+    def __init__(point, x, y, ec):
+        super().__init__(x, y)
+        if ec.exists_with(point):
+            point.ec = ec
+        else:
+            raise ECPointError('{} is not on {}.'.format(point, ec))
 
     def __rmul__(self, other):
         print('__rmul2__({}, {})'.format(id(self), id(other)))
@@ -73,9 +120,16 @@ class ECPoint(object):
 
     def __add__(self, other):
         print('__add__({}, {})'.format(id(self), id(other)))
-        x = self.x + other.x
-        y = self.y + other.y
-        obj = Point(x, y)
+        x1, y1 = self.x, self.y
+        x2, y2 = other.x, other.y
+
+        if self == other:
+            lmd = (3 * (x1 ^ 2) + self.ec.a) * 2 * (y1 ^ -1)
+        else:
+            lmd = (y2 - y1) * ((x2 - x1) ^ -1)
+        x3 = lmd ^ 2 - x1 - x2
+        y3 = lmd * (x1 - x3) - y1
+
         return obj
 
     def __iadd__(self, other):
@@ -84,8 +138,8 @@ class ECPoint(object):
         self.y += other.y
         return self
 
-    def __str__(self):
-        return '(x, y) = ({}, {})'.format(self.x, self.y)
+class ECPointError(BaseException):
+    pass
 
 if __name__ == '__main__':
     p0 = Point(1, 2)

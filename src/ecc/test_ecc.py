@@ -1,9 +1,51 @@
 # Copyright 2011 梅どぶろく(umedoblock)
 import unittest
 
-from ecc import gcdext
+from ecc import *
 
 class TestECC(unittest.TestCase):
+    def test_ec(self):
+        ec = EC(2, -1, 7, 49)
+        self.assertEqual(2, ec.a)
+        self.assertEqual(-1, ec.b)
+        self.assertEqual(7, ec.prime)
+        self.assertEqual(49, ec.order)
+
+    def test_ec_and_points(self):
+        ec = EC(2, -1, 7, 49)
+        p0 = Point(1, 3)
+        p1 = Point(5, 6)
+
+        ecp = ECPoint(4, 1, ec)
+        self.assertTrue(ecp)
+
+        self.assertTrue(ec.exists_with(p0))
+        self.assertTrue(ec.exists_with(p1))
+
+        self.assertTrue(p0.constructs(ec))
+        self.assertTrue(p1.constructs(ec))
+        self.assertTrue(p0.is_on(ec))
+        self.assertTrue(p1.is_on(ec))
+
+    def test_ec_and_points_not_relate(self):
+        ec = EC(2, -1, 7, 49)
+        p0 = Point(0, 0)
+        p1 = Point(1, 1)
+
+        with self.assertRaises(ECPointError) as raiz:
+            ECPoint(0, 0, ec)
+        args = raiz.exception.args
+        message = '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7).'
+        self.assertEqual(message, args[0])
+
+        self.assertFalse(ec.exists_with(p0))
+        self.assertFalse(ec.exists_with(p1))
+
+        self.assertFalse(p0.constructs(ec))
+        self.assertFalse(p1.constructs(ec))
+        self.assertFalse(p0.is_on(ec))
+        self.assertFalse(p1.is_on(ec))
+
     def test_gcdext(self):
         a, b = 5, 7
         gcd, x, y = gcdext(a, b)
