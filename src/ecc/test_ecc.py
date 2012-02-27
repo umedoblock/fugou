@@ -46,6 +46,28 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         self.assertEqual(expected_ecp, ecp01)
         self.assertEqual(expected_ecp, ecp10)
 
+    def test_ec_point_at_infinity(self):
+        ec = EC(2, -1, 7, 11)
+        ecp0 = ECPoint(1, 3, ec)
+        ecp1 = ECPoint(1, 4, ec)
+
+        added_ecp = ecp0 + ecp1
+        self.assertTrue(added_ecp.is_infinity)
+        self.assertEqual('0', str(added_ecp))
+
+        point_at_infinity = ECPoint(0, 0, ec, is_infinity=True)
+
+        ecp2 = ecp0 + point_at_infinity
+        self.assertEqual(ecp0, ecp2)
+
+        ecp3 = point_at_infinity + ecp1
+        self.assertEqual(ecp1, ecp3)
+
+        point_at_infinity2 = ECPoint(0, 0, ec, is_infinity=True)
+        added_infinity = point_at_infinity + point_at_infinity2
+        self.assertTrue(added_infinity.is_infinity)
+        self.assertEqual(point_at_infinity2, added_infinity)
+
     def test_ec(self):
         ec = EC(2, -1, 7, 11)
         self.assertEqual(2, ec.a)

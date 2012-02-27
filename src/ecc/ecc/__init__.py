@@ -62,6 +62,7 @@ class Point(object):
         return '({}, {})'.format(self.x, self.y)
 
 class EC(object):
+
     def __init__(self, a, b, prime, order):
         self.a = a
         self.b = b
@@ -102,11 +103,13 @@ class EC(object):
             return False
 
 class ECPoint(Point):
-    def __init__(point, x, y, ec):
+    def __init__(point, x, y, ec, is_infinity=False):
         super().__init__(x, y)
-        if ec.exists_with(point):
+        if is_infinity or ec.exists_with(point):
             point.ec = ec
+            point.is_infinity = is_infinity
         else:
+            point.is_infinity = False
             raise ECPointError('{} is not on {}.'.format(point, ec))
 
     def __rmul__(self, other):
@@ -127,12 +130,25 @@ class ECPoint(Point):
         return obj
 
     def __add__(self, other):
+        if self.ec != other.ec:
+            raise ECPointError('\n{} is not\n{}.'.format(self.ec, other.ec))
+
+        if self.is_infinity or other.is_infinity:
+            if self.is_infinity:
+                point = other
+            else:
+                point = self
+            return ECPoint(point.x, point.y, point.ec, point.is_infinity)
+
         x1, y1 = self.x, self.y
         x2, y2 = other.x, other.y
-
         if self == other:
             gcd, double_y1_inv, _n = gcdext(2 * y1, self.ec.prime)
             lmd = (3 * (x1 ** 2) + self.ec.a) * double_y1_inv
+        elif x1 == x2:
+            # not equal to y1 and y2
+            point_at_infinity = ECPoint(0, 0, self.ec, is_infinity=True)
+            return point_at_infinity
         else:
             gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.ec.prime)
             lmd = (y2 - y1) * x2_x1_inv
@@ -159,6 +175,12 @@ class ECPoint(Point):
         self.x += other.x
         self.y += other.y
         return self
+
+    def __str__(self):
+        if self.is_infinity:
+            return '0'
+        else:
+            return super().__str__()
 
 class ECPointError(BaseException):
     pass
