@@ -74,6 +74,26 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         self.assertTrue(added_infinity.is_infinity)
         self.assertEqual(point_at_infinity2, added_infinity)
 
+    def test_calc_pair_of_xy(self):
+        ec = EC(2, -1, 7, 11)
+
+        x, y = ec.calc_pair_of_xy(x=2)
+        # print('x, y =', x, y)
+        self.assertEqual((2, 2), (x, y))
+
+        x, y = ec.calc_pair_of_xy(x=5)
+        # print('x, y =', x, y)
+        self.assertEqual((5, 1), (x, y))
+
+        x, y = ec.calc_pair_of_xy(y=4)
+        self.assertEqual((1, 4), (x, y))
+
+        x, y = ec.calc_pair_of_xy(y=6)
+        self.assertEqual((4, 6), (x, y))
+
+        p = ec.calc_pair_of_xy(y=0)
+        self.assertFalse(p)
+
     def test_ec(self):
         ec = EC(2, -1, 7, 11)
         self.assertEqual(2, ec.a)

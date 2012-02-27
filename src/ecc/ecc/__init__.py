@@ -3,6 +3,8 @@
 #          : Elliptic curve       http://en.wikipedia.org/wiki/Elliptic_curve
 # Copyright 平成24年(2012)
 
+import math
+
 try:
     from _gcdext import gcdext
 
@@ -65,6 +67,7 @@ class Point(object):
 class EC(object):
 
     def __init__(self, a, b, prime, order):
+        ''' y ^ 2 = x ^ 3 + a * x + b (mod prime).'''
         self.a = a
         self.b = b
         self.prime = prime
@@ -76,6 +79,36 @@ class EC(object):
         left %= self.prime
         right %= self.prime
         return left == right
+
+    def calc_pair_of_xy(self, x=None, y=None):
+        on_curve = False
+      # y ^ 2 = x ^ 3 + a * x + b (mod prime).
+        if x is not None:
+            # y ^ 2 = x ^ 3 + a * x + b
+            y_square = (x ** 3 + self.a * x + self.b) % self.prime
+            y_ = int(math.sqrt(y_square))
+            if y_square == (y_ ** 2) % self.prime:
+                y = y_
+                tup = (x, y)
+            else:
+                tup = None
+        elif y is not None:
+            # x ^ 3 + a * x = y ^ 2 - b
+            # x * (x ^ 2 + a) = y ^ 2 - b
+            y2_b = y ** 2 - self.b
+            equal = False
+            for x in range(self.prime):
+                left = x * (x ** 2 + self.a)
+                if left % self.prime == y2_b % self.prime:
+                    equal = True
+                    break;
+            if not equal:
+                tup = None
+            else:
+                tup = (x, y)
+        else:
+            raise ECPointError('x and y are None.')
+        return tup
 
     def __str__(self):
         if self.a > 0:
