@@ -55,6 +55,12 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         self.assertTrue(added_ecp.is_infinity)
         self.assertEqual('0', str(added_ecp))
 
+        with self.assertRaises(ECPointError) as raiz:
+            ECPoint(0, 0, ec)
+        args = raiz.exception.args
+        message = '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7).'
+        self.assertEqual(message, args[0])
+
         point_at_infinity = ECPoint(0, 0, ec, is_infinity=True)
 
         ecp2 = ecp0 + point_at_infinity
