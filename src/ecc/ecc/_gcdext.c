@@ -103,6 +103,9 @@ err:
     }
     else {
         tup = PyTuple_Pack(3, gcd, x, y);
+        Py_DECREF(gcd);
+        Py_DECREF(x);
+        Py_DECREF(y);
     }
 
     Py_DECREF(x1);
