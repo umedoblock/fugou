@@ -1,6 +1,5 @@
 # author: 梅どぶろく(umedoblock)
-# quote: 妖精現実フェアリアル
-# http://deztec.jp/x/05/faireal/23-index.html
+# reference: 妖精現実フェアリアル http://deztec.jp/x/05/faireal/23-index.html
 # Copyright 平成24年(2012)
 
 try:
@@ -93,6 +92,15 @@ class EC(object):
 
         return 'y ^ 2 = x ^ 3 {} {} (mod {})'.format(a, b, self.prime)
 
+    def __eq__(self, other):
+        if  self.a == other.a and \
+            self.b == other.b and \
+            self.prime == other.prime and \
+            self.order == other.order:
+            return True
+        else:
+            return False
+
 class ECPoint(Point):
     def __init__(point, x, y, ec):
         super().__init__(x, y)
@@ -119,18 +127,32 @@ class ECPoint(Point):
         return obj
 
     def __add__(self, other):
-        print('__add__({}, {})'.format(id(self), id(other)))
         x1, y1 = self.x, self.y
         x2, y2 = other.x, other.y
 
         if self == other:
-            lmd = (3 * (x1 ^ 2) + self.ec.a) * 2 * (y1 ^ -1)
+            gcd, double_y1_inv, _n = gcdext(2 * y1, self.ec.prime)
+            lmd = (3 * (x1 ** 2) + self.ec.a) * double_y1_inv
         else:
-            lmd = (y2 - y1) * ((x2 - x1) ^ -1)
-        x3 = lmd ^ 2 - x1 - x2
+            gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.ec.prime)
+            lmd = (y2 - y1) * x2_x1_inv
+        x3 = lmd ** 2 - x1 - x2
         y3 = lmd * (x1 - x3) - y1
+        x3 %= self.ec.prime
+        y3 %= self.ec.prime
 
-        return obj
+        ecp = ECPoint(x3, y3, self.ec)
+
+        return ecp
+
+    def __eq__(self, other):
+        if self.ec != other.ec:
+            raise ECPointError('\n{} is not\n{}.'.format(self.ec, other.ec))
+
+        x_eq = (self.x % self.ec.prime) == (other.x % other.ec.prime)
+        y_eq = (self.y % self.ec.prime) == (other.y % other.ec.prime)
+
+        return x_eq and y_eq
 
     def __iadd__(self, other):
         print('__iadd__({}, {})'.format(id(self), id(other)))
