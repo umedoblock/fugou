@@ -5,6 +5,8 @@
 
 import math
 
+from . import collect_primes
+
 try:
     from _gcdext import gcdext
 
@@ -76,6 +78,9 @@ class Point(Line):
     def constructs(self, ecc):
         return ecc.exists_with(self)
 
+    def __repr__(self):
+        return '({}, {})'.format(self.x, self.y)
+
     def __str__(self):
         return '({}, {})'.format(self.x, self.y)
 
@@ -131,7 +136,7 @@ class EC(object):
 
 class ECC(EC):
 
-    def __init__(self, a, b, prime, order):
+    def __init__(self, a, b, prime, order=0):
         ''' y ^ 2 = x ^ 3 + a * x + b (mod prime).'''
         super().__init__(a, b)
         self.prime = prime
@@ -144,6 +149,22 @@ class ECC(EC):
         left %= self.prime
         right %= self.prime
         return left == right
+
+    def calc_order(self):
+        order = 0
+        for y in range(self.prime):
+            for x in range(self.prime):
+                point = Point(x, y)
+                if self.exists_with(point):
+                    order += 1
+        # for point at infinity
+        order += 1
+        if not collect_primes.is_prime(order):
+            raise RuntimeWarning(('order(={}) '
+                                  'is not prime number.').format(order))
+        self.order = order
+
+        return order
 
     def collect_all_points(self):
         points = []

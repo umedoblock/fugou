@@ -75,9 +75,23 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
         self.assertTrue(added_infinity.isinf())
         self.assertEqual(point_at_infinity2, added_infinity)
 
+    def test_calc_order(self):
+        ecc = ECC(19, 77, 307)
+        self.assertEqual(0, ecc.order)
+
+        order = ecc.calc_order()
+
+        self.assertEqual(331, order)
+        self.assertEqual(331, ecc.order)
+      # print(ecc.collect_all_points())
+
     def test_calc_all_pair_of_xy(self):
-        ecc = ECC(2, -1, 7, 11)
+        ecc = ECC(2, -1, 7)
+        self.assertEqual(0, ecc.order)
+
         points = ecc.collect_all_points()
+
+        self.assertFalse(0, ecc.order)
         self.assertEqual(11, len(points))
         expected_points = frozenset([
             ECCPoint(0, 0, ecc, is_infinity=True),
