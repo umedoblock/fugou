@@ -14,8 +14,8 @@ class TestECC(unittest.TestCase):
         with self.assertRaises(ECCPointError) as raiz:
             eccp0 == eccp1
         message = '''
-y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7) is not
-y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
+y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11) is not
+y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
         args = raiz.exception.args
         self.assertEqual(message, args[0])
 
@@ -46,7 +46,7 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         self.assertEqual(expected_eccp, eccp01)
         self.assertEqual(expected_eccp, eccp10)
 
-    def test_ec_point_at_infinity(self):
+    def test_ecc_point_at_infinity(self):
         ecc = ECC(2, -1, 7, 11)
         eccp0 = ECCPoint(1, 3, ecc)
         eccp1 = ECCPoint(1, 4, ecc)
@@ -58,7 +58,8 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         with self.assertRaises(ECCPointError) as raiz:
             ECCPoint(0, 0, ecc)
         args = raiz.exception.args
-        message = '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7).'
+        message = \
+            '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
         self.assertEqual(message, args[0])
 
         point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
@@ -113,14 +114,16 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         p = ecc.calc_pair_of_xy(y=0)
         self.assertFalse(p)
 
-    def test_ec(self):
+    def test_ecc(self):
         ecc = ECC(2, -1, 7, 11)
         self.assertEqual(2, ecc.a)
         self.assertEqual(-1, ecc.b)
         self.assertEqual(7, ecc.prime)
         self.assertEqual(11, ecc.order)
+        self.assertEqual('y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11)', \
+                         str(ecc))
 
-    def test_ec_and_points(self):
+    def test_ecc_and_points(self):
         ecc = ECC(2, -1, 7, 11)
         p0 = Point(1, 3)
         p1 = Point(5, 6)
@@ -136,7 +139,7 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         eccp = ECCPoint(4, 1, ecc)
         self.assertTrue(eccp)
 
-    def test_ec_and_points_not_relate(self):
+    def test_ecc_and_points_not_relate(self):
         ecc = ECC(2, -1, 7, 11)
         p0 = Point(0, 0)
 
@@ -147,7 +150,8 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         with self.assertRaises(ECCPointError) as raiz:
             ECCPoint(0, 0, ecc)
         args = raiz.exception.args
-        message = '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7).'
+        message = \
+            '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
         self.assertEqual(message, args[0])
 
     def test_gcdext(self):

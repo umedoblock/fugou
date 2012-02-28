@@ -75,6 +75,23 @@ class EC(object):
         right = point.x ** 3 + self.a * point.x + self.b
         return left == right
 
+    def __str__(self):
+        if self.a > 0:
+            sign_a = '+'
+        else:
+            sign_a = '-'
+        abs_a = abs(self.a)
+        if self.b > 0:
+            sign_b = '+'
+        else:
+            sign_b = '-'
+        abs_b = abs(self.b)
+
+        a = '{} {} * x'.format(sign_a, abs_a)
+        b = '{} {}'.format(sign_b, abs_b)
+
+        return 'y ^ 2 = x ^ 3 {} {}'.format(a, b)
+
 class ECC(EC):
 
     def __init__(self, a, b, prime, order):
@@ -135,21 +152,9 @@ class ECC(EC):
         return tup
 
     def __str__(self):
-        if self.a > 0:
-            sign_a = '+'
-        else:
-            sign_a = '-'
-        abs_a = abs(self.a)
-        if self.b > 0:
-            sign_b = '+'
-        else:
-            sign_b = '-'
-        abs_b = abs(self.b)
+        ss = super().__str__()
 
-        a = '{} {} * x'.format(sign_a, abs_a)
-        b = '{} {}'.format(sign_b, abs_b)
-
-        return 'y ^ 2 = x ^ 3 {} {} (mod {})'.format(a, b, self.prime)
+        return ss + ' (mod {}, order {})'.format(self.prime, self.order)
 
     def __eq__(self, other):
         if  self.a == other.a and \
