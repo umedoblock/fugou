@@ -52,8 +52,8 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         ecp1 = ECPoint(1, 4, ec)
 
         added_ecp = ecp0 + ecp1
-        self.assertTrue(added_ecp.is_infinity)
-        self.assertEqual('0', str(added_ecp))
+        self.assertTrue(added_ecp.isinf())
+        self.assertEqual('(inf, inf)', str(added_ecp))
 
         with self.assertRaises(ECPointError) as raiz:
             ECPoint(0, 0, ec)
@@ -71,8 +71,27 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
 
         point_at_infinity2 = ECPoint(0, 0, ec, is_infinity=True)
         added_infinity = point_at_infinity + point_at_infinity2
-        self.assertTrue(added_infinity.is_infinity)
+        self.assertTrue(added_infinity.isinf())
         self.assertEqual(point_at_infinity2, added_infinity)
+
+    def test_calc_all_pair_of_xy(self):
+        ec = EC(2, -1, 7, 11)
+        points = ec.collect_all_points()
+        self.assertEqual(11, len(points))
+        expected_points = frozenset([
+            ECPoint(0, 0, ec, is_infinity=True),
+            ECPoint(1, 3, ec),
+            ECPoint(1, 4, ec),
+            ECPoint(2, 2, ec),
+            ECPoint(2, 5, ec),
+            ECPoint(3, 2, ec),
+            ECPoint(3, 5, ec),
+            ECPoint(4, 1, ec),
+            ECPoint(4, 6, ec),
+            ECPoint(5, 1, ec),
+            ECPoint(5, 6, ec),
+        ])
+        self.assertEqual(expected_points, points)
 
     def test_calc_pair_of_xy(self):
         ec = EC(2, -1, 7, 11)

@@ -80,6 +80,19 @@ class EC(object):
         right %= self.prime
         return left == right
 
+    def collect_all_points(self):
+        points = []
+        for y in range(self.prime):
+            for x in range(self.prime):
+                point = Point(x, y)
+                if self.exists_with(point):
+                    ecp = ECPoint(point.x, point.y, self)
+                    points.append(ecp)
+        point_at_infinity = ECPoint(0, 0, self, is_infinity=True)
+        points.append(point_at_infinity)
+
+        return frozenset(points)
+
     def calc_pair_of_xy(self, x=None, y=None):
         on_curve = False
       # y ^ 2 = x ^ 3 + a * x + b (mod prime).
@@ -141,10 +154,12 @@ class ECPoint(Point):
         super().__init__(x, y)
         if is_infinity or ec.exists_with(point):
             point.ec = ec
-            point.is_infinity = is_infinity
+            point._is_infinity = is_infinity
         else:
-            point.is_infinity = False
+            point._is_infinity = False
             raise ECPointError('{} is not on {}.'.format(point, ec))
+        if is_infinity:
+            point.x = point.y = float('inf')
 
     def __rmul__(self, other):
         print('__rmul2__({}, {})'.format(id(self), id(other)))
@@ -166,12 +181,12 @@ class ECPoint(Point):
     def __add__(self, other):
         self._check_other_on_ec(other)
 
-        if self.is_infinity or other.is_infinity:
-            if self.is_infinity:
+        if self._is_infinity or other._is_infinity:
+            if self._is_infinity:
                 point = other
             else:
                 point = self
-            return ECPoint(point.x, point.y, point.ec, point.is_infinity)
+            return ECPoint(point.x, point.y, point.ec, point.isinf())
 
         x1, y1 = self.x, self.y
         x2, y2 = other.x, other.y
@@ -197,10 +212,22 @@ class ECPoint(Point):
     def __eq__(self, other):
         self._check_other_on_ec(other)
 
+        if self.isinf() and other.isinf():
+            return True
+        elif self.isinf() != other.isinf():
+            return False
+
         x_eq = (self.x % self.ec.prime) == (other.x % other.ec.prime)
         y_eq = (self.y % self.ec.prime) == (other.y % other.ec.prime)
 
         return x_eq and y_eq
+
+    def __hash__(self):
+        if self.isinf():
+            return -1
+        else:
+            value = self.ec.prime * self.y + self.x
+            return value
 
     def __iadd__(self, other):
         print('__iadd__({}, {})'.format(id(self), id(other)))
@@ -208,11 +235,8 @@ class ECPoint(Point):
         self.y += other.y
         return self
 
-    def __str__(self):
-        if self.is_infinity:
-            return '0'
-        else:
-            return super().__str__()
+    def isinf(self):
+        return self._is_infinity
 
     def _check_other_on_ec(self, other):
         if self.ec != other.ec:
