@@ -1,6 +1,6 @@
 # author: 梅どぶろく(umedoblock)
-# reference: 妖精現実フェアリアル http://deztec.jp/x/05/faireal/23-index.html
-#          : Elliptic curve       http://en.wikipedia.org/wiki/Elliptic_curve
+# references: 妖精現実フェアリアル http://deztecc.jp/x/05/faireal/23-index.html
+#           : Elliptic curve       http://en.wikipedia.org/wiki/Elliptic_curve
 # Copyright 平成24年(2012)
 
 import math
@@ -13,8 +13,8 @@ except ImportError as e:
     print('reason: ', e.args[0])
 
 __all__ = [
-    'Point', 'EC', 'ECPoint', 'gcdext',
-    'ECPointError'
+    'Point', 'ECC', 'ECCPoint', 'gcdext',
+    'ECCPointError'
 ]
 
 from sys import modules
@@ -55,27 +55,38 @@ class Point(object):
         self.x = x
         self.y = y
 
-    def is_on(self, ec):
-        return ec.exists_with(self)
+    def is_on(self, ecc):
+        return ecc.exists_with(self)
 
-    def constructs(self, ec):
-        return ec.exists_with(self)
+    def constructs(self, ecc):
+        return ecc.exists_with(self)
 
     def __str__(self):
         return '({}, {})'.format(self.x, self.y)
 
 class EC(object):
+    def __init__(self, a, b):
+        ''' y ^ 2 = x ^ 3 + a * x + b.'''
+        self.a = a
+        self.b = b
+
+    def exists_with(self, point):
+        left = point.y ** 2
+        right = point.x ** 3 + self.a * point.x + self.b
+        return left == right
+
+class ECC(EC):
 
     def __init__(self, a, b, prime, order):
         ''' y ^ 2 = x ^ 3 + a * x + b (mod prime).'''
-        self.a = a
-        self.b = b
+        super().__init__(a, b)
         self.prime = prime
         self.order = order
 
     def exists_with(self, point):
         left = point.y ** 2
-        right = point.x ** 3 + self.a * point.x + self.b
+        powm_x_3 = pow(point.x, 3, self.prime)
+        right = powm_x_3 + self.a * point.x + self.b
         left %= self.prime
         right %= self.prime
         return left == right
@@ -86,9 +97,9 @@ class EC(object):
             for x in range(self.prime):
                 point = Point(x, y)
                 if self.exists_with(point):
-                    ecp = ECPoint(point.x, point.y, self)
-                    points.append(ecp)
-        point_at_infinity = ECPoint(0, 0, self, is_infinity=True)
+                    eccp = ECCPoint(point.x, point.y, self)
+                    points.append(eccp)
+        point_at_infinity = ECCPoint(0, 0, self, is_infinity=True)
         points.append(point_at_infinity)
 
         return frozenset(points)
@@ -120,7 +131,7 @@ class EC(object):
             else:
                 tup = (x, y)
         else:
-            raise ECPointError('x and y are None.')
+            raise ECCPointError('x and y are None.')
         return tup
 
     def __str__(self):
@@ -149,15 +160,15 @@ class EC(object):
         else:
             return False
 
-class ECPoint(Point):
-    def __init__(point, x, y, ec, is_infinity=False):
+class ECCPoint(Point):
+    def __init__(point, x, y, ecc, is_infinity=False):
         super().__init__(x, y)
-        if is_infinity or ec.exists_with(point):
-            point.ec = ec
+        if is_infinity or ecc.exists_with(point):
+            point.ecc = ecc
             point._is_infinity = is_infinity
         else:
             point._is_infinity = False
-            raise ECPointError('{} is not on {}.'.format(point, ec))
+            raise ECCPointError('{} is not on {}.'.format(point, ecc))
         if is_infinity:
             point.x = point.y = float('inf')
 
@@ -186,28 +197,28 @@ class ECPoint(Point):
                 point = other
             else:
                 point = self
-            return ECPoint(point.x, point.y, point.ec, point.isinf())
+            return ECCPoint(point.x, point.y, point.ecc, point.isinf())
 
         x1, y1 = self.x, self.y
         x2, y2 = other.x, other.y
         if self == other:
-            gcd, double_y1_inv, _n = gcdext(2 * y1, self.ec.prime)
-            lmd = (3 * (x1 ** 2) + self.ec.a) * double_y1_inv
+            gcd, double_y1_inv, _n = gcdext(2 * y1, self.ecc.prime)
+            lmd = (3 * (x1 ** 2) + self.ecc.a) * double_y1_inv
         elif x1 == x2:
             # not equal to y1 and y2
-            point_at_infinity = ECPoint(0, 0, self.ec, is_infinity=True)
+            point_at_infinity = ECCPoint(0, 0, self.ecc, is_infinity=True)
             return point_at_infinity
         else:
-            gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.ec.prime)
+            gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.ecc.prime)
             lmd = (y2 - y1) * x2_x1_inv
         x3 = lmd ** 2 - x1 - x2
         y3 = lmd * (x1 - x3) - y1
-        x3 %= self.ec.prime
-        y3 %= self.ec.prime
+        x3 %= self.ecc.prime
+        y3 %= self.ecc.prime
 
-        ecp = ECPoint(x3, y3, self.ec)
+        eccp = ECCPoint(x3, y3, self.ecc)
 
-        return ecp
+        return eccp
 
     def __eq__(self, other):
         self._check_other_on_ec(other)
@@ -217,8 +228,8 @@ class ECPoint(Point):
         elif self.isinf() != other.isinf():
             return False
 
-        x_eq = (self.x % self.ec.prime) == (other.x % other.ec.prime)
-        y_eq = (self.y % self.ec.prime) == (other.y % other.ec.prime)
+        x_eq = (self.x % self.ecc.prime) == (other.x % other.ecc.prime)
+        y_eq = (self.y % self.ecc.prime) == (other.y % other.ecc.prime)
 
         return x_eq and y_eq
 
@@ -226,7 +237,7 @@ class ECPoint(Point):
         if self.isinf():
             return -1
         else:
-            value = self.ec.prime * self.y + self.x
+            value = self.ecc.prime * self.y + self.x
             return value
 
     def __iadd__(self, other):
@@ -239,10 +250,10 @@ class ECPoint(Point):
         return self._is_infinity
 
     def _check_other_on_ec(self, other):
-        if self.ec != other.ec:
-            raise ECPointError('\n{} is not\n{}.'.format(self.ec, other.ec))
+        if self.ecc != other.ecc:
+            raise ECCPointError('\n{} is not\n{}.'.format(self.ecc, other.ecc))
 
-class ECPointError(BaseException):
+class ECCPointError(BaseException):
     pass
 
 if __name__ == '__main__':

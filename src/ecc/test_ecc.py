@@ -4,148 +4,148 @@ import unittest
 from ecc import *
 
 class TestECC(unittest.TestCase):
-    def test_ecp_on_different_ec(self):
-        ec0 = EC(2, -1, 7, 11)
-        ec1 = EC(19, 77, 307, 331)
-        self.assertFalse(ec0 == ec1)
+    def test_eccp_on_different_ec(self):
+        ecc0 = ECC(2, -1, 7, 11)
+        ecc1 = ECC(19, 77, 307, 331)
+        self.assertFalse(ecc0 == ecc1)
 
-        ecp0 = ECPoint(3, 2, ec0)
-        ecp1 = ECPoint(7, 89, ec1)
-        with self.assertRaises(ECPointError) as raiz:
-            ecp0 == ecp1
+        eccp0 = ECCPoint(3, 2, ecc0)
+        eccp1 = ECCPoint(7, 89, ecc1)
+        with self.assertRaises(ECCPointError) as raiz:
+            eccp0 == eccp1
         message = '''
 y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7) is not
 y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307).'''
         args = raiz.exception.args
         self.assertEqual(message, args[0])
 
-    def test_ecp_add_same_point(self):
-        ec = EC(2, -1, 7, 11)
-        ecp = ECPoint(1, 3, ec)
+    def test_eccp_add_same_point(self):
+        ecc = ECC(2, -1, 7, 11)
+        eccp = ECCPoint(1, 3, ecc)
 
-        double_ecp = ecp + ecp
-        self.assertTrue(double_ecp.constructs(ec))
+        double_eccp = eccp + eccp
+        self.assertTrue(double_eccp.constructs(ecc))
 
-        expected_ecp = ECPoint(2, 2, ec)
-        self.assertEqual(expected_ecp, double_ecp)
+        expected_eccp = ECCPoint(2, 2, ecc)
+        self.assertEqual(expected_eccp, double_eccp)
 
-    def test_ecp_add(self):
-        ec = EC(2, -1, 7, 11)
-        ecp0 = ECPoint(3, 2, ec)
-        ecp1 = ECPoint(4, 6, ec)
+    def test_eccp_add(self):
+        ecc = ECC(2, -1, 7, 11)
+        eccp0 = ECCPoint(3, 2, ecc)
+        eccp1 = ECCPoint(4, 6, ecc)
 
-        ecp01 = ecp0 + ecp1
-        self.assertTrue(ecp01.constructs(ec))
+        eccp01 = eccp0 + eccp1
+        self.assertTrue(eccp01.constructs(ecc))
 
-        ecp10 = ecp1 + ecp0
-        self.assertTrue(ecp10.constructs(ec))
+        eccp10 = eccp1 + eccp0
+        self.assertTrue(eccp10.constructs(ecc))
 
-        self.assertEqual(ecp01, ecp10)
+        self.assertEqual(eccp01, eccp10)
 
-        expected_ecp = ECPoint(2, 2, ec)
-        self.assertEqual(expected_ecp, ecp01)
-        self.assertEqual(expected_ecp, ecp10)
+        expected_eccp = ECCPoint(2, 2, ecc)
+        self.assertEqual(expected_eccp, eccp01)
+        self.assertEqual(expected_eccp, eccp10)
 
     def test_ec_point_at_infinity(self):
-        ec = EC(2, -1, 7, 11)
-        ecp0 = ECPoint(1, 3, ec)
-        ecp1 = ECPoint(1, 4, ec)
+        ecc = ECC(2, -1, 7, 11)
+        eccp0 = ECCPoint(1, 3, ecc)
+        eccp1 = ECCPoint(1, 4, ecc)
 
-        added_ecp = ecp0 + ecp1
-        self.assertTrue(added_ecp.isinf())
-        self.assertEqual('(inf, inf)', str(added_ecp))
+        added_eccp = eccp0 + eccp1
+        self.assertTrue(added_eccp.isinf())
+        self.assertEqual('(inf, inf)', str(added_eccp))
 
-        with self.assertRaises(ECPointError) as raiz:
-            ECPoint(0, 0, ec)
+        with self.assertRaises(ECCPointError) as raiz:
+            ECCPoint(0, 0, ecc)
         args = raiz.exception.args
         message = '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7).'
         self.assertEqual(message, args[0])
 
-        point_at_infinity = ECPoint(0, 0, ec, is_infinity=True)
+        point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
 
-        ecp2 = ecp0 + point_at_infinity
-        self.assertEqual(ecp0, ecp2)
+        eccp2 = eccp0 + point_at_infinity
+        self.assertEqual(eccp0, eccp2)
 
-        ecp3 = point_at_infinity + ecp1
-        self.assertEqual(ecp1, ecp3)
+        eccp3 = point_at_infinity + eccp1
+        self.assertEqual(eccp1, eccp3)
 
-        point_at_infinity2 = ECPoint(0, 0, ec, is_infinity=True)
+        point_at_infinity2 = ECCPoint(0, 0, ecc, is_infinity=True)
         added_infinity = point_at_infinity + point_at_infinity2
         self.assertTrue(added_infinity.isinf())
         self.assertEqual(point_at_infinity2, added_infinity)
 
     def test_calc_all_pair_of_xy(self):
-        ec = EC(2, -1, 7, 11)
-        points = ec.collect_all_points()
+        ecc = ECC(2, -1, 7, 11)
+        points = ecc.collect_all_points()
         self.assertEqual(11, len(points))
         expected_points = frozenset([
-            ECPoint(0, 0, ec, is_infinity=True),
-            ECPoint(1, 3, ec),
-            ECPoint(1, 4, ec),
-            ECPoint(2, 2, ec),
-            ECPoint(2, 5, ec),
-            ECPoint(3, 2, ec),
-            ECPoint(3, 5, ec),
-            ECPoint(4, 1, ec),
-            ECPoint(4, 6, ec),
-            ECPoint(5, 1, ec),
-            ECPoint(5, 6, ec),
+            ECCPoint(0, 0, ecc, is_infinity=True),
+            ECCPoint(1, 3, ecc),
+            ECCPoint(1, 4, ecc),
+            ECCPoint(2, 2, ecc),
+            ECCPoint(2, 5, ecc),
+            ECCPoint(3, 2, ecc),
+            ECCPoint(3, 5, ecc),
+            ECCPoint(4, 1, ecc),
+            ECCPoint(4, 6, ecc),
+            ECCPoint(5, 1, ecc),
+            ECCPoint(5, 6, ecc),
         ])
         self.assertEqual(expected_points, points)
 
     def test_calc_pair_of_xy(self):
-        ec = EC(2, -1, 7, 11)
+        ecc = ECC(2, -1, 7, 11)
 
-        x, y = ec.calc_pair_of_xy(x=2)
+        x, y = ecc.calc_pair_of_xy(x=2)
         # print('x, y =', x, y)
         self.assertEqual((2, 2), (x, y))
 
-        x, y = ec.calc_pair_of_xy(x=5)
+        x, y = ecc.calc_pair_of_xy(x=5)
         # print('x, y =', x, y)
         self.assertEqual((5, 1), (x, y))
 
-        x, y = ec.calc_pair_of_xy(y=4)
+        x, y = ecc.calc_pair_of_xy(y=4)
         self.assertEqual((1, 4), (x, y))
 
-        x, y = ec.calc_pair_of_xy(y=6)
+        x, y = ecc.calc_pair_of_xy(y=6)
         self.assertEqual((4, 6), (x, y))
 
-        p = ec.calc_pair_of_xy(y=0)
+        p = ecc.calc_pair_of_xy(y=0)
         self.assertFalse(p)
 
     def test_ec(self):
-        ec = EC(2, -1, 7, 11)
-        self.assertEqual(2, ec.a)
-        self.assertEqual(-1, ec.b)
-        self.assertEqual(7, ec.prime)
-        self.assertEqual(11, ec.order)
+        ecc = ECC(2, -1, 7, 11)
+        self.assertEqual(2, ecc.a)
+        self.assertEqual(-1, ecc.b)
+        self.assertEqual(7, ecc.prime)
+        self.assertEqual(11, ecc.order)
 
     def test_ec_and_points(self):
-        ec = EC(2, -1, 7, 11)
+        ecc = ECC(2, -1, 7, 11)
         p0 = Point(1, 3)
         p1 = Point(5, 6)
 
-        self.assertTrue(ec.exists_with(p0))
-        self.assertTrue(ec.exists_with(p1))
+        self.assertTrue(ecc.exists_with(p0))
+        self.assertTrue(ecc.exists_with(p1))
 
-        self.assertTrue(p0.constructs(ec))
-        self.assertTrue(p1.constructs(ec))
-        self.assertTrue(p0.is_on(ec))
-        self.assertTrue(p1.is_on(ec))
+        self.assertTrue(p0.constructs(ecc))
+        self.assertTrue(p1.constructs(ecc))
+        self.assertTrue(p0.is_on(ecc))
+        self.assertTrue(p1.is_on(ecc))
 
-        ecp = ECPoint(4, 1, ec)
-        self.assertTrue(ecp)
+        eccp = ECCPoint(4, 1, ecc)
+        self.assertTrue(eccp)
 
     def test_ec_and_points_not_relate(self):
-        ec = EC(2, -1, 7, 11)
+        ecc = ECC(2, -1, 7, 11)
         p0 = Point(0, 0)
 
-        self.assertFalse(ec.exists_with(p0))
-        self.assertFalse(p0.constructs(ec))
-        self.assertFalse(p0.is_on(ec))
+        self.assertFalse(ecc.exists_with(p0))
+        self.assertFalse(p0.constructs(ecc))
+        self.assertFalse(p0.is_on(ecc))
 
-        with self.assertRaises(ECPointError) as raiz:
-            ECPoint(0, 0, ec)
+        with self.assertRaises(ECCPointError) as raiz:
+            ECCPoint(0, 0, ecc)
         args = raiz.exception.args
         message = '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7).'
         self.assertEqual(message, args[0])
