@@ -50,8 +50,23 @@ if not have_gcdext_c_extension():
 
         return gcd, x, y
 
-class Point(object):
+class Line(object):
+    pass
+'''
+    def __init__(self, num):
+        self.num = num
+
+    def __str__(self):
+        return '{}'.format(self.num)
+'''
+
+class Point(Line):
     def __init__(self, x, y):
+        '''
+        self.x = Line(x)
+        self.y = Line(y)
+        or
+        '''
         self.x = x
         self.y = y
 
@@ -63,6 +78,28 @@ class Point(object):
 
     def __str__(self):
         return '({}, {})'.format(self.x, self.y)
+
+'''
+class Space(Point):
+    def __init__(self, x, y, z):
+        self.p = Point(x, y)
+        self.z = Line(z)
+        or
+        self.x = Line(x)
+        self.y = Line(y)
+        self.z = Line(z)
+        or
+        self.x = x
+        self.y = y
+        self.z = z
+        or
+        self.x, self.y = Point(x, y)
+        self.z = Line(z)
+
+    def __str__(self):
+        return '({}, {}, {})'.format(self.x, self.y, self.z)
+
+'''
 
 class EC(object):
     def __init__(self, a, b):
