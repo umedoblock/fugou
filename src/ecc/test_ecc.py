@@ -46,6 +46,38 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
         self.assertEqual(expected_eccp, eccp01)
         self.assertEqual(expected_eccp, eccp10)
 
+    def test_ecc_the_group_low(self):
+        # http://en.wikipedia.org/wiki/Elliptic_curve
+        # The group law
+        ecc = ECC(2, -1, 7, 11)
+        point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
+
+        # case 1.
+        P = ECCPoint(1, 3, ecc)
+        Q = ECCPoint(4, 1, ecc)
+        R_ = P + Q
+        R = ECCPoint(R_.x, -R_.y, ecc)
+        self.assertEqual(point_at_infinity, P + Q + R)
+        P = Q = R = P_ = R_ = None
+
+        # case 2.
+        Q = ECCPoint(1, 3, ecc)
+        P_ = Q + Q
+        P = ECCPoint(P_.x, -P_.y, ecc)
+        self.assertEqual(point_at_infinity, P + Q + Q)
+        P = Q = R = P_ = R_ = None
+
+        # case 3.
+        P = ECCPoint(1, 3, ecc)
+        Q = ECCPoint(P.x, -P.y, ecc)
+        self.assertEqual(point_at_infinity, P + Q + point_at_infinity)
+        P = Q = R = P_ = R_ = None
+
+        # case 4.
+        # D.N.E in ECC.
+        # no need to think about Elliptic Curve.
+        pass
+
     def test_ecc_point_at_infinity(self):
         ecc = ECC(2, -1, 7, 11)
         eccp0 = ECCPoint(1, 3, ecc)
