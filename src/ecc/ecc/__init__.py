@@ -142,6 +142,12 @@ class ECC(EC):
         self.prime = prime
         self.order = order
 
+    def mul_honest(self, eccp, num):
+        muled_eccp = eccp
+        for i in range(num - 1):
+            muled_eccp = muled_eccp + eccp
+        return muled_eccp
+
     def exists_with(self, point):
         left = point.y ** 2
         powm_x_3 = pow(point.x, 3, self.prime)
@@ -236,21 +242,10 @@ class ECCPoint(Point):
             point.x = point.y = float('inf')
 
     def __rmul__(self, other):
-        print('__rmul2__({}, {})'.format(id(self), id(other)))
         return self.__mul__(other)
 
-    def __imul__(self, other):
-        print('__imul__({}, {})'.format(id(self), id(other)))
-        self.x *= other
-        self.y *= other
-        return self
-
     def __mul__(self, other):
-        print('__mul__({}, {})'.format(id(self), id(other)))
-        x = self.x * other
-        y = self.y * other
-        obj = Point(x, y)
-        return obj
+        return self.ecc.mul_honest(self, other)
 
     def __add__(self, other):
         self._check_other_on_ec(other)
@@ -302,12 +297,6 @@ class ECCPoint(Point):
         else:
             value = self.ecc.prime * self.y + self.x
             return value
-
-    def __iadd__(self, other):
-        print('__iadd__({}, {})'.format(id(self), id(other)))
-        self.x += other.x
-        self.y += other.y
-        return self
 
     def isinf(self):
         return self._is_infinity

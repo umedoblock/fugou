@@ -4,6 +4,56 @@ import unittest
 from ecc import *
 
 class TestECC(unittest.TestCase):
+
+    def test_ecdh(self):
+        ecc = ECC(19, 77, 307, 331)
+        P8 = ECCPoint(7, 218, ecc)
+        P26 = ECCPoint(20, 274, ecc)
+        P178 = ECCPoint(162, 225, ecc)
+        P217 = ECCPoint(199, 151, ecc)
+        alice_key = 75
+        bob_key = 234
+        muled_key = alice_key * bob_key % ecc.order
+
+        PA = alice_key * P8
+        PB = bob_key * P8
+
+        self.assertEqual(P26, PA)
+        self.assertEqual(P178, PB)
+
+        AlicePoint = alice_key * PB
+        BobPoint = bob_key * PA
+
+        self.assertEqual(P217, AlicePoint)
+        self.assertEqual(P217, BobPoint)
+        self.assertEqual(AlicePoint, BobPoint)
+
+        muled_point = muled_key * P8
+        self.assertEqual(P217, muled_point)
+
+    def test_eccp_mul(self):
+        ecc = ECC(19, 77, 307, 331)
+        P8 = ECCPoint(7, 218, ecc)
+        P26 = ECCPoint(20, 274, ecc)
+
+        x = P8 * 75
+        self.assertEqual(P26, x)
+
+        y = 75 * P8
+        self.assertEqual(P26, y)
+
+        z = P8
+        z *= 75
+        self.assertEqual(P26, z)
+
+    def test_eccp_mul_honest(self):
+        ecc = ECC(19, 77, 307, 331)
+        P8 = ECCPoint(7, 218, ecc)
+        P26 = ECCPoint(20, 274, ecc)
+
+        P8_75 = ecc.mul_honest(P8, 75)
+        self.assertEqual(P26, P8_75)
+
     def test_eccp_on_different_ec(self):
         ecc0 = ECC(2, -1, 7, 11)
         ecc1 = ECC(19, 77, 307, 331)
@@ -22,29 +72,32 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
     def test_eccp_add_same_point(self):
         ecc = ECC(2, -1, 7, 11)
         eccp = ECCPoint(1, 3, ecc)
+        expected_eccp = ECCPoint(2, 2, ecc)
 
         double_eccp = eccp + eccp
         self.assertTrue(double_eccp.constructs(ecc))
-
-        expected_eccp = ECCPoint(2, 2, ecc)
         self.assertEqual(expected_eccp, double_eccp)
+
+        double_eccp_ = eccp
+        double_eccp_ += eccp
+        self.assertEqual(expected_eccp, double_eccp_)
+        self.assertTrue(double_eccp_.constructs(ecc))
 
     def test_eccp_add(self):
         ecc = ECC(2, -1, 7, 11)
         eccp0 = ECCPoint(3, 2, ecc)
         eccp1 = ECCPoint(4, 6, ecc)
-
-        eccp01 = eccp0 + eccp1
-        self.assertTrue(eccp01.constructs(ecc))
-
-        eccp10 = eccp1 + eccp0
-        self.assertTrue(eccp10.constructs(ecc))
-
-        self.assertEqual(eccp01, eccp10)
-
         expected_eccp = ECCPoint(2, 2, ecc)
-        self.assertEqual(expected_eccp, eccp01)
-        self.assertEqual(expected_eccp, eccp10)
+
+        x = eccp0 + eccp1
+        self.assertTrue(x.constructs(ecc))
+        self.assertEqual(expected_eccp, x)
+
+        y = eccp1 + eccp0
+        self.assertTrue(y.constructs(ecc))
+        self.assertEqual(expected_eccp, y)
+
+        self.assertEqual(x, y)
 
     def test_ecc_the_group_low(self):
         # http://en.wikipedia.org/wiki/Elliptic_curve
