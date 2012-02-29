@@ -267,7 +267,7 @@ class ECCPoint(Point):
         return self.__mul__(other)
 
     def __mul__(self, other):
-        return self.ecc.mul_honest(self, other)
+        return self.ecc.mul_fast(self, other)
 
     def __add__(self, other):
         self._check_other_on_ec(other)
