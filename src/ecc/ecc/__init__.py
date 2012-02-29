@@ -72,11 +72,11 @@ class Point(Line):
         self.x = x
         self.y = y
 
-    def is_on(self, ecc):
-        return ecc.exists_with(self)
+    def is_on(self, ecc, raise_error=True):
+        return ecc.exists_with(self, raise_error)
 
-    def constructs(self, ecc):
-        return ecc.exists_with(self)
+    def constructs(self, ecc, raise_error=True):
+        return ecc.exists_with(self, raise_error)
 
     def __repr__(self):
         return '({}, {})'.format(self.x, self.y)
@@ -142,6 +142,39 @@ class ECC(EC):
         self.prime = prime
         self.order = order
 
+    def add(self, P, Q):
+        self.exists_with(P)
+        self.exists_with(Q)
+
+        if P.isinf() or Q.isinf():
+            if P.isinf():
+                point = Q
+            else:
+                point = P
+            return ECCPoint(point.x, point.y, self, point.isinf())
+
+        x1, y1 = P.x, P.y
+        x2, y2 = Q.x, Q.y
+        if P == Q:
+            gcd, double_y1_inv, _n = gcdext(2 * y1, self.prime)
+            lmd = (3 * (x1 ** 2) + self.a) * double_y1_inv
+        elif x1 == x2:
+            # P is not qual to Q.
+            # P and Q are on same y coordinate.
+            point_at_infinity = ECCPoint(0, 0, self, is_infinity=True)
+            return point_at_infinity
+        else:
+            gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.prime)
+            lmd = (y2 - y1) * x2_x1_inv
+        x3 = lmd ** 2 - x1 - x2
+        y3 = lmd * (x1 - x3) - y1
+        x3 %= self.prime
+        y3 %= self.prime
+
+        R = ECCPoint(x3, y3, self)
+
+        return R
+
     def mul_fast(self, eccp, num):
         flg = 1
         flged_eccp = eccp
@@ -170,20 +203,38 @@ class ECC(EC):
             muled_eccp = muled_eccp + eccp
         return muled_eccp
 
-    def exists_with(self, point):
+    def exists_with(self, point, raise_error=True):
+        if not isinstance(point, Point):
+            raise TypeError('point must be Point or Point subtype.')
+        if isinstance(point, ECCPoint):
+            if self != point.ecc:
+                if raise_error:
+                    message = \
+                        '{} is not on me(={}), on {}.'.format(
+                         point, self, point.ecc)
+                    raise ECCPointError(message)
+                else:
+                    return False
+            if point.isinf():
+                return True
         left = point.y ** 2
         powm_x_3 = pow(point.x, 3, self.prime)
         right = powm_x_3 + self.a * point.x + self.b
         left %= self.prime
         right %= self.prime
-        return left == right
+        if left == right:
+            return True
+        elif raise_error:
+            raise ECCPointError('{} is not on {}.'.format(point, self))
+        else:
+            return False
 
     def calc_order(self):
         order = 0
         for y in range(self.prime):
             for x in range(self.prime):
                 point = Point(x, y)
-                if self.exists_with(point):
+                if self.exists_with(point, raise_error=False):
                     order += 1
         # for point at infinity
         order += 1
@@ -199,7 +250,7 @@ class ECC(EC):
         for y in range(self.prime):
             for x in range(self.prime):
                 point = Point(x, y)
-                if self.exists_with(point):
+                if self.exists_with(point, raise_error=False):
                     eccp = ECCPoint(point.x, point.y, self)
                     points.append(eccp)
         point_at_infinity = ECCPoint(0, 0, self, is_infinity=True)
@@ -254,11 +305,12 @@ class ECC(EC):
 class ECCPoint(Point):
     def __init__(point, x, y, ecc, is_infinity=False):
         super().__init__(x, y)
+        point.ecc = ecc
+        point._is_infinity = False
+
         if is_infinity or ecc.exists_with(point):
-            point.ecc = ecc
             point._is_infinity = is_infinity
         else:
-            point._is_infinity = False
             raise ECCPointError('{} is not on {}.'.format(point, ecc))
         if is_infinity:
             point.x = point.y = float('inf')
@@ -270,35 +322,7 @@ class ECCPoint(Point):
         return self.ecc.mul_fast(self, other)
 
     def __add__(self, other):
-        self._check_other_on_ec(other)
-
-        if self._is_infinity or other._is_infinity:
-            if self._is_infinity:
-                point = other
-            else:
-                point = self
-            return ECCPoint(point.x, point.y, point.ecc, point.isinf())
-
-        x1, y1 = self.x, self.y
-        x2, y2 = other.x, other.y
-        if self == other:
-            gcd, double_y1_inv, _n = gcdext(2 * y1, self.ecc.prime)
-            lmd = (3 * (x1 ** 2) + self.ecc.a) * double_y1_inv
-        elif x1 == x2:
-            # not equal to y1 and y2
-            point_at_infinity = ECCPoint(0, 0, self.ecc, is_infinity=True)
-            return point_at_infinity
-        else:
-            gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.ecc.prime)
-            lmd = (y2 - y1) * x2_x1_inv
-        x3 = lmd ** 2 - x1 - x2
-        y3 = lmd * (x1 - x3) - y1
-        x3 %= self.ecc.prime
-        y3 %= self.ecc.prime
-
-        eccp = ECCPoint(x3, y3, self.ecc)
-
-        return eccp
+        return self.ecc.add(self, other)
 
     def __eq__(self, other):
         self._check_other_on_ec(other)

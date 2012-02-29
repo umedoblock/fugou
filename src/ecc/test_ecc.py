@@ -139,6 +139,19 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
         # no need to think about Elliptic Curve.
         pass
 
+    def test_ecc_point_at_infinity_with_different_ecc(self):
+        ecc0 = ECC(2, -1, 7, 11)
+        ecc1 = ECC(19, 77, 307)
+
+        point_at_infinity0 = ECCPoint(0, 0, ecc0, is_infinity=True)
+
+        self.assertTrue(ecc0.exists_with(point_at_infinity0))
+
+        self.assertFalse(ecc1.exists_with(point_at_infinity0,
+                                          raise_error=False))
+        with self.assertRaises(ECCPointError) as raiz:
+            ecc1.exists_with(point_at_infinity0, raise_error=True)
+
     def test_ecc_point_at_infinity(self):
         ecc = ECC(2, -1, 7, 11)
         eccp0 = ECCPoint(1, 3, ecc)
@@ -156,6 +169,8 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
         self.assertEqual(message, args[0])
 
         point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
+
+        self.assertTrue(ecc.exists_with(point_at_infinity))
 
         eccp2 = eccp0 + point_at_infinity
         self.assertEqual(eccp0, eccp2)
@@ -250,9 +265,9 @@ y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
         ecc = ECC(2, -1, 7, 11)
         p0 = Point(0, 0)
 
-        self.assertFalse(ecc.exists_with(p0))
-        self.assertFalse(p0.constructs(ecc))
-        self.assertFalse(p0.is_on(ecc))
+        self.assertFalse(ecc.exists_with(p0, raise_error=False))
+        self.assertFalse(p0.constructs(ecc, raise_error=False))
+        self.assertFalse(p0.is_on(ecc, raise_error=False))
 
         with self.assertRaises(ECCPointError) as raiz:
             ECCPoint(0, 0, ecc)
