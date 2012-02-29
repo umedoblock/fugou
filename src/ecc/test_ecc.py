@@ -46,6 +46,14 @@ class TestECC(unittest.TestCase):
         z *= 75
         self.assertEqual(P26, z)
 
+    def test_eccp_mul_fast(self):
+        ecc = ECC(19, 77, 307, 331)
+        P8 = ECCPoint(7, 218, ecc)
+        P26 = ECCPoint(20, 274, ecc)
+
+        P8_75 = ecc.mul_fast(P8, 75)
+        self.assertEqual(P26, P8_75)
+
     def test_eccp_mul_honest(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)

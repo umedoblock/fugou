@@ -142,6 +142,28 @@ class ECC(EC):
         self.prime = prime
         self.order = order
 
+    def mul_fast(self, eccp, num):
+        flg = 1
+        flged_eccp = eccp
+
+        muled = 0
+        muled_eccp = ECCPoint(0, 0, self, is_infinity=True)
+
+        if flg & num:
+            muled += flg
+            muled_eccp += flged_eccp
+
+        flg <<= 1
+        flged_eccp += flged_eccp
+        while flg <= num:
+            if flg & num:
+                muled += flg
+                muled_eccp += flged_eccp
+
+            flg <<= 1
+            flged_eccp += flged_eccp
+        return muled_eccp
+
     def mul_honest(self, eccp, num):
         muled_eccp = eccp
         for i in range(num - 1):
