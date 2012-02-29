@@ -7,50 +7,48 @@ import math
 
 from . import collect_primes
 
-try:
-    from _gcdext import gcdext
-
-except ImportError as e:
-    print('cannot import _gcdext')
-    print('reason: ', e.args[0])
-
 __all__ = [
     'Point', 'ECC', 'ECCPoint', 'gcdext',
     'ECCPointError'
 ]
 
 from sys import modules
-def have_gcdext_c_extension():
-    return '_gcdext' in modules
 
-if not have_gcdext_c_extension():
-    def gcdext(a, b):
-        ''' return (gcd, a, b)
-            gcd = a * x - b * y '''
+def gcdext(a, b):
+    ''' return (gcd, a, b)
+        gcd = a * x - b * y '''
 
-        x, y, gcd  = 1, 0, a
-        x1, y1, z1 = 0, 1, b
+    x, y, gcd  = 1, 0, a
+    x1, y1, z1 = 0, 1, b
 
-        while z1 > 0:
-            div, z2 = divmod(gcd, z1)
+    while z1 > 0:
+        div, z2 = divmod(gcd, z1)
 
-            div_ = div * x1
-            x2 = x - div_
+        div_ = div * x1
+        x2 = x - div_
 
-            div_ = div * y1
-            y2 = y - div_
+        div_ = div * y1
+        y2 = y - div_
 
-            x, y, gcd = x1, y1, z1
-            x1, y1, z1 = x2, y2, z2
+        x, y, gcd = x1, y1, z1
+        x1, y1, z1 = x2, y2, z2
 
-        # print(gcd, x, y)
-        if y < 0:
-            y = -y
-        if x < 0:
-            x += b
-            y = a - y
+    # print(gcd, x, y)
+    if y < 0:
+        y = -y
+    if x < 0:
+        x += b
+        y = a - y
 
-        return gcd, x, y
+    return gcd, x, y
+
+try:
+    from _gcdext import gcdext
+    print('can import _gcdext')
+
+except ImportError as e:
+    print('cannot import _gcdext')
+    print('reason: ', e.args[0])
 
 class Line(object):
     pass
