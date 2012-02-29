@@ -5,7 +5,7 @@
 
 import math
 
-from . import collect_primes
+from ecc.collect_primes import is_prime
 
 __all__ = [
     'Point', 'ECC', 'ECCPoint', 'gcdext',
@@ -236,7 +236,7 @@ class ECC(EC):
                     order += 1
         # for point at infinity
         order += 1
-        if not collect_primes.is_prime(order):
+        if not is_prime(order):
             raise RuntimeWarning(('order(={}) '
                                   'is not prime number.').format(order))
         self.order = order
