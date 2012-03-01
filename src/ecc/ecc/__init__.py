@@ -101,12 +101,11 @@ class Space(Point):
 
     def __str__(self):
         return '({}, {}, {})'.format(self.x, self.y, self.z)
-
 '''
 
 class EC(object):
     def __init__(self, a, b):
-        ''' y ^ 2 = x ^ 3 + a * x + b.'''
+        '''y ^ 2 = x ^ 3 + a * x + b.'''
         self.a = a
         self.b = b
 
@@ -135,7 +134,7 @@ class EC(object):
 class ECC(EC):
 
     def __init__(self, a, b, prime, order=0):
-        ''' y ^ 2 = x ^ 3 + a * x + b (mod prime).'''
+        '''y ^ 2 = x ^ 3 + a * x + b (mod prime).'''
         super().__init__(a, b)
         self.prime = prime
         self.order = order
@@ -170,7 +169,6 @@ class ECC(EC):
         y3 %= self.prime
 
         R = ECCPoint(x3, y3, self)
-
         return R
 
     def mul_fast(self, eccp, num):
@@ -193,6 +191,7 @@ class ECC(EC):
 
             flg <<= 1
             flged_eccp += flged_eccp
+
         return muled_eccp
 
     def mul_honest(self, eccp, num):
@@ -215,11 +214,11 @@ class ECC(EC):
                     return False
             if point.isinf():
                 return True
-        left = point.y ** 2
+
+        left = pow(point.y, 2, self.prime)
         powm_x_3 = pow(point.x, 3, self.prime)
-        right = powm_x_3 + self.a * point.x + self.b
-        left %= self.prime
-        right %= self.prime
+        right = (powm_x_3 + self.a * point.x + self.b) % self.prime
+
         if left == right:
             return True
         elif raise_error:
@@ -236,11 +235,12 @@ class ECC(EC):
                     order += 1
         # for point at infinity
         order += 1
+
         if not is_prime(order):
             raise RuntimeWarning(('order(={}) '
                                   'is not prime number.').format(order))
-        self.order = order
 
+        self.order = order
         return order
 
     def collect_all_points(self):
@@ -260,7 +260,7 @@ class ECC(EC):
         on_curve = False
       # y ^ 2 = x ^ 3 + a * x + b (mod prime).
         if x is not None:
-            # y ^ 2 = x ^ 3 + a * x + b
+          # y ^ 2 = x ^ 3 + a * x + b
             y_square = (x ** 3 + self.a * x + self.b) % self.prime
             y_ = int(math.sqrt(y_square))
             if y_square == (y_ ** 2) % self.prime:
@@ -284,11 +284,11 @@ class ECC(EC):
                 tup = (x, y)
         else:
             raise ECCPointError('x and y are None.')
+
         return tup
 
     def __str__(self):
         ss = super().__str__()
-
         return ss + ' (mod {}, order {})'.format(self.prime, self.order)
 
     def __eq__(self, other):
@@ -301,17 +301,21 @@ class ECC(EC):
             return False
 
 class ECCPoint(Point):
-    def __init__(point, x, y, ecc, is_infinity=False):
+    def __init__(self, x, y, ecc, is_infinity=False):
         super().__init__(x, y)
-        point.ecc = ecc
-        point._is_infinity = False
+        self.ecc = ecc
+        self._is_infinity = is_infinity
 
-        if is_infinity or ecc.exists_with(point):
-            point._is_infinity = is_infinity
-        else:
-            raise ECCPointError('{} is not on {}.'.format(point, ecc))
         if is_infinity:
-            point.x = point.y = float('inf')
+            self.x = self.y = float('inf')
+        else:
+            self.x %= self.ecc.prime
+            self.y %= self.ecc.prime
+        if not ecc.exists_with(self):
+            raise ECCPointError('{} is not on {}.'.format(self, ecc))
+
+    def isinf(self):
+        return self._is_infinity
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -323,15 +327,22 @@ class ECCPoint(Point):
         return self.ecc.add(self, other)
 
     def __eq__(self, other):
-        self._check_other_on_ec(other)
+        if self.ecc != other.ecc:
+            message = '\n'
+            message += '{} and\n'.format(self.ecc)
+            message += '{}\n'.format(other.ecc)
+            message += 'are different ECC.\n'
+            message += 'Therefore, __eq__() cannot compare '
+            message += '{} with {}.'.format(self, other)
+            raise ECCPointError(message)
 
         if self.isinf() and other.isinf():
             return True
         elif self.isinf() != other.isinf():
             return False
 
-        x_eq = (self.x % self.ecc.prime) == (other.x % other.ecc.prime)
-        y_eq = (self.y % self.ecc.prime) == (other.y % other.ecc.prime)
+        x_eq = self.x == other.x
+        y_eq = self.y == other.y
 
         return x_eq and y_eq
 
@@ -341,13 +352,6 @@ class ECCPoint(Point):
         else:
             value = self.ecc.prime * self.y + self.x
             return value
-
-    def isinf(self):
-        return self._is_infinity
-
-    def _check_other_on_ec(self, other):
-        if self.ecc != other.ecc:
-            raise ECCPointError('\n{} is not\n{}.'.format(self.ecc, other.ecc))
 
 class ECCPointError(BaseException):
     pass

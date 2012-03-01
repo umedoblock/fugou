@@ -71,9 +71,12 @@ class TestECC(unittest.TestCase):
         eccp1 = ECCPoint(7, 89, ecc1)
         with self.assertRaises(ECCPointError) as raiz:
             eccp0 == eccp1
+
         message = '''
-y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11) is not
-y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331).'''
+y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11) and
+y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331)
+are different ECC.
+Therefore, __eq__() cannot compare (3, 2) with (7, 89).'''
         args = raiz.exception.args
         self.assertEqual(message, args[0])
 
