@@ -31,6 +31,24 @@ class TestECC(unittest.TestCase):
         muled_point = muled_key * P8
         self.assertEqual(P217, muled_point)
 
+    def test_eccp_div(self):
+        ecc = ECC(19, 77, 307, 331)
+        P8 = ECCPoint(7, 218, ecc)
+        num = 111
+
+        Q = num * P8
+        self.assertNotEqual(P8, Q)
+
+        P8_ = Q / num
+        self.assertEqual(P8, P8_)
+
+        with self.assertRaises(TypeError) as raiz:
+            P8_ = Q // num
+        args = raiz.exception.args
+        self.assertEqual(args[0],
+                    ("unsupported operand type(s) for //: "
+                     "'ECCPoint' and 'int'"))
+
     def test_eccp_mul(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)

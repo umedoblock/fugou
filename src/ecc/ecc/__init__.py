@@ -194,6 +194,10 @@ class ECC(EC):
 
         return muled_eccp
 
+    def div(self, P, num):
+        gcd, num_inverse, order_ = gcdext(num, self.order)
+        return num_inverse * P
+
     def mul_honest(self, eccp, num):
         muled_eccp = eccp
         for i in range(num - 1):
@@ -325,6 +329,9 @@ class ECCPoint(Point):
 
     def __add__(self, other):
         return self.ecc.add(self, other)
+
+    def __truediv__(self, num):
+        return self.ecc.div(self, num)
 
     def __eq__(self, other):
         if self.ecc != other.ecc:
