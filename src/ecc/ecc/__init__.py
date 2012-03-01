@@ -8,8 +8,7 @@ import math
 from ecc.collect_primes import is_prime
 
 __all__ = [
-    'Point', 'ECC', 'ECCPoint', 'gcdext',
-    'ECCPointError'
+    'ECC', 'ECCPoint', 'ECCPointError'
 ]
 
 from sys import modules
