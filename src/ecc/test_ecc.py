@@ -5,7 +5,7 @@ from ecc import *
 
 class TestECC(unittest.TestCase):
 
-    def test_ecdh(self):
+    def test_simple_ecdh(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
         P26 = ECCPoint(20, 274, ecc)
