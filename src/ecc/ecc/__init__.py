@@ -325,6 +325,9 @@ class ECCPoint(Point):
         return self.__mul__(other)
 
     def __mul__(self, other):
+        if other < 0:
+            raise ValueError('number(={}) must be positive value.'. \
+                              format(other))
         return self.ecc.mul_fast(self, other)
 
     def __add__(self, other):

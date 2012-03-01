@@ -49,6 +49,15 @@ class TestECC(unittest.TestCase):
                     ("unsupported operand type(s) for //: "
                      "'ECCPoint' and 'int'"))
 
+    def test_eccp_mul_by_negative_value(self):
+        ecc = ECC(19, 77, 307, 331)
+        P8 = ECCPoint(7, 218, ecc)
+
+        with self.assertRaises(ValueError) as raiz:
+            P8 * -1
+        args = raiz.exception.args
+        self.assertEqual('number(=-1) must be positive value.', args[0])
+
     def test_eccp_mul(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
