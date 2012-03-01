@@ -356,6 +356,9 @@ class ECCPoint(Point):
 
         return x_eq and y_eq
 
+    def __bool__(self):
+        return not self.isinf()
+
     def __hash__(self):
         if self.isinf():
             return -1

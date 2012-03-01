@@ -137,6 +137,13 @@ Therefore, __eq__() cannot compare (3, 2) with (7, 89).'''
 
         self.assertEqual(x, y)
 
+    def test_eccp_bool(self):
+        ecc = ECC(2, -1, 7)
+        P = ECCPoint(3, 2, ecc)
+        self.assertTrue(P)
+        Q = ECCPoint(0, 0, ecc, is_infinity=True)
+        self.assertFalse(Q)
+
     def test_ecc_the_group_low(self):
         # http://en.wikipedia.org/wiki/Elliptic_curve
         # The group law
