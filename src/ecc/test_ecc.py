@@ -2,6 +2,32 @@
 import unittest
 
 from ecc import *
+from ecc import Point
+from ecc import gcdext
+from ecdh import *
+
+class TestECDH(unittest.TestCase):
+    def test_ecdh_basic(self):
+        ecc = ECC(19, 77, 307, 331)
+        generator = ECCPoint(7, 218, ecc)
+        alice = ECDH(generator)
+        bob = ECDH(generator)
+
+        alice.set_private_key()
+        bob.set_private_key()
+        self.assertNotEqual(alice.get_private_key(), bob.get_private_key())
+
+        alice.compute_public_key()
+        bob.compute_public_key()
+        self.assertNotEqual(alice.get_public_key(), bob.get_public_key())
+
+        alice.demand_client_public_key(bob.get_public_key())
+        bob.demand_client_public_key(alice.get_public_key())
+
+        alice.share_secret_key()
+        bob.share_secret_key()
+
+        self.assertEqual(alice.get_secret_key(), bob.get_secret_key())
 
 class TestECC(unittest.TestCase):
 
