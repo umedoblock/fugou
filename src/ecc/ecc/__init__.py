@@ -4,11 +4,12 @@
 # Copyright 平成24年(2012)
 
 import math
+import random
 
 from ecc.collect_primes import is_prime
 
 __all__ = [
-    'ECC', 'ECCPoint', 'ECCPointError'
+    'ECC', 'ECCPoint', 'ECCPointError', 'generate_random'
 ]
 
 from sys import modules
@@ -48,6 +49,13 @@ try:
 except ImportError as e:
     print('cannot import _gcdext')
     print('reason: ', e.args[0])
+
+def generate_random(rand_max):
+    from sys import modules
+    d = modules['ecc'].__dict__['generate_random'].__dict__
+    if not 'randrange' in d:
+        d['randrange'] = random.SystemRandom().randrange
+    return d['randrange'](0, rand_max)
 
 class Line(object):
     pass

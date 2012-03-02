@@ -1,17 +1,9 @@
-import random
-
 from ecc import *
 
 __all__ = ['ECDH', 'ECDHError']
 
 class ECDH(object):
     '''ECDH'''
-
-    @classmethod
-    def generate_random(cls, rand_max):
-        if not hasattr(cls, 'randrange'):
-            cls.randrange = random.SystemRandom().randrange
-        return cls.randrange(0, rand_max)
 
     def __init__(self, generator):
         if not isinstance(generator, ECCPoint):
@@ -30,7 +22,7 @@ class ECDH(object):
         if private_key:
             self._private_key = private_key
         else:
-            self._private_key = ECDH.generate_random(self._generator.ecc.order)
+            self._private_key = generate_random(self._generator.ecc.order)
 
     def compute_public_key(self):
         self._public_key = self._private_key * self._generator
