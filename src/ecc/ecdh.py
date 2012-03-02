@@ -32,11 +32,9 @@ class ECDH(object):
         self._generator.ecc.exists_with(public_key)
         self._public_key = public_key
 
-    def demand_client_public_key(self, client_public_key):
+    def make_secret_key(self, client_public_key):
         self._generator.ecc.exists_with(client_public_key)
-        self._client_public_key = client_public_key
 
-    def share_secret_key(self):
         if not self._private_key or not self._public_key:
             raise ValueError('You must have _private_key and _public_key.')
         if not self._computed_public_key:
@@ -45,7 +43,7 @@ class ECDH(object):
             else:
                 raise ECDHError('mismatch _private_key and _public_key.')
 
-        self._secret_key = self._private_key * self._client_public_key
+        self._secret_key = self._private_key * client_public_key
 
     def get_public_key(self):
         if not self._public_key:
@@ -82,13 +80,10 @@ if __name__ == '__main__':
     alice.compute_public_key()
     bob.compute_public_key()
 
-    alice.demand_client_public_key(bob.get_public_key())
-    bob.demand_client_public_key(alice.get_public_key())
+    alice_secret_key = alice.make_secret_key(bob.get_public_key())
+    bob_secret_key = bob.make_secret_key(alice.get_public_key())
 
-    alice.share_secret_key()
-    bob.share_secret_key()
-
-    if alice.get_secret_key() == bob.get_secret_key():
+    if alice_secret_key == bob_secret_key:
         print('Alice and Bob succeed to share secret key.')
     else:
         print('Alice and Bob failed to share secret key.')

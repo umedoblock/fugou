@@ -21,13 +21,10 @@ class TestECDH(unittest.TestCase):
         bob.compute_public_key()
         self.assertNotEqual(alice.get_public_key(), bob.get_public_key())
 
-        alice.demand_client_public_key(bob.get_public_key())
-        bob.demand_client_public_key(alice.get_public_key())
+        alice_secret_key = alice.make_secret_key(bob.get_public_key())
+        bob_secret_key = bob.make_secret_key(alice.get_public_key())
 
-        alice.share_secret_key()
-        bob.share_secret_key()
-
-        self.assertEqual(alice.get_secret_key(), bob.get_secret_key())
+        self.assertEqual(alice_secret_key, bob_secret_key)
 
 class TestECC(unittest.TestCase):
 
