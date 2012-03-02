@@ -46,7 +46,7 @@ class ECDH(object):
 
     def share_secret_key(self):
         if not self._private_key or not self._public_key:
-            raise ECDHError('You must have _private_key and _public_key.')
+            raise ValueError('You must have _private_key and _public_key.')
         if not self._computed_public_key:
             if self._private_key * self._generator == self._public_key:
                 self._computed_public_key = True
