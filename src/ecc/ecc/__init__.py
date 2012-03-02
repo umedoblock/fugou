@@ -52,7 +52,7 @@ except ImportError as e:
 
 def generate_random(rand_max):
     from sys import modules
-    d = modules['ecc'].__dict__['generate_random'].__dict__
+    d = generate_random.__dict__
     if not 'randrange' in d:
         d['randrange'] = random.SystemRandom().randrange
     return d['randrange'](0, rand_max)
