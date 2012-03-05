@@ -7,6 +7,90 @@ from ecc import gcdext
 from ecdh import *
 
 class TestECDH(unittest.TestCase):
+    def test_ecdh_256bit_random_ECP_Group(self):
+        # test data from http://www.rfc-editor.org/rfc/rfc5903.txt
+        # make ecc.
+        a = -3
+        b = int.from_bytes(bytes.fromhex(
+                 '5AC635D8 AA3A93E7 B3EBBD55 769886BC'
+                 '651D06B0 CC53B0F6 3BCE3C3E 27D2604B'), 'big')
+        prime = int.from_bytes(bytes.fromhex(
+                    'FFFFFFFF 00000001 00000000 00000000'
+                    '00000000 FFFFFFFF FFFFFFFF FFFFFFFF'), 'big')
+        order = int.from_bytes(bytes.fromhex(
+                    'FFFFFFFF 00000000 FFFFFFFF FFFFFFFF'
+                    'BCE6FAAD A7179E84 F3B9CAC2 FC632551'), 'big')
+        ecc = ECC(a, b, prime, order)
+
+        # make generator.
+        gx = int.from_bytes(bytes.fromhex(
+                    '6B17D1F2 E12C4247 F8BCE6E5 63A440F2'
+                    '77037D81 2DEB33A0 F4A13945 D898C296'), 'big')
+        gy = int.from_bytes(bytes.fromhex(
+                    '4FE342E2 FE1A7F9B 8EE7EB4A 7C0F9E16'
+                    '2BCE3357 6B315ECE CBB64068 37BF51F5'), 'big')
+        generator = ECCPoint(gx, gy, ecc)
+        alice = ECDH(generator)
+        bob = ECDH(generator)
+
+        # make alice's public key.
+        i = int.from_bytes(bytes.fromhex(
+                    'C88F01F5 10D9AC3F 70A292DA A2316DE5'
+                    '44E9AAB8 AFE84049 C62A9C57 862D1433'), 'big')
+        alice.set_private_key(private_key=i)
+        alice.compute_public_key()
+        # check alice's public key.
+        gix = int.from_bytes(bytes.fromhex(
+                    'DAD0B653 94221CF9 B051E1FE CA5787D0'
+                    '98DFE637 FC90B9EF 945D0C37 72581180'), 'big')
+        giy = int.from_bytes(bytes.fromhex(
+                    '5271A046 1CDB8252 D61F1C45 6FA3E59A'
+                    'B1F45B33 ACCF5F58 389E0577 B8990BB3'), 'big')
+        gi = ECCPoint(gix, giy, ecc)
+        self.assertEqual(gi, alice.get_public_key())
+
+        # make bob's public key.
+        r = int.from_bytes(bytes.fromhex(
+                    'C6EF9C5D 78AE012A 011164AC B397CE20'
+                    '88685D8F 06BF9BE0 B283AB46 476BEE53'), 'big')
+        bob.set_private_key(private_key=r)
+        bob.compute_public_key()
+        # check bob's public key.
+        grx = int.from_bytes(bytes.fromhex(
+                    'D12DFB52 89C8D4F8 1208B702 70398C34'
+                    '2296970A 0BCCB74C 736FC755 4494BF63'), 'big')
+        gry = int.from_bytes(bytes.fromhex(
+                    '56FBF3CA 366CC23E 8157854C 13C58D6A'
+                    'AC23F046 ADA30F83 53E74F33 039872AB'), 'big')
+        gr = ECCPoint(grx, gry, ecc)
+        self.assertEqual(gr, bob.get_public_key())
+
+        self.assertNotEqual(alice.get_private_key(), bob.get_private_key())
+        self.assertNotEqual(alice.get_public_key(), bob.get_public_key())
+
+        # alice's turn.
+        alice.make_secret_key(bob.get_public_key())
+        alice_secret_key = alice.get_secret_key()
+
+        # bob's turn.
+        bob.make_secret_key(alice.get_public_key())
+        bob_secret_key = bob.get_secret_key()
+
+        # alice and bob finished ECDH protocol.
+
+        # make expected secret key
+        girx = int.from_bytes(bytes.fromhex(
+                    'D6840F6B 42F6EDAF D13116E0 E1256520'
+                    '2FEF8E9E CE7DCE03 812464D0 4B9442DE'), 'big')
+        giry = int.from_bytes(bytes.fromhex(
+                    '522BDE0A F0D8585B 8DEF9C18 3B5AE38F'
+                    '50235206 A8674ECB 5D98EDB2 0EB153A2'), 'big')
+        gir = ECCPoint(girx, giry, ecc)
+
+        # check
+        self.assertEqual(gir, alice_secret_key)
+        self.assertEqual(gir, bob_secret_key)
+
     def test_ecdh_basic(self):
         ecc = ECC(19, 77, 307, 331)
         generator = ECCPoint(7, 218, ecc)
