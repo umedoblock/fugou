@@ -55,7 +55,7 @@ def generate_random(rand_max):
     d = generate_random.__dict__
     if not 'randrange' in d:
         d['randrange'] = random.SystemRandom().randrange
-    return d['randrange'](0, rand_max)
+    return d['randrange'](1, rand_max)
 
 class Line(object):
     pass
