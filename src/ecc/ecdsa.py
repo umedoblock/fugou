@@ -18,7 +18,6 @@ class ECDSA(object):
         self._generator = generator
         self._private_key = 0
         self._public_key = ECCPoint(0, 0, generator.ecc, is_infinity=True)
-        self._computed_public_key = False
 
     def sign(self, h):
         if not self._private_key:
@@ -71,7 +70,6 @@ class ECDSA(object):
 
     def compute_public_key(self):
         self._public_key = self._private_key * self._generator
-        self._computed_public_key = True
 
     def read_public_key(self, public_key):
         self._generator.ecc.exists_with(public_key)
@@ -92,4 +90,39 @@ class ECDSA(object):
         self._private_key = None
 
 if __name__ == '__main__':
-    pass
+    ecc256, generator256 = ECCGetItem(256)
+
+    # signer: alice
+    # verifier: bob
+    # alice doesn't need to calculate public key for signature.
+    # alice needs judt to set private key.
+    alice = ECDSA(generator256)
+    bob = ECDSA(generator256)
+
+    w = int.from_bytes(bytes.fromhex(
+                'DC51D386 6A15BACD E33D96F9 92FCA99D'
+                'A7E6EF09 34E70975 59C27F16 14C88A7F'), 'big')
+    alice.set_private_key(private_key=w)
+
+    # calculate digest.
+    import hashlib
+    m = hashlib.sha1()
+    m.update(b'abc')
+    hexdigest = m.hexdigest()
+
+    # convert digest to int.
+    h = int.from_bytes(bytes.fromhex(hexdigest), 'big')
+
+    # alice doesn't need calculated public key for signature.
+    # alice needs judt to set private key.
+    r, s = alice.sign(h)
+
+    # bob must get alice's public key.
+    # Therefore alice compute public key and send it to bob.
+    alice.compute_public_key()
+    alice_public_key = alice.get_public_key()
+    result = bob.verify(r, s, h, alice_public_key)
+    if result:
+        print('bob got VALID signature.')
+    else:
+        print('bob got INVALID signature.')
