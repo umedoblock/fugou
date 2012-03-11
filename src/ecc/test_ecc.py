@@ -3,7 +3,6 @@ import unittest
 
 from ecc import *
 from ecc import Point
-from ecc import gcdext
 from ecdh import *
 
 def ECCGetItem(bit):
@@ -217,7 +216,7 @@ class TestECC(unittest.TestCase):
 y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11) and
 y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331)
 are different ECC.
-Therefore, __eq__() cannot compare (3, 2) with (7, 89).'''
+Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         args = raiz.exception.args
         self.assertEqual(message, args[0])
 
@@ -316,7 +315,7 @@ Therefore, __eq__() cannot compare (3, 2) with (7, 89).'''
             ECCPoint(0, 0, ecc)
         args = raiz.exception.args
         message = \
-            '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
+            '(0x0, 0x0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
         self.assertEqual(message, args[0])
 
         point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
@@ -424,7 +423,7 @@ Therefore, __eq__() cannot compare (3, 2) with (7, 89).'''
             ECCPoint(0, 0, ecc)
         args = raiz.exception.args
         message = \
-            '(0, 0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
+            '(0x0, 0x0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
         self.assertEqual(message, args[0])
 
     def test_gcdext(self):

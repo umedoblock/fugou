@@ -9,7 +9,7 @@ import random
 from ecc.collect_primes import is_prime
 
 __all__ = [
-    'ECC', 'ECCPoint', 'ECCPointError', 'generate_random'
+    'ECC', 'ECCPoint', 'ECCPointError', 'generate_random', 'gcdext'
 ]
 
 from sys import modules
@@ -83,11 +83,10 @@ class Point(Line):
     def constructs(self, ecc, raise_error=True):
         return ecc.exists_with(self, raise_error)
 
-    def __repr__(self):
-        return '({}, {})'.format(self.x, self.y)
-
     def __str__(self):
-        return '({}, {})'.format(self.x, self.y)
+        if self.isinf():
+            return '(inf, inf)'
+        return '(0x{:x}, 0x{:x})'.format(self.x, self.y)
 
 '''
 class Space(Point):
