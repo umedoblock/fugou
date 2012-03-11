@@ -6,10 +6,10 @@ from ecc import Point
 from ecc import gcdext
 from ecdh import *
 
-class TestECDH(unittest.TestCase):
-    def test_ecdh_256bit_random_ECP_Group(self):
-        # test data from http://www.rfc-editor.org/rfc/rfc5903.txt
-        # make ecc.
+def ECCGetItem(bit):
+    # test data from http://www.rfc-editor.org/rfc/rfc5903.txt
+    # make ecc.
+    if bit == 256:
         a = -3
         b = int.from_bytes(bytes.fromhex(
                  '5AC635D8 AA3A93E7 B3EBBD55 769886BC'
@@ -30,6 +30,13 @@ class TestECDH(unittest.TestCase):
                     '4FE342E2 FE1A7F9B 8EE7EB4A 7C0F9E16'
                     '2BCE3357 6B315ECE CBB64068 37BF51F5'), 'big')
         generator256 = ECCPoint(gx, gy, ecc256)
+        return ecc256, generator256
+    else:
+        raise ValueError('invalid bit(={})'.format(bit))
+
+class TestECDH(unittest.TestCase):
+    def test_ecdh_256bit_random_ECP_Group(self):
+        ecc256, generator256 = ECCGetItem(256)
         alice = ECDH(generator256)
         bob = ECDH(generator256)
 
