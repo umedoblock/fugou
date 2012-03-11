@@ -6,34 +6,6 @@ from ecc import Point
 from ecdh import *
 from ecdsa import *
 
-def ECCGetItem(bit):
-    # test data from http://www.rfc-editor.org/rfc/rfc5903.txt
-    # make ecc.
-    if bit == 256:
-        a = -3
-        b = int.from_bytes(bytes.fromhex(
-                 '5AC635D8 AA3A93E7 B3EBBD55 769886BC'
-                 '651D06B0 CC53B0F6 3BCE3C3E 27D2604B'), 'big')
-        prime = int.from_bytes(bytes.fromhex(
-                    'FFFFFFFF 00000001 00000000 00000000'
-                    '00000000 FFFFFFFF FFFFFFFF FFFFFFFF'), 'big')
-        order = int.from_bytes(bytes.fromhex(
-                    'FFFFFFFF 00000000 FFFFFFFF FFFFFFFF'
-                    'BCE6FAAD A7179E84 F3B9CAC2 FC632551'), 'big')
-        ecc256 = ECC(a, b, prime, order)
-
-        # make generator.
-        gx = int.from_bytes(bytes.fromhex(
-                    '6B17D1F2 E12C4247 F8BCE6E5 63A440F2'
-                    '77037D81 2DEB33A0 F4A13945 D898C296'), 'big')
-        gy = int.from_bytes(bytes.fromhex(
-                    '4FE342E2 FE1A7F9B 8EE7EB4A 7C0F9E16'
-                    '2BCE3357 6B315ECE CBB64068 37BF51F5'), 'big')
-        generator256 = ECCPoint(gx, gy, ecc256)
-        return ecc256, generator256
-    else:
-        raise ValueError('invalid bit(={})'.format(bit))
-
 class TestECDSA(unittest.TestCase):
     def test_ecdsa_256bit_random(self):
         # test data from http://www.rfc-editor.org/rfc/rfc4754.txt
