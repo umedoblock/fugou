@@ -13,8 +13,6 @@ __all__ = [
     'generate_random', 'gcdext'
 ]
 
-from sys import modules
-
 def ECCGetItem(bit):
     # test data from http://www.rfc-editor.org/rfc/rfc5903.txt
     # make ecc.
