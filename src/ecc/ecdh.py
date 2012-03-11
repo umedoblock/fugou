@@ -78,9 +78,12 @@ if __name__ == '__main__':
     bob.set_private_key()
 
     alice.compute_public_key()
-    bob.compute_public_key()
+    alice_public_key = alice.get_public_key()
 
-    alice_secret_key = alice.make_secret_key(bob.get_public_key())
+    bob.compute_public_key()
+    bob_public_key = bob.get_public_key()
+
+    alice_secret_key = alice.make_secret_key(bob_public_key)
     bob_secret_key = bob.make_secret_key(alice.get_public_key())
 
     if alice_secret_key == bob_secret_key:
