@@ -402,38 +402,3 @@ class ECCPoint(Point):
 
 class ECCPointError(BaseException):
     pass
-
-if __name__ == '__main__':
-    p0 = Point(1, 2)
-    p1 = Point(3, 4)
-    print('p0 =', id(p0))
-    print('p1 =', id(p1))
-    print('------------------------------------------------')
-
-    p0 += p1
-    print('p0 =', id(p0))
-    print(str(p0))
-    print('------------------------------------------------')
-
-    p2 = p0 + p1
-    print('p2 =', id(p2))
-    print(str(p0))
-    print(str(p2))
-
-    p2 *= 3
-    print('p2 =', id(p2))
-    print(str(p2))
-
-    p3 = p2 * 3
-    print('p3 =', id(p3))
-    print(str(p3))
-
-    p4 = 3 * p3
-    print('p4 =', id(p4))
-    print(str(p4))
-    print('------------------------------------------------')
-    print(str(p0))
-    print(str(p1))
-    print(str(p2))
-    print(str(p3))
-    print(str(p4))
