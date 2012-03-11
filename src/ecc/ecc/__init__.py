@@ -51,7 +51,6 @@ except ImportError as e:
     print('reason: ', e.args[0])
 
 def generate_random(rand_max):
-    from sys import modules
     d = generate_random.__dict__
     if not 'randrange' in d:
         d['randrange'] = random.SystemRandom().randrange
