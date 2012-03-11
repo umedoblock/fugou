@@ -6,8 +6,6 @@
 import math
 import random
 
-from ecc.collect_primes import is_prime
-
 __all__ = [
     'ECC', 'ECCPoint', 'ECCPointError', 'ECCGetItem',
     'generate_random', 'gcdext'
@@ -400,3 +398,35 @@ class ECCPoint(Point):
 
 class ECCPointError(BaseException):
     pass
+
+def collect_primes(n):
+    primes = list()
+    primes.append(2)
+    for i in range(3, n + 1, 2):
+        # print(i)
+        dived = False
+        sq = int(math.sqrt(i))
+        for prime in primes:
+            if prime > sq:
+      #     if prime ** 2 > i:
+                break
+            if i % prime == 0:
+                dived = True
+        if not dived:
+            primes.append(i)
+    return primes
+
+def is_prime(n):
+    primes = collect_primes(n)
+    return n in primes
+
+if __name__ == '__main__':
+    import sys
+    print(sys.argv)
+    if len(sys.argv) >= 2:
+        prime_max = int(sys.argv[1])
+    else:
+        prime_max = 100
+    primes = collect_primes(prime_max)
+    print(primes)
+    print('len(primes) =', len(primes))
