@@ -4,6 +4,7 @@ import unittest
 from ecc import *
 from ecc import Point
 from ecdh import *
+from ecdsa import *
 
 def ECCGetItem(bit):
     # test data from http://www.rfc-editor.org/rfc/rfc5903.txt
@@ -32,6 +33,72 @@ def ECCGetItem(bit):
         return ecc256, generator256
     else:
         raise ValueError('invalid bit(={})'.format(bit))
+
+class TestECDSA(unittest.TestCase):
+    def test_ecdsa_256bit_random(self):
+        # test data from http://www.rfc-editor.org/rfc/rfc4754.txt
+        expected_w = int.from_bytes(bytes.fromhex(
+                    'DC51D386 6A15BACD E33D96F9 92FCA99D'
+                    'A7E6EF09 34E70975 59C27F16 14C88A7F'), 'big')
+
+        expected_r = int.from_bytes(bytes.fromhex(
+                    'CB28E099 9B9C7715 FD0A80D8 E47A7707'
+                    '9716CBBF 917DD72E 97566EA1 C066957C'), 'big')
+
+        expected_s = int.from_bytes(bytes.fromhex(
+                    '86FA3BB4 E26CAD5B F90B7F81 899256CE'
+                    '7594BB1E A0C89212 748BFF3B 3D5B0315'), 'big')
+
+        ecc256, generator256 = ECCGetItem(256)
+
+        # signer: alice
+        # verifier: bob
+        # alice doesn't need to calculate public key for signature.
+        # alice needs judt to set private key.
+        alice = ECDSA(generator256)
+        bob = ECDSA(generator256)
+
+        with self.assertRaises(ValueError) as raiz:
+            alice.get_private_key()
+        args = raiz.exception.args
+        self.assertEqual(args[0], '_private_key is empty value.')
+
+        alice.set_private_key(private_key=expected_w)
+        pri = alice.get_private_key()
+        self.assertEqual(expected_w, pri)
+
+        # stand in randrange for this test.
+        # alice recieve k as random number in sign().
+        k = int.from_bytes(bytes.fromhex(
+                    '9E56F509 196784D9 63D1C0A4 01510EE7'
+                    'ADA3DCC5 DEE04B15 4BF61AF1 D5A6DECE'), 'big')
+        def randrange_stand_in(_min, _max, v=k):
+            return v
+        import ecc
+        d = ecc.__dict__['generate_random'].__dict__
+        d['randrange'] = randrange_stand_in
+
+        h = int.from_bytes(bytes.fromhex(
+                    'BA7816BF 8F01CFEA 414140DE 5DAE2223'
+                    'B00361A3 96177A9C B410FF61 F20015AD'), 'big')
+        # alice doesn't need calculated public key for signature.
+        # alice needs judt to set private key.
+        r, s = alice.sign(h)
+        self.assertEqual(k, generate_random(ecc256.order))
+        del d['randrange']
+        self.assertNotEqual(k, generate_random(ecc256.order))
+        self.assertEqual(expected_r, r)
+        self.assertEqual(expected_s, s)
+
+        gwx = int.from_bytes(bytes.fromhex(
+                    '2442A5CC 0ECD015F A3CA31DC 8E2BBC70'
+                    'BF42D60C BCA20085 E0822CB0 4235E970'), 'big')
+        gwy = int.from_bytes(bytes.fromhex(
+                    '6FC98BD7 E50211A4 A27102FA 3549DF79'
+                    'EBCB4BF2 46B80945 CDDFE7D5 09BBFD7D'), 'big')
+        alice_public_key = ECCPoint(gwx, gwy, ecc256)
+        result = bob.verify(r, s, h, alice_public_key)
+        self.assertTrue(result)
 
 class TestECDH(unittest.TestCase):
     def test_ecdh_256bit_random_ECP_Group(self):
