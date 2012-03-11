@@ -20,7 +20,7 @@ class TestECDH(unittest.TestCase):
         order = int.from_bytes(bytes.fromhex(
                     'FFFFFFFF 00000000 FFFFFFFF FFFFFFFF'
                     'BCE6FAAD A7179E84 F3B9CAC2 FC632551'), 'big')
-        ecc = ECC(a, b, prime, order)
+        ecc256 = ECC(a, b, prime, order)
 
         # make generator.
         gx = int.from_bytes(bytes.fromhex(
@@ -29,9 +29,9 @@ class TestECDH(unittest.TestCase):
         gy = int.from_bytes(bytes.fromhex(
                     '4FE342E2 FE1A7F9B 8EE7EB4A 7C0F9E16'
                     '2BCE3357 6B315ECE CBB64068 37BF51F5'), 'big')
-        generator = ECCPoint(gx, gy, ecc)
-        alice = ECDH(generator)
-        bob = ECDH(generator)
+        generator256 = ECCPoint(gx, gy, ecc256)
+        alice = ECDH(generator256)
+        bob = ECDH(generator256)
 
         # make alice's public key.
         i = int.from_bytes(bytes.fromhex(
@@ -46,7 +46,7 @@ class TestECDH(unittest.TestCase):
         giy = int.from_bytes(bytes.fromhex(
                     '5271A046 1CDB8252 D61F1C45 6FA3E59A'
                     'B1F45B33 ACCF5F58 389E0577 B8990BB3'), 'big')
-        gi = ECCPoint(gix, giy, ecc)
+        gi = ECCPoint(gix, giy, ecc256)
         self.assertEqual(gi, alice.get_public_key())
 
         # make bob's public key.
@@ -62,7 +62,7 @@ class TestECDH(unittest.TestCase):
         gry = int.from_bytes(bytes.fromhex(
                     '56FBF3CA 366CC23E 8157854C 13C58D6A'
                     'AC23F046 ADA30F83 53E74F33 039872AB'), 'big')
-        gr = ECCPoint(grx, gry, ecc)
+        gr = ECCPoint(grx, gry, ecc256)
         self.assertEqual(gr, bob.get_public_key())
 
         self.assertNotEqual(alice.get_private_key(), bob.get_private_key())
@@ -85,7 +85,7 @@ class TestECDH(unittest.TestCase):
         giry = int.from_bytes(bytes.fromhex(
                     '522BDE0A F0D8585B 8DEF9C18 3B5AE38F'
                     '50235206 A8674ECB 5D98EDB2 0EB153A2'), 'big')
-        gir = ECCPoint(girx, giry, ecc)
+        gir = ECCPoint(girx, giry, ecc256)
 
         # check
         self.assertEqual(gir, alice_secret_key)
