@@ -1,0 +1,70 @@
+p3 test_speed.py --ecdsa-times=1000 --profile
+can import _gcdext
+ecdsa sign()         1000 signatures.
+      139.66 seconds.
+speed 7.16 signs / second.
+      0.14 seconds / signature.
+ecdsa verify()       1000 signatures.
+      276.93 seconds.
+speed 3.61 signs / second.
+      0.28 seconds / signature.
+         38000240 function calls in 416.593 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000  416.592  416.592 <string>:1(<module>)
+        1    0.000    0.000    0.000    0.000 __init__.py:137(__init__)
+        1    0.000    0.000    0.000    0.000 __init__.py:14(ECCGetItem)
+        1    0.000    0.000    0.000    0.000 __init__.py:166(__init__)
+  1150580   73.917    0.000  406.987    0.000 __init__.py:172(add)
+     3001    4.276    0.001  415.759    0.139 __init__.py:204(mul_fast)
+  3454744   53.661    0.000  136.134    0.000 __init__.py:237(exists_with)
+  4602323   11.403    0.000   11.403    0.000 __init__.py:329(__eq__)
+  1153584    9.417    0.000   58.035    0.000 __init__.py:339(__init__)
+  9201643   15.561    0.000   15.561    0.000 __init__.py:352(isinf)
+     3001    0.012    0.000  415.785    0.139 __init__.py:355(__rmul__)
+     3001    0.014    0.000  415.773    0.139 __init__.py:358(__mul__)
+  1150580    4.747    0.000  411.734    0.000 __init__.py:364(__add__)
+  1147579   11.835    0.000   20.291    0.000 __init__.py:370(__eq__)
+        1    0.000    0.000    0.000    0.000 __init__.py:390(__bool__)
+     1001    0.006    0.000    0.089    0.000 __init__.py:78(generate_random)
+  1153584    2.623    0.000    2.623    0.000 __init__.py:95(__init__)
+        2    0.000    0.000    0.000    0.000 ecdsa.py:15(__init__)
+     1000    0.024    0.000  139.504    0.140 ecdsa.py:22(sign)
+     1000    0.025    0.000  276.911    0.277 ecdsa.py:42(verify)
+        1    0.000    0.000    0.000    0.000 ecdsa.py:63(set_private_key)
+        1    0.000    0.000    0.141    0.141 ecdsa.py:71(compute_public_key)
+        1    0.000    0.000    0.000    0.000 ecdsa.py:78(get_public_key)
+     1000    0.002    0.000    0.002    0.000 ecdsa.py:83(get_private_key)
+        2    0.000    0.000    0.000    0.000 ecdsa.py:88(__del__)
+     1001    0.016    0.000    0.054    0.000 os.py:765(urandom)
+     1001    0.007    0.000    0.082    0.000 random.py:166(randrange)
+     1001    0.008    0.000    0.075    0.000 random.py:217(_randbelow)
+     1001    0.009    0.000    0.066    0.000 random.py:638(getrandbits)
+        1    0.000    0.000    0.000    0.000 random.py:648(seed)
+        1    0.000    0.000    0.000    0.000 random.py:85(__init__)
+        1    0.000    0.000  416.592  416.592 test_speed.py:105(run)
+        1    0.011    0.011  139.663  139.663 test_speed.py:37(do_ecdsa_sign)
+        1    0.011    0.011  276.928  276.928 test_speed.py:52(do_ecdsa_verify)
+        1    0.000    0.000  416.592  416.592 test_speed.py:64(do_ecdsa)
+        2    0.000    0.000    0.000    0.000 test_speed.py:98(performance)
+     1001    0.004    0.000    0.004    0.000 {built-in method close}
+        1    0.000    0.000  416.593  416.593 {built-in method exec}
+     3006    0.010    0.000    0.010    0.000 {built-in method from_bytes}
+     2005    0.006    0.000    0.006    0.000 {built-in method fromhex}
+  1149579  161.161    0.000  161.161    0.000 {built-in method gcdext}
+  6909491   12.414    0.000   12.414    0.000 {built-in method isinstance}
+     3003    0.005    0.000    0.005    0.000 {built-in method len}
+        4    0.000    0.000    0.000    0.000 {built-in method now}
+        1    0.000    0.000    0.000    0.000 {built-in method openssl_sha1}
+     1001    0.017    0.000    0.017    0.000 {built-in method open}
+  6897480   55.376    0.000   55.376    0.000 {built-in method pow}
+        8    0.000    0.000    0.000    0.000 {built-in method print}
+     1001    0.013    0.000    0.013    0.000 {built-in method read}
+     1001    0.002    0.000    0.002    0.000 {method 'bit_length' of 'int' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        8    0.000    0.000    0.000    0.000 {method 'format' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+        2    0.000    0.000    0.000    0.000 {method 'total_seconds' of 'datetime.timedelta' objects}
+        1    0.000    0.000    0.000    0.000 {method 'update' of '_hashlib.HASH' objects}

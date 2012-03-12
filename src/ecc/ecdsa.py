@@ -89,6 +89,24 @@ class ECDSA(object):
         # TODO: change _private_key value in C language.
         self._private_key = None
 
+class ECDSAError(BaseException):
+    def __init__(self, message, r, s, h, public_key):
+        self.message = message
+        self.r = r
+        self.s = s
+        self.h = h
+        self.public_key = public_key
+
+    def __str__(self):
+        ss = (
+        '{}\n'
+        'r = 0x{:x}\n'
+        's = 0x{:x}\n'
+        'h = 0x{:x}\n'
+        'public_key = {}\n') \
+        .format(self.message, self.r, self.s, self.h, self.public_key)
+        return ss
+
 if __name__ == '__main__':
     ecc256, generator256 = ECCGetItem(256)
 
@@ -129,4 +147,5 @@ if __name__ == '__main__':
     if result:
         print('bob got VALID signature.')
     else:
-        print('bob got INVALID signature.')
+        raise ECDSAError('bob got INVALID signature.', \
+                         r, s, h, alice_public_key)
