@@ -252,8 +252,8 @@ class TestECC(unittest.TestCase):
             eccp0 == eccp1
 
         message = '''
-y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11) and
-y ^ 2 = x ^ 3 + 19 * x + 77 (mod 307, order 331)
+y ^ 2 = x ^ 3 + 0x2 * x - 0x1 (mod 0x7, order 0xb) and
+y ^ 2 = x ^ 3 + 0x13 * x + 0x4d (mod 0x133, order 0x14b)
 are different ECC.
 Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         args = raiz.exception.args
@@ -354,7 +354,8 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
             ECCPoint(0, 0, ecc)
         args = raiz.exception.args
         message = \
-            '(0x0, 0x0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
+            ('(0x0, 0x0) is not on y ^ 2 = x ^ 3 + 0x2 * x - 0x1 '
+             '(mod 0x7, order 0xb).')
         self.assertEqual(message, args[0])
 
         point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
@@ -431,8 +432,9 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         self.assertEqual(-1, ecc.b)
         self.assertEqual(7, ecc.prime)
         self.assertEqual(11, ecc.order)
-        self.assertEqual('y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11)', \
-                         str(ecc))
+        self.assertEqual(
+                'y ^ 2 = x ^ 3 + 0x2 * x - 0x1 (mod 0x7, order 0xb)',
+                 str(ecc))
 
     def test_ecc_and_points(self):
         ecc = ECC(2, -1, 7, 11)
@@ -462,7 +464,8 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
             ECCPoint(0, 0, ecc)
         args = raiz.exception.args
         message = \
-            '(0x0, 0x0) is not on y ^ 2 = x ^ 3 + 2 * x - 1 (mod 7, order 11).'
+            ('(0x0, 0x0) is not on y ^ 2 = x ^ 3 + 0x2 * x - 0x1 '
+             '(mod 0x7, order 0xb).')
         self.assertEqual(message, args[0])
 
     def test_gcdext(self):

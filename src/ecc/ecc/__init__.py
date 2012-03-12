@@ -34,8 +34,8 @@ def ECCGetItem(bit):
         gy = int.from_bytes(bytes.fromhex(
                     '4FE342E2 FE1A7F9B 8EE7EB4A 7C0F9E16'
                     '2BCE3357 6B315ECE CBB64068 37BF51F5'), 'big')
-        generator256 = ECCPoint(gx, gy, ecc256)
-        return ecc256, generator256
+        G256 = ECCPoint(gx, gy, ecc256)
+        return ecc256, G256
     else:
         raise ValueError('invalid bit(={})'.format(bit))
 
@@ -156,15 +156,15 @@ class EC(object):
             sign_b = '-'
         abs_b = abs(self.b)
 
-        a = '{} {} * x'.format(sign_a, abs_a)
-        b = '{} {}'.format(sign_b, abs_b)
+        a = '{} 0x{:x} * x'.format(sign_a, abs_a)
+        b = '{} 0x{:x}'.format(sign_b, abs_b)
 
         return 'y ^ 2 = x ^ 3 {} {}'.format(a, b)
 
 class ECC(EC):
 
     def __init__(self, a, b, prime, order=0):
-        '''y ^ 2 = x ^ 3 + a * x + b (mod prime).'''
+        '''y ^ 2 = x ^ 3 + a * x + b (mod prime, order).'''
         super().__init__(a, b)
         self.prime = prime
         self.order = order
@@ -323,7 +323,8 @@ class ECC(EC):
 
     def __str__(self):
         ss = super().__str__()
-        return ss + ' (mod {}, order {})'.format(self.prime, self.order)
+        return (ss + \
+             ' (mod 0x{:x}, order 0x{:x})').format(self.prime, self.order)
 
     def __eq__(self, other):
         if  self.a == other.a and \
@@ -421,12 +422,27 @@ def is_prime(n):
     return n in primes
 
 if __name__ == '__main__':
-    import sys
-    print(sys.argv)
-    if len(sys.argv) >= 2:
-        prime_max = int(sys.argv[1])
-    else:
-        prime_max = 100
-    primes = collect_primes(prime_max)
-    print(primes)
-    print('len(primes) =', len(primes))
+    # data from http://www.rfc-editor.org/rfc/rfc5903.txt
+    a = -3
+    b = int.from_bytes(bytes.fromhex(
+             '5AC635D8 AA3A93E7 B3EBBD55 769886BC'
+             '651D06B0 CC53B0F6 3BCE3C3E 27D2604B'), 'big')
+    prime = int.from_bytes(bytes.fromhex(
+                'FFFFFFFF 00000001 00000000 00000000'
+                '00000000 FFFFFFFF FFFFFFFF FFFFFFFF'), 'big')
+    order = int.from_bytes(bytes.fromhex(
+                'FFFFFFFF 00000000 FFFFFFFF FFFFFFFF'
+                'BCE6FAAD A7179E84 F3B9CAC2 FC632551'), 'big')
+    ecc = ECC(a, b, prime, order)
+
+    # make generator.
+    gx = int.from_bytes(bytes.fromhex(
+                '6B17D1F2 E12C4247 F8BCE6E5 63A440F2'
+                '77037D81 2DEB33A0 F4A13945 D898C296'), 'big')
+    gy = int.from_bytes(bytes.fromhex(
+                '4FE342E2 FE1A7F9B 8EE7EB4A 7C0F9E16'
+                '2BCE3357 6B315ECE CBB64068 37BF51F5'), 'big')
+    G = ECCPoint(gx, gy, ecc)
+
+    print('ecc =', ecc)
+    print('G =', G)
