@@ -21,14 +21,14 @@ class TestECDSA(unittest.TestCase):
                     '86FA3BB4 E26CAD5B F90B7F81 899256CE'
                     '7594BB1E A0C89212 748BFF3B 3D5B0315'), 'big')
 
-        ecc256, generator256 = ECCGetItem(256)
+        ecc256, G256 = ECCGetItem(256)
 
         # signer: alice
         # verifier: bob
         # alice doesn't need to calculate public key for signature.
         # alice needs judt to set private key.
-        alice = ECDSA(generator256)
-        bob = ECDSA(generator256)
+        alice = ECDSA(G256)
+        bob = ECDSA(G256)
 
         with self.assertRaises(ValueError) as raiz:
             alice.get_private_key()
@@ -74,9 +74,9 @@ class TestECDSA(unittest.TestCase):
 
 class TestECDH(unittest.TestCase):
     def test_ecdh_256bit_random_ECP_Group(self):
-        ecc256, generator256 = ECCGetItem(256)
-        alice = ECDH(generator256)
-        bob = ECDH(generator256)
+        ecc256, G256 = ECCGetItem(256)
+        alice = ECDH(G256)
+        bob = ECDH(G256)
 
         # make alice's public key.
         i = int.from_bytes(bytes.fromhex(
@@ -138,9 +138,9 @@ class TestECDH(unittest.TestCase):
 
     def test_ecdh_basic(self):
         ecc = ECC(19, 77, 307, 331)
-        generator = ECCPoint(7, 218, ecc)
-        alice = ECDH(generator)
-        bob = ECDH(generator)
+        G = ECCPoint(7, 218, ecc)
+        alice = ECDH(G)
+        bob = ECDH(G)
 
         alice.set_private_key()
         bob.set_private_key()
@@ -173,17 +173,17 @@ class TestECC(unittest.TestCase):
         self.assertEqual(P26, PA)
         self.assertEqual(P178, PB)
 
-        AlicePoint = alice_key * PB
-        BobPoint = bob_key * PA
+        Alice_compute = alice_key * PB
+        Bob_compute = bob_key * PA
 
-        self.assertEqual(P217, AlicePoint)
-        self.assertEqual(P217, BobPoint)
-        self.assertEqual(AlicePoint, BobPoint)
+        self.assertEqual(P217, Alice_compute)
+        self.assertEqual(P217, Bob_compute)
+        self.assertEqual(Alice_compute, Bob_compute)
 
         muled_point = muled_key * P8
         self.assertEqual(P217, muled_point)
 
-    def test_eccp_div(self):
+    def test_ECCPoint_div(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
         num = 111
@@ -201,7 +201,7 @@ class TestECC(unittest.TestCase):
                     ("unsupported operand type(s) for //: "
                      "'ECCPoint' and 'int'"))
 
-    def test_eccp_mul_by_negative_value(self):
+    def test_ECCPoint_mul_by_negative_value(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
 
@@ -210,22 +210,22 @@ class TestECC(unittest.TestCase):
         args = raiz.exception.args
         self.assertEqual('number(=-1) must be positive value.', args[0])
 
-    def test_eccp_mul(self):
+    def test_ECCPoint_mul(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
         P26 = ECCPoint(20, 274, ecc)
 
-        x = P8 * 75
-        self.assertEqual(P26, x)
+        Q = P8 * 75
+        self.assertEqual(P26, Q)
 
-        y = 75 * P8
-        self.assertEqual(P26, y)
+        R = 75 * P8
+        self.assertEqual(P26, R)
 
-        z = P8
-        z *= 75
-        self.assertEqual(P26, z)
+        S = P8
+        S *= 75
+        self.assertEqual(P26, S)
 
-    def test_eccp_mul_fast(self):
+    def test_ECCPoint_mul_fast(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
         P26 = ECCPoint(20, 274, ecc)
@@ -233,7 +233,7 @@ class TestECC(unittest.TestCase):
         P8_75 = ecc.mul_fast(P8, 75)
         self.assertEqual(P26, P8_75)
 
-    def test_eccp_mul_honest(self):
+    def test_ECCPoint_mul_honest(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
         P26 = ECCPoint(20, 274, ecc)
@@ -241,15 +241,15 @@ class TestECC(unittest.TestCase):
         P8_75 = ecc.mul_honest(P8, 75)
         self.assertEqual(P26, P8_75)
 
-    def test_eccp_on_different_ec(self):
-        ecc0 = ECC(2, -1, 7, 11)
-        ecc1 = ECC(19, 77, 307, 331)
-        self.assertFalse(ecc0 == ecc1)
+    def test_ECCPoint_on_different_ec(self):
+        ecc_0 = ECC(2, -1, 7, 11)
+        ecc_1 = ECC(19, 77, 307, 331)
+        self.assertFalse(ecc_0 == ecc_1)
 
-        eccp0 = ECCPoint(3, 2, ecc0)
-        eccp1 = ECCPoint(7, 89, ecc1)
+        P = ECCPoint(3, 2, ecc_0)
+        Q = ECCPoint(7, 89, ecc_1)
         with self.assertRaises(ECCPointError) as raiz:
-            eccp0 == eccp1
+            P == Q
 
         message = '''
 y ^ 2 = x ^ 3 + 0x2 * x - 0x1 (mod 0x7, order 0xb) and
@@ -259,37 +259,44 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         args = raiz.exception.args
         self.assertEqual(message, args[0])
 
-    def test_eccp_add_same_point(self):
+    def test_ECCPoint_add_same_point(self):
         ecc = ECC(2, -1, 7, 11)
-        eccp = ECCPoint(1, 3, ecc)
-        expected_eccp = ECCPoint(2, 2, ecc)
+        P = ECCPoint(1, 3, ecc)
+        expected_P2 = ECCPoint(2, 2, ecc)
 
-        double_eccp = eccp + eccp
-        self.assertTrue(double_eccp.constructs(ecc))
-        self.assertEqual(expected_eccp, double_eccp)
+        P2_add = P + P
+        self.assertTrue(P2_add.constructs(ecc))
+        self.assertEqual(expected_P2, P2_add)
 
-        double_eccp_ = eccp
-        double_eccp_ += eccp
-        self.assertEqual(expected_eccp, double_eccp_)
-        self.assertTrue(double_eccp_.constructs(ecc))
+        P2_iadd = P
+        P2_iadd += P
+        self.assertEqual(expected_P2, P2_iadd)
+        self.assertTrue(P2_iadd.constructs(ecc))
 
-    def test_eccp_add(self):
+        P2_self = P
+        P2_self += P2_self
+        self.assertEqual(expected_P2, P2_self)
+        self.assertTrue(P2_self.constructs(ecc))
+
+        self.assertEqual(ECCPoint(1, 3, ecc), P)
+
+    def test_ECCPoint_add(self):
         ecc = ECC(2, -1, 7, 11)
-        eccp0 = ECCPoint(3, 2, ecc)
-        eccp1 = ECCPoint(4, 6, ecc)
-        expected_eccp = ECCPoint(2, 2, ecc)
+        P = ECCPoint(3, 2, ecc)
+        Q = ECCPoint(4, 6, ecc)
+        expected_PQ = ECCPoint(2, 2, ecc)
 
-        x = eccp0 + eccp1
-        self.assertTrue(x.constructs(ecc))
-        self.assertEqual(expected_eccp, x)
+        PQ = P + Q
+        self.assertTrue(PQ.constructs(ecc))
+        self.assertEqual(expected_PQ, PQ)
 
-        y = eccp1 + eccp0
-        self.assertTrue(y.constructs(ecc))
-        self.assertEqual(expected_eccp, y)
+        QP = Q + P
+        self.assertTrue(PQ.constructs(ecc))
+        self.assertEqual(expected_PQ, QP)
 
-        self.assertEqual(x, y)
+        self.assertEqual(PQ, QP)
 
-    def test_eccp_bool(self):
+    def test_ECCPoint_bool(self):
         ecc = ECC(2, -1, 7)
         P = ECCPoint(3, 2, ecc)
         self.assertTrue(P)
@@ -300,55 +307,60 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         # http://en.wikipedia.org/wiki/Elliptic_curve
         # The group law
         ecc = ECC(2, -1, 7, 11)
-        point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
+        O = ECCPoint(0, 0, ecc, is_infinity=True)
 
         # case 1.
         P = ECCPoint(1, 3, ecc)
         Q = ECCPoint(4, 1, ecc)
         R_ = P + Q
         R = ECCPoint(R_.x, -R_.y, ecc)
-        self.assertEqual(point_at_infinity, P + Q + R)
+        self.assertEqual(O, P + Q + R)
         P = Q = R = P_ = R_ = None
 
         # case 2.
         Q = ECCPoint(1, 3, ecc)
         P_ = Q + Q
         P = ECCPoint(P_.x, -P_.y, ecc)
-        self.assertEqual(point_at_infinity, P + Q + Q)
+        self.assertEqual(O, P + Q + Q)
         P = Q = R = P_ = R_ = None
 
         # case 3.
         P = ECCPoint(1, 3, ecc)
         Q = ECCPoint(P.x, -P.y, ecc)
-        self.assertEqual(point_at_infinity, P + Q + point_at_infinity)
+        self.assertEqual(O, P + Q + O)
         P = Q = R = P_ = R_ = None
 
         # case 4.
         # D.N.E in ECC.
         # no need to think about Elliptic Curve.
+        # no maybe find a order which is even.
+        # but it's tired ?
+        # Therefore I never try to find it !.
         pass
 
     def test_ecc_point_at_infinity_with_different_ecc(self):
-        ecc0 = ECC(2, -1, 7, 11)
-        ecc1 = ECC(19, 77, 307)
+        ecc_0 = ECC(2, -1, 7, 11)
+        ecc_1 = ECC(19, 77, 307)
 
-        point_at_infinity0 = ECCPoint(0, 0, ecc0, is_infinity=True)
+        O_ecc_0 = ECCPoint(0, 0, ecc_0, is_infinity=True)
 
-        self.assertTrue(ecc0.exists_with(point_at_infinity0))
+        self.assertTrue(ecc_0.exists_with(O_ecc_0))
 
-        self.assertFalse(ecc1.exists_with(point_at_infinity0,
+        self.assertFalse(ecc_1.exists_with(O_ecc_0,
                                           raise_error=False))
         with self.assertRaises(ECCPointError) as raiz:
-            ecc1.exists_with(point_at_infinity0, raise_error=True)
+            ecc_1.exists_with(O_ecc_0)
+        with self.assertRaises(ECCPointError) as raiz:
+            ecc_1.exists_with(O_ecc_0, raise_error=True)
 
     def test_ecc_point_at_infinity(self):
+        # point at infinity names O.
         ecc = ECC(2, -1, 7, 11)
-        eccp0 = ECCPoint(1, 3, ecc)
-        eccp1 = ECCPoint(1, 4, ecc)
 
-        added_eccp = eccp0 + eccp1
-        self.assertTrue(added_eccp.isinf())
-        self.assertEqual('(inf, inf)', str(added_eccp))
+        O = ECCPoint(0, 0, ecc, is_infinity=True)
+        self.assertTrue(ecc.exists_with(O))
+        self.assertTrue(O.isinf())
+        self.assertEqual('(inf, inf)', str(O))
 
         with self.assertRaises(ECCPointError) as raiz:
             ECCPoint(0, 0, ecc)
@@ -358,20 +370,27 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
              '(mod 0x7, order 0xb).')
         self.assertEqual(message, args[0])
 
-        point_at_infinity = ECCPoint(0, 0, ecc, is_infinity=True)
+        P = ECCPoint(1, 3, ecc)
 
-        self.assertTrue(ecc.exists_with(point_at_infinity))
+        PO = P + O
+        self.assertEqual(P, PO)
+        OP = O + P
+        self.assertEqual(P, OP)
+        P0 = 0 * P
+        self.assertEqual(O, P0)
 
-        eccp2 = eccp0 + point_at_infinity
-        self.assertEqual(eccp0, eccp2)
+        O_ = ECCPoint(0, 0, ecc, is_infinity=True)
+        OO_ = O + O_
+        self.assertTrue(OO_.isinf())
+        self.assertEqual(O, OO_)
+        self.assertEqual(O_, OO_)
 
-        eccp3 = point_at_infinity + eccp1
-        self.assertEqual(eccp1, eccp3)
-
-        point_at_infinity2 = ECCPoint(0, 0, ecc, is_infinity=True)
-        added_infinity = point_at_infinity + point_at_infinity2
-        self.assertTrue(added_infinity.isinf())
-        self.assertEqual(point_at_infinity2, added_infinity)
+        # P + Q = O
+        Q = ECCPoint(1, 4, ecc)
+        R = P + Q
+        self.assertEqual(O, R)
+        self.assertTrue(R.isinf())
+        self.assertEqual('(inf, inf)', str(R))
 
     def test_calc_order(self):
         ecc = ECC(19, 77, 307)
@@ -449,8 +468,8 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         self.assertTrue(p0.is_on(ecc))
         self.assertTrue(p1.is_on(ecc))
 
-        eccp = ECCPoint(4, 1, ecc)
-        self.assertTrue(eccp)
+        P = ECCPoint(4, 1, ecc)
+        self.assertTrue(P)
 
     def test_ecc_and_points_not_relate(self):
         ecc = ECC(2, -1, 7, 11)
