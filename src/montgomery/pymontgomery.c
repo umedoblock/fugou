@@ -538,3 +538,9 @@ PyInit__montgomery(void)
 
     return m;
 }
+
+PyMODINIT_FUNC
+PyInit__montgomery_pg(void)
+{
+    return PyInit__montgomery();
+}

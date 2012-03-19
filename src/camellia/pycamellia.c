@@ -340,3 +340,9 @@ PyInit__camellia(void)
 
     return m;
 }
+
+PyMODINIT_FUNC
+PyInit__camellia_pg(void)
+{
+    return PyInit__camellia();
+}

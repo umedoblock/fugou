@@ -957,3 +957,9 @@ error:
 
     return m;
 }
+
+PyMODINIT_FUNC
+PyInit__par2_pg(void)
+{
+    return PyInit__par2();
+}

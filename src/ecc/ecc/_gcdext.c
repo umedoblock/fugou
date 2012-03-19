@@ -147,3 +147,9 @@ PyInit__gcdext(void)
 
     return m;
 }
+
+PyMODINIT_FUNC
+PyInit__gcdext_pg(void)
+{
+    return PyInit__gcdext();
+}

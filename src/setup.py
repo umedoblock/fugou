@@ -26,22 +26,37 @@
 #   license for the package 	short string 	(6)
 
 from distutils.core import setup, Extension
+import sys
 
-# module_camellia = Extension('camellia', sources = ['camellia/pycamellia.c'])
+# print('sys.argv =', sys.argv)
+# print('type(sys.argv) =', type(sys.argv))
+if '--pg' in sys.argv:
+    suffix = '_pg'
+    sys.argv.remove('--pg')
+else:
+    suffix = ''
+# print('suffix =', suffix)
+
+ext_name = '_par2' + suffix
 module_par2 = \
-    Extension('_par2', sources=[
+    Extension(ext_name, sources=[
                         'par2/par2/pypar2.c',
                         'par2/par2/libpar2.c'
-                       ])
+                       ],
+              )
 
+ext_name = '_gcdext' + suffix
 module_gcdext = \
-    Extension('_gcdext', sources = ['ecc/ecc/_gcdext.c'])
+    Extension(ext_name, sources = ['ecc/ecc/_gcdext.c'],
+              )
 
+ext_name = '_montgomery' + suffix
 module_montgomery = \
-    Extension('_montgomery', sources = ['montgomery/pymontgomery.c'])
+    Extension(ext_name, sources = ['montgomery/pymontgomery.c'])
 
+ext_name = '_camellia' + suffix
 module_camellia = \
-    Extension('_camellia', sources = ['camellia/pycamellia.c',
+    Extension(ext_name, sources = ['camellia/pycamellia.c',
     'camellia/camellia_keygen.c',
     'camellia/camellia_cbc.c',
     'camellia/camellia_debug.c',
