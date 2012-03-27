@@ -8,7 +8,7 @@
 
 void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 {
-/*	unt *w_seki = NULL, *w_seki_adr;*/
+	unt *w_seki = NULL, *w_seki_adr;
 	extern int yousosuu;
 	unt *chuukansou = NULL, *chuukansou_adr;
 	unt *mdr_seki_adr;
@@ -40,12 +40,12 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 	}
 	chuukansou_adr = chuukansou;
 
-/*	w_seki = (unt *)calloc(yousosuu, sizeof(unt));
+	w_seki = (unt *)calloc(yousosuu, sizeof(unt));
 	if(w_seki == NULL){
 		printf("メモリ貸してくれません。\n");
 		exit(1);
 	}
-	w_seki_adr = w_seki;*/
+	w_seki_adr = w_seki;
 
 	utbi_fukusha(iroha_seki_karimasu, iroha_seki);
 	utbi_fukusha(nihohe_seki_karimasu, nihohe_seki);
@@ -54,8 +54,8 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 
 	utbi_shokika(mdr_seki);
 	utbi_shokika(chuukansou);
-/*	utbi_shokika(chuukansou+yousosuu);
-	utbi_shokika(w_seki);*/
+	utbi_shokika(chuukansou+yousosuu);
+	utbi_shokika(w_seki);
 
 	mdr_seki_adr = mdr_seki;
 
@@ -74,13 +74,12 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 			}
 		}
 		mdr_seki++;
-
 	}
 	mdr_seki = mdr_seki_adr;
 
 /*	printf("---------左側---------------------------------------\n");*/
 /*	printf("----------------------------------------------------\n");*/
-/*	for(j=1;j<2*(yousosuu);j+=2){
+	for(j=1;j<2*(yousosuu);j+=2){
 		*w_seki += ketaagari;
 		ketaagari = 0;
 		for(i=j;i<2*yousosuu;i++){
@@ -93,7 +92,7 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 		}
 		w_seki++;
 	}
-	w_seki = w_seki_adr;*/
+	w_seki = w_seki_adr;
 
 /*	printf("--------中間層----右側側----------------------------\n");*/
 /*	printf("----------------------------------------------------\n");*/
@@ -116,11 +115,11 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 
 /*	printf("--------中間層----左側側----------------------------\n");*/
 /*	printf("----------------------------------------------------\n");*/
-/*	for(i=2;i<(2*yousosuu-1);i+=2){
+	for(i=2;i<(2*yousosuu-1);i+=2){
 		*chuukansou += ketaagari;
 		ketaagari = 0;
 		for(j=i;j<2*yousosuu;j++){
-			printf("(%d,%d),", j, 2*yousosuu+i-j-1);
+			/*printf("(%d,%d),", j, 2*yousosuu+i-j-1);*/
 			w=(*(sahen+j))*(*(uhen+(2*yousosuu+i-j-1)));
 			*chuukansou += w;
 			if(*chuukansou < w){
@@ -128,39 +127,38 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 			}
 		}
 		chuukansou++;
-	}*/
+	}
 
 	/*中間層の左側側が桁上がりしたときに受ける必要がある。*/
-/*	*(w_seki+(yousosuu-1)) += (0x00010000 * ketaagari);*/
+	*(w_seki+(yousosuu-1)) += (0x00010000 * ketaagari);
 
 	/*中間層は16ビットずれていて扱いにくいので*/
 	/*左に16ビットシフトさせて戻値や左側側のビットとあわせる*/
 	/*これで扱いやすくなる*/
-/*	utbi_bitzurashi_h_si((chuukansou+yousosuu), (chuukansou+yousosuu), 16);*/
+	utbi_bitzurashi_h_si((chuukansou+yousosuu), (chuukansou+yousosuu), 16);
 
-/*	*(chuukansou + yousosuu) |= (*(chuukansou + (yousosuu-1)) >> 16);*/
+	*(chuukansou + yousosuu) |= (*(chuukansou + (yousosuu-1)) >> 16);
 	utbi_bitzurashi_h_si(chuukansou, chuukansou, 16);
 
 	/*ずらした中間層をそれぞれ左側と右側に加える*/
 	/*右側同士を加える*/
 	ketaagari = 0;
 	utbi_wa(mdr_seki, mdr_seki, chuukansou);
-/*	if(utbi_futougou(mdr_seki, (chuukansou)) < 0){
+	if(utbi_futougou(mdr_seki, (chuukansou)) < 0){
 		ketaagari++;
-	}*/
+	}
 
 	/*今度は左側同士を加える*/
-/*	utbi_wa_ui(w_seki, w_seki, (unt)ketaagari);
-	utbi_wa(w_seki, w_seki, (chuukansou+yousosuu));*/
-
+	utbi_wa_ui(w_seki, w_seki, (unt)ketaagari);
+	utbi_wa(w_seki, w_seki, (chuukansou+yousosuu));
 
 	nihohe_seki_karimasu = nihohe_seki_karimasu_adr;
 	iroha_seki_karimasu = iroha_seki_karimasu_adr;
 	chuukansou = chuukansou_adr;
-/*	w_seki = w_seki_adr;*/
+	w_seki = w_seki_adr;
 
 	free(chuukansou);
-/*	free(w_seki);*/
+	free(w_seki);
 	free(iroha_seki_karimasu);
 	free(nihohe_seki_karimasu);
 }
