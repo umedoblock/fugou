@@ -11,8 +11,8 @@ void utbi_shou_amari(unt *mdr_shou, unt *mdr_amari, /**/unt *a, unt *x)
 	extern int yousosuu;
 	int i, j=0, atama, atama0, atama1;
 	unt *a_karimasu, *a_karimasu_adr;
-	unt *warukazu_shoki, *warukazu_shoki_adr;
-	unt *hikukazu_shouyo_karimasu, *hikukazu_shouyo_karimasu_adr;
+	unt *warukazu_shoki = NULL;
+	unt *hikukazu_shouyo_karimasu = NULL;
 	unt *tmp;
 	unt flg;
 
@@ -20,8 +20,6 @@ void utbi_shou_amari(unt *mdr_shou, unt *mdr_amari, /**/unt *a, unt *x)
 		exit(1);
 	}
 	a_karimasu = a_karimasu_adr = tmp;
-	warukazu_shoki_adr = warukazu_shoki = a_karimasu + yousosuu;
-	hikukazu_shouyo_karimasu_adr = hikukazu_shouyo_karimasu = warukazu_shoki + yousosuu;
 
 	utbi_fukusha(mdr_amari, a);
 	utbi_fukusha(a_karimasu, a);

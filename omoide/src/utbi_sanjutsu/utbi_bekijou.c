@@ -9,7 +9,7 @@
 void utbi_bekijou(unt *mdr_bekijou, unt *kisuu_bekijou, unt *bekisuu_bekijou)
 {
 	unt *kisuu_bekijou_karimasu, *kisuu_bekijou_adr;
-	unt *bekisuu_bekijou_karimasu, *bekisuu_bekijou_adr;
+	unt *bekisuu_bekijou_karimasu;
 	int i, atama;
 	unt flg;
 	unt *tmp;
@@ -22,7 +22,6 @@ void utbi_bekijou(unt *mdr_bekijou, unt *kisuu_bekijou, unt *bekisuu_bekijou)
 	bekisuu_bekijou_karimasu = kisuu_bekijou_karimasu + yousosuu;
 
 	kisuu_bekijou_adr = kisuu_bekijou_karimasu;
-	bekisuu_bekijou_adr = bekisuu_bekijou_karimasu;
 
 	utbi_fukusha_ui(mdr_bekijou, 1);
 	utbi_fukusha(kisuu_bekijou_karimasu, kisuu_bekijou);

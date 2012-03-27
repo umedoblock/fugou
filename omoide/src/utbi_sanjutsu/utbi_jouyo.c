@@ -16,8 +16,8 @@ void utbi_jouyo(unt *mdr_jouyo, unt *iroha_jouyo, unt *nihohe_jouyo, unt *hou_jo
 	unt *w_jouyo, *w_jouyo_adr;
 	unt *www;
 	unt *chuukansou, *chuukansou_adr;
-	unt *iroha_jouyo_karimasu, *iroha_jouyo_karimasu_adr;
-	unt *nihohe_jouyo_karimasu, *nihohe_jouyo_karimasu_adr;
+	unt *iroha_jouyo_karimasu;
+	unt *nihohe_jouyo_karimasu;
 	unt *mdr_jouyo_adr;
 	unt *_n[15];
 	unt *tmp = NULL;
@@ -37,8 +37,6 @@ void utbi_jouyo(unt *mdr_jouyo, unt *iroha_jouyo, unt *nihohe_jouyo, unt *hou_jo
 	chuukansou = nihohe_jouyo_karimasu + 2*yousosuu;
 	w_jouyo = chuukansou + 2*yousosuu;
 
-	iroha_jouyo_karimasu_adr = iroha_jouyo_karimasu;
-	nihohe_jouyo_karimasu_adr = nihohe_jouyo_karimasu;
 	chuukansou_adr = chuukansou;
 	w_jouyo_adr = w_jouyo;
 	mdr_jouyo_adr = mdr_jouyo;
