@@ -33,7 +33,7 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 	}
 	nihohe_seki_karimasu_adr = nihohe_seki_karimasu;
 
-	chuukansou = (unt *)calloc(yousosuu, sizeof(unt));
+	chuukansou = (unt *)calloc(2*yousosuu, sizeof(unt));
 	if(chuukansou == NULL){
 		printf("メモリ貸してくれません。\n");
 		exit(1);
@@ -128,6 +128,7 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 		}
 		chuukansou++;
 	}
+	chuukansou = chuukansou_adr;
 
 	/*中間層の左側側が桁上がりしたときに受ける必要がある。*/
 	*(w_seki+(yousosuu-1)) += (0x00010000 * ketaagari);
@@ -151,6 +152,9 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 	/*今度は左側同士を加える*/
 	utbi_wa_ui(w_seki, w_seki, (unt)ketaagari);
 	utbi_wa(w_seki, w_seki, (chuukansou+yousosuu));
+
+	/*計算結果を左側に戻してやる*/
+	utbi_fukusha(mdr_seki+yousosuu, w_seki);
 
 	nihohe_seki_karimasu = nihohe_seki_karimasu_adr;
 	iroha_seki_karimasu = iroha_seki_karimasu_adr;

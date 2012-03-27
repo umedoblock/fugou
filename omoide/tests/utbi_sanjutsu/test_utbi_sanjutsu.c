@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
 
 	utbi_bitset(bit);
 
-	utbi_memory(&tmp, 7);
+	utbi_memory(&tmp, 8);
 	x = tmp;
 	y = x + yousosuu;
 	z = y + yousosuu;
-	w = z + yousosuu;
+	w = z + 2*yousosuu;
 	v = w + yousosuu;
 	f = v + yousosuu;
 	g = f + yousosuu;
