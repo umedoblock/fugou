@@ -282,6 +282,9 @@ void mazekoze_jouyo(unt *y, unt *a, unt *x)
 	//本当はここに信頼のできる積を求める処理を置く。
 	//今は、utbi_seki()を置いてみる。
 	//過去の私が信用できるか・・・
+	/* H24/03/27 駄目だったよ。しっかりbug仕込んでたよ。
+	 * bug 取りするのに2時間くらいかかったよ！
+	 */
 	utbi_seki(Rtmp, a, x);
 #endif
 	/*
