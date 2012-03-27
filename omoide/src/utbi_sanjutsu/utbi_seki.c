@@ -14,7 +14,7 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 	unt *mdr_seki_adr;
 	unt *iroha_seki_karimasu, *iroha_seki_karimasu_adr;
 	unt *nihohe_seki_karimasu, *nihohe_seki_karimasu_adr;
-	int i, j, k=0;
+	int i, j;
 	unt w;
 	unsigned short *sahen, *uhen;
 	int ketaagari;
@@ -109,7 +109,6 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 			}
 		}
 		chuukansou++;
-		k++;
 	}
 
 /*	printf("--------中間層----左側側----------------------------\n");*/
