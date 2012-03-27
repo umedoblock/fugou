@@ -83,7 +83,7 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 		*w_seki += ketaagari;
 		ketaagari = 0;
 		for(i=j;i<2*yousosuu;i++){
-			printf("(%d,%d) ", i, 2*yousosuu-i+j-1);
+/*			printf("(%d,%d) ", i, 2*yousosuu-i+j-1);*/
 			w = *(sahen + i) * (*(uhen+(2*yousosuu-i+j-1)));
 			*w_seki += w;
 			if(*w_seki < w){
@@ -111,7 +111,6 @@ void utbi_seki(unt *mdr_seki, unt *iroha_seki, unt *nihohe_seki)
 		chuukansou++;
 		k++;
 	}
-	chuukansou = chuukansou_adr;
 
 /*	printf("--------中間層----左側側----------------------------\n");*/
 /*	printf("----------------------------------------------------\n");*/
