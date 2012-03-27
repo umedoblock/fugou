@@ -2,7 +2,7 @@
  * Copyright (C) 2008 梅どぶろく umedoblock
  */
 
-#include "../src/utbi_sanjutsu.h"
+#include "../../src/utbi_sanjutsu/utbi_sanjutsu.h"
 
 int main(int argc, char *argv[])
 {
