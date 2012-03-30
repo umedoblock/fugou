@@ -1,6 +1,7 @@
 #include "libpar2.h"
 
 #define ENABLE 1
+#define MAX_REDUNDANCY 8192
 
 typedef struct _opts_t {
     int encode;
@@ -56,11 +57,11 @@ int invalid_opts(opts_t *opts)
             fprintf(stderr, "Therefore canceled --decode option.\n");
             opts->decode = 0;
         }
-        if (opts->redundancy <= 0 ||
+        if (opts->redundancy <= 1 ||
             opts->bits <= 0) {
             fprintf(stderr, "when use --encode option,\n");
-            fprintf(stderr, "NUM must be positive number.\n");
-            fprintf(stderr, "have to use --redundancy=NUM and --bits=NUM.\n");
+            fprintf(stderr, "have to use --redundancy >= 2 and " \
+                            "--bits=(4, 8, 16 or 24).\n");
             goto err;
         }
     }
@@ -237,10 +238,18 @@ int close_file(opts_t *opts)
     return 0;
 }
 
+#define SEE_YOU 0
+#define OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO -2
+
 int main(int argc, char *argv[])
 {
-    int i, help = 0;
+    int i, help = 0, done, ret;
+    int redundancy, bits, max_redundancy;
     opts_t opts;
+    /* please see par2/pypar2.c Par2_init() in detail. */
+    /* need need p2, rds for libpar2.*/
+    par2_t par2, *p2 = NULL;
+    reed_solomon_t *rds = NULL;
 
     help = parse_args(&opts, argc, argv);
     if (invalid_opts(&opts) || help) {
@@ -254,7 +263,52 @@ int main(int argc, char *argv[])
 
     view_opts_t(&opts);
 
+    /* main routine for libpar2. */
+    /* below three variant need to use libpar2. */
+    redundancy = opts.redundancy;
+    bits = opts.bits;
+    p2 = &par2;
+
+    /* occured par2 big bang !!! */
+    done = par2_big_bang();
+    if (done == PAR2_MALLOC_ERROR){
+        fprintf(stderr, "par2_big_bang() failed for memory.\n");
+        return PAR2_MALLOC_ERROR;
+    }
+
+    /* you can call par2_init_p2() */
+    ret = par2_init_p2(p2, redundancy, bits);
+    if (ret < 0){
+        if (ret == PAR2_INVALID_BITS_ERROR)
+            fprintf(stderr, "must chose 4, 8, 16 or 24 for bits.\n");
+        else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
+    /*
+    if (redundancy < 2 || redundancy > PAR2_MAX_REDUNDANCY)
+        return PAR2_INVALID_REDUNDANCY_ERROR;
+    */
+            if (bits == 4 || bits == 8) {
+                rds = p2->rds;
+                max_redundancy = rds->gf_max;
+            }
+            else {
+                /* bits == 164 || bits == 24 */
+                max_redundancy = MAX_REDUNDANCY;
+            }
+            fprintf(stderr, "redundancy(=%d) must be 2 <= redundancy <= %d.\n",
+                             redundancy, max_redundancy);
+        }
+        else
+            fprintf(stderr, "unknown return code that is %d.\n", ret);
+        par2_view_p2(p2);
+
+        return OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO;
+    }
+
+    /* black hole appered. */
+    par2_ultimate_fate_of_the_universe();
+
     close_file(&opts);
 
-    return 0;
+    /* THANK YOU. */
+    return SEE_YOU;
 }
