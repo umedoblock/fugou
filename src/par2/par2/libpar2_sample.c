@@ -312,6 +312,8 @@ int main(int argc, char *argv[])
 
     /* you can call par2_init_p2() */
     ret = sample_init_p2(p2, redundancy, bits);
+    if (ret < 0)
+        return ret;
 
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
