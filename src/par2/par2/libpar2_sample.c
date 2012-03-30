@@ -238,13 +238,48 @@ int close_file(opts_t *opts)
     return 0;
 }
 
+int sample_init_p2(par2_t *p2, int redundancy, int bits)
+{
+    int ret, max_redundancy;
+
+    ret = par2_init_p2(p2, redundancy, bits);
+    if (ret == 0) {
+        if (bits == 16 || bits == 24) {
+            if (redundancy > MAX_REDUNDANCY)
+                ret = PAR2_INVALID_REDUNDANCY_ERROR;
+        }
+    }
+    if (ret < 0){
+        if (ret == PAR2_INVALID_BITS_ERROR)
+            fprintf(stderr, "must chose 4, 8, 16 or 24 for bits.\n");
+        else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
+            if (bits == 4 || bits == 8) {
+                max_redundancy = p2->rds->gf_max;
+            }
+            else {
+                /* bits == 16 || bits == 24 */
+                max_redundancy = MAX_REDUNDANCY;
+            }
+            fprintf(stderr, "redundancy(=%d) must be 2 <= redundancy <= %d.\n",
+                             redundancy, max_redundancy);
+        }
+        else
+            fprintf(stderr, "unknown return code that is %d.\n", ret);
+        par2_view_p2(p2);
+
+        #define OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO -2
+        ret = OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO;
+    }
+
+    return ret;
+}
+
 #define SEE_YOU 0
-#define OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO -2
 
 int main(int argc, char *argv[])
 {
     int i, help = 0, done, ret;
-    int redundancy, bits, max_redundancy;
+    int redundancy, bits;
     opts_t opts;
     /* please see par2/pypar2.c Par2_init() in detail. */
     /* need need p2, rds for libpar2.*/
@@ -276,33 +311,7 @@ int main(int argc, char *argv[])
     }
 
     /* you can call par2_init_p2() */
-    ret = par2_init_p2(p2, redundancy, bits);
-    if (ret == 0) {
-        if (bits == 16 || bits == 24) {
-            if (redundancy > MAX_REDUNDANCY)
-                ret = PAR2_INVALID_REDUNDANCY_ERROR;
-        }
-    }
-    if (ret < 0){
-        if (ret == PAR2_INVALID_BITS_ERROR)
-            fprintf(stderr, "must chose 4, 8, 16 or 24 for bits.\n");
-        else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
-            if (bits == 4 || bits == 8) {
-                max_redundancy = p2->rds->gf_max;
-            }
-            else {
-                /* bits == 16 || bits == 24 */
-                max_redundancy = MAX_REDUNDANCY;
-            }
-            fprintf(stderr, "redundancy(=%d) must be 2 <= redundancy <= %d.\n",
-                             redundancy, max_redundancy);
-        }
-        else
-            fprintf(stderr, "unknown return code that is %d.\n", ret);
-        par2_view_p2(p2);
-
-        return OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO;
-    }
+    ret = sample_init_p2(p2, redundancy, bits);
 
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
