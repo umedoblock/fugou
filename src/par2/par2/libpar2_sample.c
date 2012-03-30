@@ -9,7 +9,7 @@ typedef struct _opts_t {
     int bits;
 } opts_t;
 
-void view_arg(int argc, char *argv[])
+void view_args(int argc, char *argv[])
 {
     int i;
 
@@ -71,7 +71,7 @@ err:
     return invalid;
 }
 
-int check_encode_or_decode(opts_t *opts, int argc, char *argv[])
+int parse_encode_or_decode(opts_t *opts, int argc, char *argv[])
 {
     int i;
 
@@ -86,7 +86,7 @@ int check_encode_or_decode(opts_t *opts, int argc, char *argv[])
     return 0;
 }
 
-int parse_numeric_arg(
+int parse_numeric_args(
     opts_t *opts, char *opt_name, int argc, char *argv[])
 {
     int i;
@@ -109,22 +109,22 @@ int parse_numeric_arg(
     return num;
 }
 
-int check_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
+int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
 {
-    opts->redundancy = parse_numeric_arg(opts, "--redundancy", argc, argv);
-    opts->bits = parse_numeric_arg(opts, "--bits", argc, argv);
+    opts->redundancy = parse_numeric_args(opts, "--redundancy", argc, argv);
+    opts->bits = parse_numeric_args(opts, "--bits", argc, argv);
 
     return 0;
 }
 
-int parse_arg(opts_t *opts, int argc, char *argv[])
+int parse_args(opts_t *opts, int argc, char *argv[])
 {
     int i;
 
     memset(opts, 0, sizeof(opts_t));
 
-    check_encode_or_decode(opts, argc, argv);
-    check_redundancy_and_bits(opts, argc, argv);
+    parse_encode_or_decode(opts, argc, argv);
+    parse_redundancy_and_bits(opts, argc, argv);
 
     return 0;
 }
@@ -134,9 +134,9 @@ int main(int argc, char *argv[])
     int i;
     opts_t opts;
 
-    parse_arg(&opts, argc, argv);
+    parse_args(&opts, argc, argv);
     if (invalid_opts(&opts)) {
-        view_arg(argc, argv);
+        view_args(argc, argv);
         usage();
         return -1;
     }
