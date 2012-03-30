@@ -7,6 +7,8 @@ typedef struct _opts_t {
     int decode;
     int redundancy;
     int bits;
+    char *file;
+    FILE *fp;
 } opts_t;
 
 void view_args(int argc, char *argv[])
@@ -24,6 +26,8 @@ void view_opts_t(opts_t *opts)
     fprintf(stderr, "decode = %d\n", opts->decode);
     fprintf(stderr, "redundancy = %d\n", opts->redundancy);
     fprintf(stderr, "bits = %d\n", opts->bits);
+    fprintf(stderr, "file = \"%s\"\n", opts->file);
+    fprintf(stderr, "fp = %p\n", opts->fp);
 }
 
 void usage(void)
@@ -109,10 +113,41 @@ int parse_numeric_arg(
     return num;
 }
 
+char *parse_string_arg(
+    opts_t *opts, char *opt_name, int argc, char *argv[])
+{
+    int i;
+    int opt_name_len = -1, argv_len = -1;
+    char *p = NULL;
+
+    opt_name_len = strlen(opt_name);
+    for (i=0;i<argc;i++){
+        /* expect opt_name style
+         * opt_name=NUM
+         */
+        argv_len = strlen(argv[i]);
+        if (argv_len > opt_name_len + 1 &&
+            strncmp(opt_name, argv[i], opt_name_len) == 0 &&
+            argv[i][opt_name_len] == '=') {
+            p = argv[i] + opt_name_len + 1;
+            break;
+        }
+    }
+
+    return p;
+}
+
 int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
 {
     opts->redundancy = parse_numeric_arg(opts, "--redundancy", argc, argv);
     opts->bits = parse_numeric_arg(opts, "--bits", argc, argv);
+
+    return 0;
+}
+
+int parse_file(opts_t *opts, int argc, char *argv[])
+{
+    opts->file = parse_string_arg(opts, "--file", argc, argv);
 
     return 0;
 }
@@ -125,6 +160,7 @@ int parse_args(opts_t *opts, int argc, char *argv[])
 
     parse_encode_or_decode(opts, argc, argv);
     parse_redundancy_and_bits(opts, argc, argv);
+    parse_file(opts, argc, argv);
 
     return 0;
 }
