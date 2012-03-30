@@ -40,12 +40,8 @@ err:
     return invalid;
 }
 
-int parse_arg(opts_t *opts, int argc, char *argv[])
+int check_encode_or_decode(opts_t *opts, int argc, char *argv[])
 {
-    int i;
-
-    memset(opts, 0, sizeof(opts_t));
-
     /* check encode or decode. */
     for (i=0;i<argc;i++) {
         if (strcmp("--encode", argv[i]) == 0)
@@ -55,6 +51,17 @@ int parse_arg(opts_t *opts, int argc, char *argv[])
     }
     if (opts->encode == ENABLE)
         opts->decode = 0;
+
+    return 0;
+}
+
+int parse_arg(opts_t *opts, int argc, char *argv[])
+{
+    int i;
+
+    memset(opts, 0, sizeof(opts_t));
+
+    check_encode_or_decode(opts, argc, argv);
 
     return 0;
 }
