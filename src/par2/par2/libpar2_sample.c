@@ -249,7 +249,6 @@ int main(int argc, char *argv[])
     /* please see par2/pypar2.c Par2_init() in detail. */
     /* need need p2, rds for libpar2.*/
     par2_t par2, *p2 = NULL;
-    reed_solomon_t *rds = NULL;
 
     help = parse_args(&opts, argc, argv);
     if (invalid_opts(&opts) || help) {
@@ -289,8 +288,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "must chose 4, 8, 16 or 24 for bits.\n");
         else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
             if (bits == 4 || bits == 8) {
-                rds = p2->rds;
-                max_redundancy = rds->gf_max;
+                max_redundancy = p2->rds->gf_max;
             }
             else {
                 /* bits == 16 || bits == 24 */
