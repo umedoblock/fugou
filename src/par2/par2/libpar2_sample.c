@@ -86,7 +86,7 @@ int parse_encode_or_decode(opts_t *opts, int argc, char *argv[])
     return 0;
 }
 
-int parse_numeric_args(
+int parse_numeric_arg(
     opts_t *opts, char *opt_name, int argc, char *argv[])
 {
     int i;
@@ -111,8 +111,8 @@ int parse_numeric_args(
 
 int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
 {
-    opts->redundancy = parse_numeric_args(opts, "--redundancy", argc, argv);
-    opts->bits = parse_numeric_args(opts, "--bits", argc, argv);
+    opts->redundancy = parse_numeric_arg(opts, "--redundancy", argc, argv);
+    opts->bits = parse_numeric_arg(opts, "--bits", argc, argv);
 
     return 0;
 }
