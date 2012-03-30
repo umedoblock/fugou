@@ -7,6 +7,21 @@ typedef struct _opts_t {
     int decode;
 } opts_t;
 
+void view_arg(int argc, char *argv[])
+{
+    int i;
+
+    for (i=0;i<argc;i++) {
+        fprintf(stderr, "argv[%d] = \"%s\"\n", i, argv[i]);
+    }
+}
+
+void view_opts_t(opts_t *opts)
+{
+    fprintf(stderr, "encode = %d\n", opts->encode);
+    fprintf(stderr, "decode = %d\n", opts->decode);
+}
+
 void usage(void)
 {
     fprintf(stderr, "libpar2_sample [filename or -]\n");
@@ -23,21 +38,6 @@ int invalid_opts(opts_t *opts)
 
 err:
     return invalid;
-}
-
-void view_arg(int argc, char *argv[])
-{
-    int i;
-
-    for (i=0;i<argc;i++) {
-        fprintf(stderr, "argv[%d] = \"%s\"\n", i, argv[i]);
-    }
-}
-
-void view_opts_t(opts_t *opts)
-{
-    fprintf(stderr, "encode = %d\n", opts->encode);
-    fprintf(stderr, "decode = %d\n", opts->decode);
 }
 
 int parse_arg(opts_t *opts, int argc, char *argv[])
