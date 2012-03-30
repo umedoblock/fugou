@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
     int redundancy, bits;
     opts_t opts;
     /* please see par2/pypar2.c Par2_init() in detail. */
-    /* need need p2, rds for libpar2.*/
+    /* need p2 for libpar2. */
     par2_t par2, *p2 = NULL;
 
     help = parse_args(&opts, argc, argv);
@@ -295,9 +295,9 @@ int main(int argc, char *argv[])
 
     open_file(&opts);
 
-    view_opts_t(&opts);
+    /* view_opts_t(&opts); */
 
-    /* main routine for libpar2. */
+    /* MAIN ROUTINE for libpar2. */
     /* below three variant need to use libpar2. */
     redundancy = opts.redundancy;
     bits = opts.bits;
