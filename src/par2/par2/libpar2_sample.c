@@ -53,6 +53,8 @@ int parse_arg(opts_t *opts, int argc, char *argv[])
         if (strcmp("--decode", argv[i]) == 0)
             opts->decode = ENABLE;
     }
+    if (opts->encode == ENABLE)
+        opts->decode = 0;
 
     return 0;
 }
