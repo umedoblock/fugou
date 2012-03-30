@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
         return PAR2_MALLOC_ERROR;
     }
 
-    /* you can call par2_init_p2() */
+    /* you can call par2_init_p2() in sample_init_p2() */
     ret = sample_init_p2(p2, redundancy, bits);
     if (ret < 0)
         return ret;
