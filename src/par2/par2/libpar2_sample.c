@@ -218,6 +218,7 @@ int open_file(opts_t *opts)
     else {
         fprintf(stderr, "cannot open \"%s\" with fp = %p and mode \"%s\"\n",
                                 opts->file, opts->fp, mode);
+        return -2;
     }
 
     return 0;
@@ -293,7 +294,9 @@ int main(int argc, char *argv[])
     }
     /* view_opts_t(&opts); */
 
-    open_file(&opts);
+    ret = open_file(&opts);
+    if (ret < 0)
+        return ret;
 
     /* view_opts_t(&opts); */
 
