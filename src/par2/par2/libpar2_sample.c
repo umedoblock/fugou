@@ -33,7 +33,10 @@ void view_opts_t(opts_t *opts)
 
 void usage(void)
 {
-    fprintf(stderr, "libpar2_sample [filename or -]\n");
+    fprintf(stderr, "libpar2_sample --encode " \
+                    "--redundancy=NUM --bits=NUM --file=NAME\n");
+    fprintf(stderr, "or\n");
+    fprintf(stderr, "libpar2_sample --decode --file=NAME\n");
 }
 
 int invalid_opts(opts_t *opts)
@@ -138,6 +141,27 @@ char *parse_string_arg(
     return p;
 }
 
+int parse_string_arg_about_existential(
+    opts_t *opts, char *opt_name, int argc, char *argv[])
+{
+    int i, existence = 0;
+    int opt_name_len = -1, argv_len = -1;
+
+    opt_name_len = strlen(opt_name);
+    for (i=0;i<argc;i++){
+        /* expect opt_name style
+         * opt_name
+         */
+        argv_len = strlen(argv[i]);
+        if (strcmp(opt_name, argv[i]) == 0) {
+            existence = 1;
+            break;
+        }
+    }
+
+    return existence;
+}
+
 int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
 {
     opts->redundancy = parse_numeric_arg(opts, "--redundancy", argc, argv);
@@ -156,6 +180,14 @@ int parse_file(opts_t *opts, int argc, char *argv[])
 int parse_args(opts_t *opts, int argc, char *argv[])
 {
     int i;
+    int help;
+
+    help = parse_string_arg_about_existential(opts, "--help", argc, argv);
+    if (help)
+        return 1;
+    help = parse_string_arg_about_existential(opts, "-h", argc, argv);
+    if (help)
+        return 1;
 
     memset(opts, 0, sizeof(opts_t));
 
@@ -207,11 +239,11 @@ int close_file(opts_t *opts)
 
 int main(int argc, char *argv[])
 {
-    int i;
+    int i, help = 0;
     opts_t opts;
 
-    parse_args(&opts, argc, argv);
-    if (invalid_opts(&opts)) {
+    help = parse_args(&opts, argc, argv);
+    if (invalid_opts(&opts) || help) {
         view_args(argc, argv);
         usage();
         return -1;
