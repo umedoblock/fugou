@@ -278,20 +278,22 @@ int main(int argc, char *argv[])
 
     /* you can call par2_init_p2() */
     ret = par2_init_p2(p2, redundancy, bits);
+    if (ret == 0) {
+        if (bits == 16 || bits == 24) {
+            if (redundancy > MAX_REDUNDANCY)
+                ret = PAR2_INVALID_REDUNDANCY_ERROR;
+        }
+    }
     if (ret < 0){
         if (ret == PAR2_INVALID_BITS_ERROR)
             fprintf(stderr, "must chose 4, 8, 16 or 24 for bits.\n");
         else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
-    /*
-    if (redundancy < 2 || redundancy > PAR2_MAX_REDUNDANCY)
-        return PAR2_INVALID_REDUNDANCY_ERROR;
-    */
             if (bits == 4 || bits == 8) {
                 rds = p2->rds;
                 max_redundancy = rds->gf_max;
             }
             else {
-                /* bits == 164 || bits == 24 */
+                /* bits == 16 || bits == 24 */
                 max_redundancy = MAX_REDUNDANCY;
             }
             fprintf(stderr, "redundancy(=%d) must be 2 <= redundancy <= %d.\n",
