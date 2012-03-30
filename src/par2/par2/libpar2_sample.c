@@ -22,6 +22,7 @@ void view_args(int argc, char *argv[])
 
 void view_opts_t(opts_t *opts)
 {
+    fprintf(stderr, "view_opts_t(opts=%p)\n", opts);
     fprintf(stderr, "encode = %d\n", opts->encode);
     fprintf(stderr, "decode = %d\n", opts->decode);
     fprintf(stderr, "redundancy = %d\n", opts->redundancy);
@@ -165,6 +166,45 @@ int parse_args(opts_t *opts, int argc, char *argv[])
     return 0;
 }
 
+int open_file(opts_t *opts)
+{
+    char *mode = NULL;
+
+    if (opts->encode == ENABLE)
+        mode = "rb";
+    else if (opts->decode == ENABLE)
+        mode = "wb";
+    else
+        return -1;
+
+    opts->fp = fopen(opts->file, mode);
+    if (opts->fp != NULL) {
+        fprintf(stderr, "opened \"%s\" with fp = %p and mode \"%s\"\n",
+                                opts->file, opts->fp, mode);
+    }
+    else {
+        fprintf(stderr, "cannot open \"%s\" with fp = %p and mode \"%s\"\n",
+                                opts->file, opts->fp, mode);
+    }
+
+    return 0;
+}
+
+int close_file(opts_t *opts)
+{
+    if (opts->fp != NULL) {
+        fprintf(stderr, "closed \"%s\" with fp = %p\n",
+                                opts->file, opts->fp);
+        fclose(opts->fp);
+    }
+    else {
+        fprintf(stderr, "cannot close \"%s\" with fp = %p\n",
+                                opts->file, opts->fp);
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     int i;
@@ -176,7 +216,13 @@ int main(int argc, char *argv[])
         usage();
         return -1;
     }
+    /* view_opts_t(&opts); */
+
+    open_file(&opts);
+
     view_opts_t(&opts);
+
+    close_file(&opts);
 
     return 0;
 }
