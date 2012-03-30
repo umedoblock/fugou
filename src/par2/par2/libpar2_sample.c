@@ -43,6 +43,11 @@ int invalid_opts(opts_t *opts)
         goto err;
     }
     if (opts->encode == ENABLE) {
+        if (opts->decode == ENABLE) {
+            fprintf(stderr, "same time use --encode and --decode option.\n");
+            fprintf(stderr, "Therefore canceled --decode option.\n");
+            opts->decode = 0;
+        }
         if (opts->redundancy <= 0 ||
             opts->bits <= 0) {
             fprintf(stderr, "when use --encode option,\n");
@@ -62,7 +67,6 @@ int invalid_opts(opts_t *opts)
     }
 
     invalid = 0;
-
 err:
     return invalid;
 }
@@ -77,11 +81,6 @@ int check_encode_or_decode(opts_t *opts, int argc, char *argv[])
             opts->encode = ENABLE;
         if (strcmp("--decode", argv[i]) == 0)
             opts->decode = ENABLE;
-    }
-    if (opts->encode == ENABLE) {
-        fprintf(stderr, "same time use --encode and --decode option.\n");
-        fprintf(stderr, "Therefore canceled --decode option.\n");
-        opts->decode = 0;
     }
 
     return 0;
