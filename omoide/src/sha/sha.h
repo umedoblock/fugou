@@ -93,6 +93,11 @@ void sha_puthash(unt *x, int hLen);
 /* 改めてそう思いました。
  * 平成24年  3月 31日 土曜日 11:46:52
  */
+/* 思うだけでは無責任なので特に酷いsha1()を直しておきました。
+ * 最初、これ本当に俺が書いたか？と疑いましたが、
+ * 何となく見覚えがあったので私が書いたのだと認めました。
+ * 平成24年  3月 31日 土曜日 16:50:48
+ */
 int sha(uchar *hash, uchar *data, unt datasize, int shatype);
 int sprintfsha(char *ss, uchar *data, unt datasize, int shatype);
 void sharandom(uchar *random, unt randomsize, uchar *seed, unt seedsize);
