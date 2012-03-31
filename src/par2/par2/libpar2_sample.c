@@ -346,7 +346,7 @@ void *allocate_resource(
     return mem_;
 }
 
-int open_part_files(char **names, FILE **files, int names_num)
+int open_par2_files(char **names, FILE **files, int names_num)
 {
     int i;
     FILE *fp;
@@ -359,7 +359,7 @@ int open_part_files(char **names, FILE **files, int names_num)
     return 0;
 }
 
-int close_part_files(char **names, FILE **files, int names_num)
+int close_par2_files(char **names, FILE **files, int names_num)
 {
     int i, ret;
     FILE *fp;
@@ -438,8 +438,8 @@ int main(int argc, char *argv[])
             close_file(p2f);
             return -2;
         }
-        open_part_files(names, files, names_num);
-        close_part_files(names, files, names_num);
+        open_par2_files(names, files, names_num);
+        close_par2_files(names, files, names_num);
         free(mem);
     }
 
