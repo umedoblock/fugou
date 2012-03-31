@@ -8,9 +8,13 @@ typedef struct _opts_t {
     int decode;
     int redundancy;
     int bits;
-    char *file;
-    FILE *fp;
 } opts_t;
+
+typedef struct _par2_file_t {
+    char *name;
+    FILE *fp;
+    long file_size;
+} par2_file_t;
 
 void view_args(int argc, char *argv[])
 {
@@ -28,8 +32,13 @@ void view_opts_t(opts_t *opts)
     fprintf(stderr, "decode = %d\n", opts->decode);
     fprintf(stderr, "redundancy = %d\n", opts->redundancy);
     fprintf(stderr, "bits = %d\n", opts->bits);
-    fprintf(stderr, "file = \"%s\"\n", opts->file);
-    fprintf(stderr, "fp = %p\n", opts->fp);
+}
+
+void view_par2_file_t(par2_file_t *p2f)
+{
+    fprintf(stderr, "name = \"%s\"\n", p2f->name);
+    fprintf(stderr, "fp = %p\n", p2f->fp);
+    fprintf(stderr, "file_size = %ld\n", p2f->file_size);
 }
 
 void usage(void)
@@ -165,14 +174,14 @@ int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
     return 0;
 }
 
-int parse_file(opts_t *opts, int argc, char *argv[])
+int parse_file(par2_file_t *p2f, opts_t *opts, int argc, char *argv[])
 {
-    opts->file = parse_string_arg(opts, "--file", argc, argv);
+    p2f->name = parse_string_arg(opts, "--file", argc, argv);
 
     return 0;
 }
 
-int parse_args(opts_t *opts, int argc, char *argv[])
+int parse_args(par2_file_t *p2f, opts_t *opts, int argc, char *argv[])
 {
     int help;
 
@@ -187,12 +196,12 @@ int parse_args(opts_t *opts, int argc, char *argv[])
 
     parse_encode_or_decode(opts, argc, argv);
     parse_redundancy_and_bits(opts, argc, argv);
-    parse_file(opts, argc, argv);
+    parse_file(p2f, opts, argc, argv);
 
     return 0;
 }
 
-int open_file(opts_t *opts)
+int open_file(par2_file_t *p2f, opts_t *opts)
 {
     char *mode = NULL;
 
@@ -203,30 +212,33 @@ int open_file(opts_t *opts)
     else
         return -1;
 
-    opts->fp = fopen(opts->file, mode);
-    if (opts->fp != NULL) {
+    p2f->fp = fopen(p2f->name, mode);
+    if (p2f->fp != NULL) {
         fprintf(stderr, "opened \"%s\" with fp = %p and mode \"%s\"\n",
-                                opts->file, opts->fp, mode);
+                                p2f->name, p2f->fp, mode);
+        fseek(p2f->fp, 0L, SEEK_END);
+        p2f->file_size = ftell(p2f->fp);
+        fseek(p2f->fp, 0L, SEEK_SET);
     }
     else {
         fprintf(stderr, "cannot open \"%s\" with fp = %p and mode \"%s\"\n",
-                                opts->file, opts->fp, mode);
+                                p2f->name, p2f->fp, mode);
         return -2;
     }
 
     return 0;
 }
 
-int close_file(opts_t *opts)
+int close_file(par2_file_t *p2f, opts_t *opts)
 {
-    if (opts->fp != NULL) {
+    if (p2f->fp != NULL) {
         fprintf(stderr, "closed \"%s\" with fp = %p\n",
-                                opts->file, opts->fp);
-        fclose(opts->fp);
+                                p2f->name, p2f->fp);
+        fclose(p2f->fp);
     }
     else {
         fprintf(stderr, "cannot close \"%s\" with fp = %p\n",
-                                opts->file, opts->fp);
+                                p2f->name, p2f->fp);
     }
 
     return 0;
@@ -337,11 +349,12 @@ int main(int argc, char *argv[])
     char **names;
     opts_t opts;
     /* need p2 for libpar2. */
-    par2_t par2, *p2 = NULL;
+    par2_t par2, *p2 = &par2;
+    par2_file_t par2_file, *p2f = &par2_file;
     FILE **files;
     void *mem;
 
-    help = parse_args(&opts, argc, argv);
+    help = parse_args(p2f, &opts, argc, argv);
     if (invalid_opts(&opts) || help) {
         view_args(argc, argv);
         usage();
@@ -349,7 +362,7 @@ int main(int argc, char *argv[])
     }
     /* view_opts_t(&opts); */
 
-    ret = open_file(&opts);
+    ret = open_file(p2f, &opts);
     if (ret < 0)
         return ret;
 
@@ -359,7 +372,6 @@ int main(int argc, char *argv[])
     /* below three variant need to use libpar2. */
     redundancy = opts.redundancy;
     bits = opts.bits;
-    p2 = &par2;
 
     /* occured par2 big bang !!! */
     done = par2_big_bang();
@@ -379,7 +391,7 @@ int main(int argc, char *argv[])
     if (opts.encode == ENABLE) {
         mem = allocate_resource(&files, &names, &opts, names_num);
         if (mem == NULL) {
-            close_file(&opts);
+            close_file(p2f, &opts);
             return -2;
         }
         open_part_files(names, files, names_num);
@@ -390,7 +402,7 @@ int main(int argc, char *argv[])
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
-    close_file(&opts);
+    close_file(p2f, &opts);
 
     /* THANK YOU. */
     return SEE_YOU;
