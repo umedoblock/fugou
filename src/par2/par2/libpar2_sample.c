@@ -281,9 +281,13 @@ int main(int argc, char *argv[])
 {
     int i, help = 0, done, ret;
     int redundancy, bits;
+    int names_num;
+    char *name, **names;
     opts_t opts;
     /* need p2 for libpar2. */
     par2_t par2, *p2 = NULL;
+    FILE **files, *fp;
+    void *mem;
 
     help = parse_args(&opts, argc, argv);
     if (invalid_opts(&opts) || help) {
@@ -318,9 +322,42 @@ int main(int argc, char *argv[])
     if (ret < 0)
         return ret;
 
+/* fprintf(stdout, "L_tmpnam = %d, TMP_MAX = %d\n", L_tmpnam, TMP_MAX); */
+    if (opts.encode == ENABLE) {
+        /* header + data * redundancy + parity * redundancy*/
+        names_num = 1 + opts.redundancy + opts.redundancy;
+        mem = (void *)malloc(L_tmpnam * names_num);
+        names = (char **)malloc(sizeof(char *) * names_num);
+
+        files = (FILE **)malloc(sizeof(FILE *) * names_num);
+        if (names == NULL) {
+            close_file(&opts);
+            return -1;
+        }
+
+        for (i=0;i<names_num;i++)
+            names[i] = mem + L_tmpnam * i;
+        for (i=0;i<names_num;i++){
+            tmpnam(names[i]);
+            fp = fopen(names[i], "wb");
+            files[i] = fp;
+            fprintf(stdout, "names[%d] = %s, fp = %p\n", i, names[i], fp);
+        }
+    }
+
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
+    for (i=0;i<names_num;i++){
+        name = names[i];
+        fp = files[i];
+        fclose(fp);
+        ret = remove(names[i]);
+        fprintf(stdout, "remove(names[%d]=%s)=%d, fclose(%p)\n", \
+                                      i, names[i], ret, fp);
+    }
+    free(files);
+    free(names);
     close_file(&opts);
 
     /* THANK YOU. */
