@@ -275,6 +275,36 @@ int sample_init_p2(par2_t *p2, int redundancy, int bits)
     return ret;
 }
 
+void *allocate_resource(
+    FILE ***files, char ***names, opts_t *opts, int names_num)
+{
+    size_t mem_size;
+    void *mem, *mem_;
+    char **names_;
+    int i;
+
+    /* header + data * redundancy + parity * redundancy*/
+    mem_size = 0;
+    mem_size += sizeof(FILE *) * names_num;
+    mem_size += sizeof(char *) * names_num;
+    mem_size += L_tmpnam * names_num;
+
+    mem = (void *)malloc(mem_size);
+    if (mem == NULL) {
+        return NULL;
+    }
+    mem_ = mem;
+    *files = mem; mem += sizeof(FILE *) * names_num;
+    *names = mem; mem += sizeof(char *) * names_num;
+    names_ = *names;
+    for (i=0;i<names_num;i++) {
+        names_[i] = mem;
+        mem += L_tmpnam;
+    }
+
+    return mem_;
+}
+
 #define SEE_YOU 0
 
 int main(int argc, char *argv[])
@@ -287,8 +317,7 @@ int main(int argc, char *argv[])
     /* need p2 for libpar2. */
     par2_t par2, *p2 = NULL;
     FILE **files, *fp;
-    void *mem, *mem_;
-    size_t mem_size;
+    void *mem;
 
     help = parse_args(&opts, argc, argv);
     if (invalid_opts(&opts) || help) {
@@ -323,29 +352,14 @@ int main(int argc, char *argv[])
     if (ret < 0)
         return ret;
 
-/* fprintf(stdout, "L_tmpnam = %d, TMP_MAX = %d\n", L_tmpnam, TMP_MAX); */
+    names_num = 1 + redundancy + redundancy;
+ /* fprintf(stdout, "L_tmpnam = %d, TMP_MAX = %d\n", L_tmpnam, TMP_MAX); */
     if (opts.encode == ENABLE) {
-        /* header + data * redundancy + parity * redundancy*/
-        names_num = 1 + opts.redundancy + opts.redundancy;
-        mem_size = 0;
-        mem_size += sizeof(FILE *) * names_num;
-        mem_size += sizeof(char *) * names_num;
-        mem_size += L_tmpnam * names_num;
-
-        mem = (void *)malloc(mem_size);
+        mem = allocate_resource(&files, &names, &opts, names_num);
         if (mem == NULL) {
             close_file(&opts);
-            return -1;
         }
-        mem_ = mem;
-        files = mem; mem += sizeof(FILE *) * names_num;
-        names = mem; mem += sizeof(char *) * names_num;
         for (i=0;i<names_num;i++) {
-            names[i] = mem;
-            mem += L_tmpnam;
-        }
-
-        for (i=0;i<names_num;i++){
             tmpnam(names[i]);
             fp = fopen(names[i], "wb");
             files[i] = fp;
@@ -363,7 +377,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "remove(names[%d]=%s)=%d, fclose(%p)\n", \
                                       i, names[i], ret, fp);
     }
-    free(mem_);
+    free(mem);
     close_file(&opts);
 
     /* THANK YOU. */
