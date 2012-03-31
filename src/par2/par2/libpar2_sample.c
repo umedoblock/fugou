@@ -291,6 +291,7 @@ void *allocate_resource(
 
     mem = (void *)malloc(mem_size);
     if (mem == NULL) {
+        fprintf(stderr, "cannot allocate memory(=%d)\n", mem_size);
         return NULL;
     }
     mem_ = mem;
@@ -358,6 +359,7 @@ int main(int argc, char *argv[])
         mem = allocate_resource(&files, &names, &opts, names_num);
         if (mem == NULL) {
             close_file(&opts);
+            return -2;
         }
         for (i=0;i<names_num;i++) {
             tmpnam(names[i]);
