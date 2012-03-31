@@ -229,7 +229,7 @@ int open_file(par2_file_t *p2f, opts_t *opts)
     return 0;
 }
 
-int close_file(par2_file_t *p2f, opts_t *opts)
+int close_file(par2_file_t *p2f)
 {
     if (p2f->fp != NULL) {
         fprintf(stderr, "closed \"%s\" with fp = %p\n",
@@ -281,7 +281,7 @@ int sample_init_p2(par2_t *p2, int redundancy, int bits)
 }
 
 void *allocate_resource(
-    FILE ***files, char ***names, opts_t *opts, int names_num)
+    FILE ***files, char ***names, int names_num)
 {
     size_t mem_size;
     void *mem, *mem_;
@@ -347,31 +347,31 @@ int main(int argc, char *argv[])
     int redundancy, bits;
     int names_num;
     char **names;
-    opts_t opts;
+    opts_t opts_, *opts = &opts_;
     /* need p2 for libpar2. */
-    par2_t par2, *p2 = &par2;
-    par2_file_t par2_file, *p2f = &par2_file;
+    par2_t p2_, *p2 = &p2_;
+    par2_file_t p2f_, *p2f = &p2f_;
     FILE **files;
     void *mem;
 
-    help = parse_args(p2f, &opts, argc, argv);
-    if (invalid_opts(&opts) || help) {
+    help = parse_args(p2f, opts, argc, argv);
+    if (invalid_opts(opts) || help) {
         view_args(argc, argv);
         usage();
         return -1;
     }
-    /* view_opts_t(&opts); */
+    /* view_opts_t(opts); */
 
-    ret = open_file(p2f, &opts);
+    ret = open_file(p2f, opts);
     if (ret < 0)
         return ret;
 
-    /* view_opts_t(&opts); */
+    /* view_opts_t(opts); */
 
     /* MAIN ROUTINE for libpar2. */
     /* below three variant need to use libpar2. */
-    redundancy = opts.redundancy;
-    bits = opts.bits;
+    redundancy = opts->redundancy;
+    bits = opts->bits;
 
     /* occured par2 big bang !!! */
     done = par2_big_bang();
@@ -388,10 +388,10 @@ int main(int argc, char *argv[])
 
     names_num = 1 + redundancy + redundancy;
  /* fprintf(stdout, "L_tmpnam = %d, TMP_MAX = %d\n", L_tmpnam, TMP_MAX); */
-    if (opts.encode == ENABLE) {
-        mem = allocate_resource(&files, &names, &opts, names_num);
+    if (opts->encode == ENABLE) {
+        mem = allocate_resource(&files, &names, names_num);
         if (mem == NULL) {
-            close_file(p2f, &opts);
+            close_file(p2f);
             return -2;
         }
         open_part_files(names, files, names_num);
@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
-    close_file(p2f, &opts);
+    close_file(p2f);
 
     /* THANK YOU. */
     return SEE_YOU;
