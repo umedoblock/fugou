@@ -14,6 +14,7 @@ typedef struct _par2_file_t {
     char *name;
     FILE *fp;
     long file_size;
+    uchar *data;
 } par2_file_t;
 
 void view_args(int argc, char *argv[])
@@ -39,6 +40,7 @@ void view_par2_file_t(par2_file_t *p2f)
     fprintf(stderr, "name = \"%s\"\n", p2f->name);
     fprintf(stderr, "fp = %p\n", p2f->fp);
     fprintf(stderr, "file_size = %ld\n", p2f->file_size);
+    fprintf(stderr, "data = %p\n", p2f->data);
 }
 
 void usage(void)
@@ -205,6 +207,9 @@ int open_file(par2_file_t *p2f, opts_t *opts)
 {
     char *mode = NULL;
 
+    p2f->fp = NULL;
+    p2f->data = NULL;
+
     if (opts->encode == ENABLE)
         mode = "rb";
     else if (opts->decode == ENABLE)
@@ -216,9 +221,6 @@ int open_file(par2_file_t *p2f, opts_t *opts)
     if (p2f->fp != NULL) {
         fprintf(stderr, "opened \"%s\" with fp = %p and mode \"%s\"\n",
                                 p2f->name, p2f->fp, mode);
-        fseek(p2f->fp, 0L, SEEK_END);
-        p2f->file_size = ftell(p2f->fp);
-        fseek(p2f->fp, 0L, SEEK_SET);
     }
     else {
         fprintf(stderr, "cannot open \"%s\" with fp = %p and mode \"%s\"\n",
@@ -229,12 +231,45 @@ int open_file(par2_file_t *p2f, opts_t *opts)
     return 0;
 }
 
+int read_file(par2_file_t *p2f)
+{
+    fseek(p2f->fp, 0L, SEEK_END);
+    p2f->file_size = ftell(p2f->fp);
+    fseek(p2f->fp, 0L, SEEK_SET);
+    p2f->data = (uchar *)malloc(p2f->file_size);
+    if (p2f->data == NULL) {
+        fprintf(stderr, "\n");
+        return -4;
+    }
+    fread(p2f->data, p2f->file_size, 1, p2f->fp);
+
+    return 0;
+}
+
+int free_file(par2_file_t *p2f)
+{
+    if (p2f->data != NULL) {
+        fprintf(stderr, "freed \"%s\" with data = %p\n",
+                                p2f->name, p2f->data);
+        free(p2f->data);
+        p2f->data = NULL;
+    }
+    else {
+        fprintf(stderr, "cannot free \"%s\" with data = %p\n",
+                                p2f->name, p2f->data);
+    }
+
+    return 0;
+}
+
 int close_file(par2_file_t *p2f)
 {
+    free_file(p2f);
     if (p2f->fp != NULL) {
         fprintf(stderr, "closed \"%s\" with fp = %p\n",
                                 p2f->name, p2f->fp);
         fclose(p2f->fp);
+        p2f->fp = NULL;
     }
     else {
         fprintf(stderr, "cannot close \"%s\" with fp = %p\n",
@@ -366,7 +401,11 @@ int main(int argc, char *argv[])
     if (ret < 0)
         return ret;
 
-    close_file(p2f);
+    ret = read_file(p2f);
+    if (ret < 0) {
+        close_file(p2f);
+        return -6;
+    }
 
     /* view_opts_t(opts); */
 
@@ -379,14 +418,17 @@ int main(int argc, char *argv[])
     done = par2_big_bang();
     if (done == PAR2_MALLOC_ERROR){
         fprintf(stderr, "par2_big_bang() failed for memory.\n");
+        close_file(p2f);
         return PAR2_MALLOC_ERROR;
     }
 
     /* please see par2/pypar2.c Par2_init() in detail. */
     /* you can call par2_init_p2() in sample_init_p2() */
     ret = sample_init_p2(p2, redundancy, bits);
-    if (ret < 0)
+    if (ret < 0) {
+        close_file(p2f);
         return ret;
+    }
 
     names_num = 1 + redundancy + redundancy;
  /* fprintf(stdout, "L_tmpnam = %d, TMP_MAX = %d\n", L_tmpnam, TMP_MAX); */
@@ -400,6 +442,8 @@ int main(int argc, char *argv[])
         close_part_files(names, files, names_num);
         free(mem);
     }
+
+    close_file(p2f);
 
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
