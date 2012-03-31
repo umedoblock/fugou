@@ -28,6 +28,10 @@ int sha(uchar *hash, uchar *data, unt datasize, int shatype)
 		default:
 			//SHA-1, SHA-256に関しては、ソースコードが酷すぎる。
 			//触らぬ神に祟り無し
+			/* こんな所にも書いてあった。
+			 * sha.h にも書きましたが、改めてそう思いました。
+			 * 平成24年 3月 31日 土曜日 11:49:32
+			 */
 			hashlen = -1;
 			break;
 		case 512:
