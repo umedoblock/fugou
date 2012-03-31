@@ -287,7 +287,8 @@ int main(int argc, char *argv[])
     /* need p2 for libpar2. */
     par2_t par2, *p2 = NULL;
     FILE **files, *fp;
-    void *mem;
+    void *mem, *mem_;
+    size_t mem_size;
 
     help = parse_args(&opts, argc, argv);
     if (invalid_opts(&opts) || help) {
@@ -326,17 +327,24 @@ int main(int argc, char *argv[])
     if (opts.encode == ENABLE) {
         /* header + data * redundancy + parity * redundancy*/
         names_num = 1 + opts.redundancy + opts.redundancy;
-        mem = (void *)malloc(L_tmpnam * names_num);
-        names = (char **)malloc(sizeof(char *) * names_num);
+        mem_size = 0;
+        mem_size += sizeof(FILE *) * names_num;
+        mem_size += sizeof(char *) * names_num;
+        mem_size += L_tmpnam * names_num;
 
-        files = (FILE **)malloc(sizeof(FILE *) * names_num);
-        if (names == NULL) {
+        mem = (void *)malloc(mem_size);
+        if (mem == NULL) {
             close_file(&opts);
             return -1;
         }
+        mem_ = mem;
+        files = mem; mem += sizeof(FILE *) * names_num;
+        names = mem; mem += sizeof(char *) * names_num;
+        for (i=0;i<names_num;i++) {
+            names[i] = mem;
+            mem += L_tmpnam;
+        }
 
-        for (i=0;i<names_num;i++)
-            names[i] = mem + L_tmpnam * i;
         for (i=0;i<names_num;i++){
             tmpnam(names[i]);
             fp = fopen(names[i], "wb");
@@ -349,15 +357,13 @@ int main(int argc, char *argv[])
     par2_ultimate_fate_of_the_universe();
 
     for (i=0;i<names_num;i++){
-        name = names[i];
         fp = files[i];
         fclose(fp);
         ret = remove(names[i]);
         fprintf(stdout, "remove(names[%d]=%s)=%d, fclose(%p)\n", \
                                       i, names[i], ret, fp);
     }
-    free(files);
-    free(names);
+    free(mem_);
     close_file(&opts);
 
     /* THANK YOU. */
