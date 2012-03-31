@@ -282,7 +282,6 @@ int main(int argc, char *argv[])
     int i, help = 0, done, ret;
     int redundancy, bits;
     opts_t opts;
-    /* please see par2/pypar2.c Par2_init() in detail. */
     /* need p2 for libpar2. */
     par2_t par2, *p2 = NULL;
 
@@ -313,6 +312,7 @@ int main(int argc, char *argv[])
         return PAR2_MALLOC_ERROR;
     }
 
+    /* please see par2/pypar2.c Par2_init() in detail. */
     /* you can call par2_init_p2() in sample_init_p2() */
     ret = sample_init_p2(p2, redundancy, bits);
     if (ret < 0)
