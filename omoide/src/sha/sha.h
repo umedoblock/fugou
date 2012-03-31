@@ -90,6 +90,9 @@ void sha_puthash(unt *x, int hLen);
 
 //酷い酷い酷い酷い酷い酷いSHAは全部酷い
 //平成20年  1月 31日 木曜日 22:37:52
+/* 改めてそう思いました。
+ * 平成24年  3月 31日 土曜日 11:46:52
+ */
 int sha(uchar *hash, uchar *data, unt datasize, int shatype);
 int sprintfsha(char *ss, uchar *data, unt datasize, int shatype);
 void sharandom(uchar *random, unt randomsize, uchar *seed, unt seedsize);
