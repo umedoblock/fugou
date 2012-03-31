@@ -146,14 +146,8 @@ int parse_string_arg_about_existential(
     opts_t *opts, char *opt_name, int argc, char *argv[])
 {
     int i, existence = 0;
-    int opt_name_len = -1, argv_len = -1;
 
-    opt_name_len = strlen(opt_name);
     for (i=0;i<argc;i++){
-        /* expect opt_name style
-         * opt_name
-         */
-        argv_len = strlen(argv[i]);
         if (strcmp(opt_name, argv[i]) == 0) {
             existence = 1;
             break;
@@ -180,7 +174,6 @@ int parse_file(opts_t *opts, int argc, char *argv[])
 
 int parse_args(opts_t *opts, int argc, char *argv[])
 {
-    int i;
     int help;
 
     help = parse_string_arg_about_existential(opts, "--help", argc, argv);
@@ -306,18 +299,46 @@ void *allocate_resource(
     return mem_;
 }
 
+int open_part_files(char **names, FILE **files, int names_num)
+{
+    int i;
+    FILE *fp;
+    for (i=0;i<names_num;i++) {
+        tmpnam(names[i]);
+        fp = fopen(names[i], "wb");
+        files[i] = fp;
+        fprintf(stdout, "names[%d] = %s, fp = %p\n", i, names[i], fp);
+    }
+    return 0;
+}
+
+int close_part_files(char **names, FILE **files, int names_num)
+{
+    int i, ret;
+    FILE *fp;
+
+    for (i=0;i<names_num;i++){
+        fp = files[i];
+        fclose(fp);
+        ret = remove(names[i]);
+        fprintf(stdout, "remove(names[%d]=%s)=%d, fclose(%p)\n", \
+                                      i, names[i], ret, fp);
+    }
+    return 0;
+}
+
 #define SEE_YOU 0
 
 int main(int argc, char *argv[])
 {
-    int i, help = 0, done, ret;
+    int help = 0, done, ret;
     int redundancy, bits;
     int names_num;
-    char *name, **names;
+    char **names;
     opts_t opts;
     /* need p2 for libpar2. */
     par2_t par2, *p2 = NULL;
-    FILE **files, *fp;
+    FILE **files;
     void *mem;
 
     help = parse_args(&opts, argc, argv);
@@ -361,25 +382,14 @@ int main(int argc, char *argv[])
             close_file(&opts);
             return -2;
         }
-        for (i=0;i<names_num;i++) {
-            tmpnam(names[i]);
-            fp = fopen(names[i], "wb");
-            files[i] = fp;
-            fprintf(stdout, "names[%d] = %s, fp = %p\n", i, names[i], fp);
-        }
+        open_part_files(names, files, names_num);
+        close_part_files(names, files, names_num);
+        free(mem);
     }
 
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
-    for (i=0;i<names_num;i++){
-        fp = files[i];
-        fclose(fp);
-        ret = remove(names[i]);
-        fprintf(stdout, "remove(names[%d]=%s)=%d, fclose(%p)\n", \
-                                      i, names[i], ret, fp);
-    }
-    free(mem);
     close_file(&opts);
 
     /* THANK YOU. */
