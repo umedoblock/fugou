@@ -366,6 +366,8 @@ int main(int argc, char *argv[])
     if (ret < 0)
         return ret;
 
+    close_file(p2f);
+
     /* view_opts_t(opts); */
 
     /* MAIN ROUTINE for libpar2. */
@@ -401,8 +403,6 @@ int main(int argc, char *argv[])
 
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
-
-    close_file(p2f);
 
     /* THANK YOU. */
     return SEE_YOU;
