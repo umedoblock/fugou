@@ -309,7 +309,7 @@ Par2__encode(PyPar2Object *self, PyObject *args)
     reed_solomon_t *rds = p2->rds;
     PyObject *parity_slots_obj, *data_slots_obj, *slot_obj;
     int symbol_num;
-    int len_slots, len_data_slots, len_parity_slots;
+    int len_data_slots, len_parity_slots;
     int i;
 
     if (!PyArg_ParseTuple(args, "OOi", \
@@ -318,10 +318,6 @@ Par2__encode(PyPar2Object *self, PyObject *args)
 
     len_data_slots = PySequence_Length(data_slots_obj);
     len_parity_slots = PySequence_Length(parity_slots_obj);
-    len_slots = len_data_slots + len_parity_slots;
-    if (len_slots < p2->redundancy * 2) {
-        /* to avoid noisy compiler */
-    }
 
     for (i=0;i<len_data_slots;i++) {
         slot_obj = PySequence_GetItem(data_slots_obj, i);
@@ -351,7 +347,7 @@ Par2__decode(PyPar2Object *self, PyObject *args)
     PyObject *slot_obj, *decode_data_slots_obj, *merged_slots_obj;
     PyBytesObject *inverse_matrix_obj = NULL;
     int symbol_num;
-    int len_slots, len_decode_data_slots, len_merged_slots;
+    int len_decode_data_slots, len_merged_slots;
     ptr_t inverse_matrix;
     int i;
 
@@ -364,10 +360,6 @@ Par2__decode(PyPar2Object *self, PyObject *args)
 
     len_decode_data_slots = PySequence_Length(decode_data_slots_obj);
     len_merged_slots = PySequence_Length(merged_slots_obj);
-    len_slots = len_decode_data_slots + len_merged_slots;
-    if (len_slots < p2->redundancy * 2) {
-        /* to avoid noisy compiler */
-    }
 
     for (i=0;i<len_decode_data_slots;i++) {
         slot_obj = PySequence_GetItem(decode_data_slots_obj, i);
@@ -577,8 +569,6 @@ static PyMethodDef Par2_methods[] = {
         METH_NOARGS, "_make_gf_and_gfi()"},
     {"_make_vandermonde_matrix", (PyCFunction )Par2__make_vandermonde_matrix, \
         METH_NOARGS, "_make_vandermonde_matrix()"},
-    {"_make_square_matrix", (PyCFunction )Par2__make_square_matrix, \
-        METH_NOARGS, "_make_square_matrix()"},
     {"_make_e_matrix", (PyCFunction )Par2__make_e_matrix, \
         METH_NOARGS, "_make_e_matrix()"},
     {"_mul_matrixes", (PyCFunction )Par2__mul_matrixes, \
