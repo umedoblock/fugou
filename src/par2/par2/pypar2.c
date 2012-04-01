@@ -3,6 +3,11 @@
 
 #include "libpar2.h"
 
+#define PYPAR2_MAX_REDUNDANCY (1 << 13)
+/* MO means Mega Octets(Bytes) */
+/* ((2 ^ 13) ^ 2) * 4 = 64(= 2 ^ 26) * 4 = 256 Mega Octets */
+/* 256 MO need for par2_big_bang()! */
+
 #define Par2_MODULE
 
 static PyTypeObject PyPar2Type;
@@ -20,7 +25,6 @@ typedef struct {
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
-    {"bits", T_INT, offsetof(PyPar2Object, par2.bits), 0, ""},
     {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
     {"vertical_size", T_INT, offsetof(PyPar2Object, par2.vertical_size), 0, ""},
     {"horizontal_size", T_INT, \
@@ -79,7 +83,7 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
                 max_redundancy = rds->gf_max;
             }
             else {
-                max_redundancy = PAR2_MAX_REDUNDANCY;
+                max_redundancy = PYPAR2_MAX_REDUNDANCY;
             }
             PyErr_Format(pypar2_Par2Error,
                 "redundancy(=%d) must be 2 <= redundancy <= %d.",
@@ -101,15 +105,14 @@ static PyObject *
 Par2__allocate_memory(PyPar2Object *self)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds;
+    reed_solomon_t *rds = p2->rds;
     int ret;
     char msg[80];
 /*
 fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
 */
-    rds = par2_get_reed_solomon(p2->bits);
     if (rds == NULL){
-        sprintf(msg, "unknown bits %d", p2->bits);
+        sprintf(msg, "unknown bits %d", rds->bits);
         PyErr_SetString(pypar2_Par2Error, msg);
         return NULL;
     }
@@ -613,7 +616,7 @@ Par2__solve_inverse_matrix(PyPar2Object *self, PyObject *args)
             /* Par2Error */
             PyErr_Format(pypar2_Par2Error,
                 "cannot make inverse_matrix. bits = %d, redundancy = %d.",
-                                             p2->bits, p2->redundancy);
+                                             p2->rds->bits, p2->redundancy);
         }
         else {
             PyErr_Format(pypar2_Par2Error,
