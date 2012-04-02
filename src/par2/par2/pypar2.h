@@ -1,3 +1,6 @@
+/* author: 梅どぶろく(umedoblock)
+ * Copyright 平成23-24(2011-2012)年
+ */
 #include "Python.h"
 #include "structmember.h"
 

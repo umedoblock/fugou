@@ -1,3 +1,6 @@
+/* author: 梅どぶろく(umedoblock)
+ * Copyright 平成23-24(2011-2012)年
+ */
 #include "pypar2.h"
 
 static PyTypeObject PyPar2Type;
@@ -289,12 +292,12 @@ Par2__encode(PyPar2Object *self, PyObject *args)
 
     for (i=0;i<len_data_slots;i++) {
         slot_obj = PySequence_GetItem(data_slots_obj, i);
-        p2->data_slots[i] = (ptr_t )PyBytes_AS_STRING(slot_obj);
+        p2->data_slots[i].u8 = (uchar *)PyBytes_AS_STRING(slot_obj);
     }
 
     for (i=0;i<len_parity_slots;i++) {
         slot_obj = PySequence_GetItem(parity_slots_obj, i);
-        p2->parity_slots[i] = (ptr_t )PyByteArray_AS_STRING(slot_obj);
+        p2->parity_slots[i].u8 = (uchar *)PyByteArray_AS_STRING(slot_obj);
     }
 
     if (rds->code_size == 2) {
@@ -331,12 +334,12 @@ Par2__decode(PyPar2Object *self, PyObject *args)
 
     for (i=0;i<len_decode_data_slots;i++) {
         slot_obj = PySequence_GetItem(decode_data_slots_obj, i);
-        p2->data_slots[i] = (ptr_t )PyByteArray_AS_STRING(slot_obj);
+        p2->data_slots[i].u8 = (uchar *)PyByteArray_AS_STRING(slot_obj);
     }
 
     for (i=0;i<len_merged_slots;i++) {
         slot_obj = PySequence_GetItem(merged_slots_obj, i);
-        p2->merged_slots[i] = (ptr_t )PyBytes_AS_STRING(slot_obj);
+        p2->merged_slots[i].u8 = (uchar *)PyBytes_AS_STRING(slot_obj);
     }
 
     if (rds->code_size == 2) {
@@ -349,7 +352,7 @@ Par2__decode(PyPar2Object *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-static int _set_slots(ptr_t *slots, PyListObject *slots_obj, int len_slots)
+static int _set_slots(slot_t *slots, PyListObject *slots_obj, int len_slots)
 {
     int i, count = 0;
     PyObject *slot_obj;
