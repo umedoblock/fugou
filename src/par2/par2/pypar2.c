@@ -7,6 +7,8 @@ PyObject *pypar2_Par2Error;
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
     {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
+    {"object_used_size", T_UINT, \
+        offsetof(PyPar2Object, object_used_size), 0, ""},
     {"vertical_size", T_INT, offsetof(PyPar2Object, par2.vertical_size), 0, ""},
     {"horizontal_size", T_INT, \
         offsetof(PyPar2Object, par2.horizontal_size), 0, ""},
@@ -54,9 +56,7 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
         return -1;
 
     ret = par2_init_p2(p2, bits, redundancy);
-    if (ret >= 0)
-        p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
-    else if (ret < 0) {
+    if (ret < 0) {
         if (ret == PAR2_INVALID_BITS_ERROR)
             PyErr_Format(pypar2_Par2Error,
                 "must chose 4, 8, 16 or 24 for bits.");
@@ -80,6 +80,7 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
         */
         return -1;
     }
+    self->object_used_size = sizeof(PyPar2Object) + p2->allocate_size;
 
     return 0;
 }
