@@ -370,10 +370,9 @@ int main(int argc, char *argv[])
     opts_t opts_, *opts = &opts_;
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
-    FILE **files;
     void *mem;
 
-    help = parse_args(p2f, opts, argc, argv);
+    help = parse_args(opts, argc, argv);
     if (invalid_opts(opts) || help) {
         view_args(argc, argv);
         usage();

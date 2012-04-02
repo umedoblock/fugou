@@ -1,27 +1,8 @@
-#include "Python.h"
-#include "structmember.h"
-
-#include "libpar2.h"
-
-#define PYPAR2_MAX_REDUNDANCY (1 << 13)
-/* MO means Mega Octets(Bytes) */
-/* ((2 ^ 13) ^ 2) * 4 = 64(= 2 ^ 26) * 4 = 256 Mega Octets */
-/* 256 MO need for par2_big_bang()! */
-
-#define Par2_MODULE
+#include "pypar2.h"
 
 static PyTypeObject PyPar2Type;
 PyObject *pypar2_Error;
 PyObject *pypar2_Par2Error;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    par2_t par2;
-} PyPar2Object;
-
-#define PyPar2_Check(op) PyObject_TypeCheck(op, &PyPar2Type)
-#define PyPar2_CheckExact(op) (Py_TYPE(op) == &PyPar2Type)
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
@@ -73,7 +54,9 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
         return -1;
 
     ret = par2_init_p2(p2, bits, redundancy);
-    if (ret < 0){
+    if (ret >= 0)
+        p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
+    else if (ret < 0) {
         if (ret == PAR2_INVALID_BITS_ERROR)
             PyErr_Format(pypar2_Par2Error,
                 "must chose 4, 8, 16 or 24 for bits.");
@@ -99,22 +82,6 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
     }
 
     return 0;
-}
-
-static PyObject *
-Par2__allocate_memory(PyPar2Object *self)
-{
-    par2_t *p2 = &self->par2;
-/*
-fprintf(stderr, "Par2__allocate_memory(self=%p)\n", self);
-*/
-
-    p2->object_size = sizeof(PyPar2Object) + p2->allocate_size;
-    /*
-    par2_view_p2(p2);
-    */
-
-    Py_RETURN_NONE;
 }
 
 static void
@@ -555,8 +522,6 @@ Py_dump(PyPar2Object *self, PyObject *args)
 }
 
 static PyMethodDef Par2_methods[] = {
-    {"_allocate_memory", (PyCFunction )Par2__allocate_memory, \
-        METH_NOARGS, "_allocate_memory()"},
     {"_encode", (PyCFunction )Par2__encode, \
         METH_VARARGS, "_encode()"},
     {"_decode", (PyCFunction )Par2__decode, \
@@ -634,28 +599,6 @@ static PyTypeObject PyPar2Type = {
     Par2_new,                 /* tp_new */
     (freefunc)Par2_free,                /* tp_free Low-level free-memory routine */
 };
-
-typedef struct {
-    PyObject_HEAD
-} PyBigBangObject;
-
-/*
-typedef struct PyModuleDef{
-  PyModuleDef_Base m_base;
-  const char* m_name;
-  const char* m_doc;
-  Py_ssize_t m_size;
-  PyMethodDef *m_methods;
-  inquiry m_reload;
-  traverseproc m_traverse;
-  inquiry m_clear;
-  freefunc m_free;
-}PyModuleDef;
-
-typedef int (*inquiry)(PyObject *);
-typedef int (*traverseproc)(PyObject *, visitproc, void *);
-typedef void (*freefunc)(void *);
-*/
 
 static int
 BigBang_init(PyBigBangObject *self, PyObject *args, PyObject *kwds);
