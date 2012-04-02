@@ -10,13 +10,6 @@ typedef struct _opts_t {
     int bits;
 } opts_t;
 
-typedef struct _par2_file_t {
-    char *name;
-    FILE *fp;
-    long file_size;
-    uchar *data;
-} par2_file_t;
-
 void view_args(int argc, char *argv[])
 {
     int i;
@@ -33,14 +26,6 @@ void view_opts_t(opts_t *opts)
     fprintf(stderr, "decode = %d\n", opts->decode);
     fprintf(stderr, "redundancy = %d\n", opts->redundancy);
     fprintf(stderr, "bits = %d\n", opts->bits);
-}
-
-void view_par2_file_t(par2_file_t *p2f)
-{
-    fprintf(stderr, "name = \"%s\"\n", p2f->name);
-    fprintf(stderr, "fp = %p\n", p2f->fp);
-    fprintf(stderr, "file_size = %ld\n", p2f->file_size);
-    fprintf(stderr, "data = %p\n", p2f->data);
 }
 
 void usage(void)
@@ -176,14 +161,14 @@ int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
     return 0;
 }
 
-int parse_file(par2_file_t *p2f, opts_t *opts, int argc, char *argv[])
+int parse_file(opts_t *opts, int argc, char *argv[])
 {
     p2f->name = parse_string_arg(opts, "--file", argc, argv);
 
     return 0;
 }
 
-int parse_args(par2_file_t *p2f, opts_t *opts, int argc, char *argv[])
+int parse_args(opts_t *opts, int argc, char *argv[])
 {
     int help;
 
@@ -213,7 +198,7 @@ int open_file(par2_file_t *p2f, opts_t *opts)
     if (opts->encode == ENABLE)
         mode = "rb";
     else if (opts->decode == ENABLE)
-        mode = "wb";
+        mode = "r";
     else
         return -1;
 
@@ -385,7 +370,6 @@ int main(int argc, char *argv[])
     opts_t opts_, *opts = &opts_;
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
-    par2_file_t p2f_, *p2f = &p2f_;
     FILE **files;
     void *mem;
 
@@ -395,18 +379,6 @@ int main(int argc, char *argv[])
         usage();
         return -1;
     }
-    /* view_opts_t(opts); */
-
-    ret = open_file(p2f, opts);
-    if (ret < 0)
-        return ret;
-
-    ret = read_file(p2f);
-    if (ret < 0) {
-        close_file(p2f);
-        return -6;
-    }
-
     /* view_opts_t(opts); */
 
     /* MAIN ROUTINE for libpar2. */
