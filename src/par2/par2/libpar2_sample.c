@@ -8,6 +8,7 @@ typedef struct _opts_t {
     int decode;
     int redundancy;
     int bits;
+    char *path;
 } opts_t;
 
 void view_args(int argc, char *argv[])
@@ -163,7 +164,7 @@ int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
 
 int parse_file(opts_t *opts, int argc, char *argv[])
 {
-    p2f->name = parse_string_arg(opts, "--file", argc, argv);
+    opts->path = parse_string_arg(opts, "--file", argc, argv);
 
     return 0;
 }
@@ -183,11 +184,12 @@ int parse_args(opts_t *opts, int argc, char *argv[])
 
     parse_encode_or_decode(opts, argc, argv);
     parse_redundancy_and_bits(opts, argc, argv);
-    parse_file(p2f, opts, argc, argv);
+    parse_file(opts, argc, argv);
 
     return 0;
 }
 
+#if 0
 int open_file(par2_file_t *p2f, opts_t *opts)
 {
     char *mode = NULL;
@@ -264,42 +266,6 @@ int close_file(par2_file_t *p2f)
     return 0;
 }
 
-int sample_init_p2(par2_t *p2, int redundancy, int bits)
-{
-    int ret, max_redundancy;
-
-    ret = par2_init_p2(p2, redundancy, bits);
-    if (ret == 0) {
-        if (bits == 16 || bits == 24) {
-            if (redundancy > MAX_REDUNDANCY)
-                ret = PAR2_INVALID_REDUNDANCY_ERROR;
-        }
-    }
-    if (ret < 0){
-        if (ret == PAR2_INVALID_BITS_ERROR)
-            fprintf(stderr, "must chose 4, 8, 16 or 24 for bits.\n");
-        else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
-            if (bits == 4 || bits == 8) {
-                max_redundancy = p2->rds->gf_max;
-            }
-            else {
-                /* bits == 16 || bits == 24 */
-                max_redundancy = MAX_REDUNDANCY;
-            }
-            fprintf(stderr, "redundancy(=%d) must be 2 <= redundancy <= %d.\n",
-                             redundancy, max_redundancy);
-        }
-        else
-            fprintf(stderr, "unknown return code that is %d.\n", ret);
-        par2_view_p2(p2);
-
-        #define OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO -2
-        ret = OHHHHHHHHHHHHHHHHHHHH_NOOOOOOOOOOOOO;
-    }
-
-    return ret;
-}
-
 void *allocate_resource(
     FILE ***files, char ***names, int names_num)
 {
@@ -308,7 +274,7 @@ void *allocate_resource(
     char **names_;
     int i;
 
-    /* header + data * redundancy + parity * redundancy*/
+    /* header + data * redundancy + parity * redundancy */
     mem_size = 0;
     mem_size += sizeof(FILE *) * names_num;
     mem_size += sizeof(char *) * names_num;
@@ -358,6 +324,7 @@ int close_par2_files(char **names, FILE **files, int names_num)
     }
     return 0;
 }
+#endif
 
 #define SEE_YOU 0
 
@@ -365,12 +332,10 @@ int main(int argc, char *argv[])
 {
     int help = 0, done, ret;
     int redundancy, bits;
-    int names_num;
-    char **names;
     opts_t opts_, *opts = &opts_;
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
-    void *mem;
+    size_t encoded = 0;
 
     help = parse_args(opts, argc, argv);
     if (invalid_opts(opts) || help) {
@@ -389,32 +354,22 @@ int main(int argc, char *argv[])
     done = par2_big_bang();
     if (done == PAR2_MALLOC_ERROR){
         fprintf(stderr, "par2_big_bang() failed for memory.\n");
-        close_file(p2f);
         return PAR2_MALLOC_ERROR;
     }
 
+    fprintf(stderr, "bits = %d, redundancy = %d\n", bits, redundancy);
+
     /* please see par2/pypar2.c Par2_init() in detail. */
     /* you can call par2_init_p2() in sample_init_p2() */
-    ret = sample_init_p2(p2, redundancy, bits);
+    ret = par2_init_p2(p2, bits, redundancy, NULL);
     if (ret < 0) {
-        close_file(p2f);
         return ret;
     }
 
-    names_num = 1 + redundancy + redundancy;
- /* fprintf(stdout, "L_tmpnam = %d, TMP_MAX = %d\n", L_tmpnam, TMP_MAX); */
     if (opts->encode == ENABLE) {
-        mem = allocate_resource(&files, &names, names_num);
-        if (mem == NULL) {
-            close_file(p2f);
-            return -2;
-        }
-        open_par2_files(names, files, names_num);
-        close_par2_files(names, files, names_num);
-        free(mem);
+        encoded = par2_encode_file(bits, redundancy, opts->path);
+        fprintf(stdout, "encoded = %d\n", encoded);
     }
-
-    close_file(p2f);
 
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
