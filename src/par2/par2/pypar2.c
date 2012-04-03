@@ -47,9 +47,9 @@ static int
 Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds)
 {
     par2_t *p2 = &self->par2;
-    reed_solomon_t *rds = NULL;
     int ret, bits = -1, redundancy = -1, max_redundancy = -1;
     char *kwlist[] = {"bits", "redundancy", NULL};
+    char errmsg[80];
 
 /*
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
@@ -58,30 +58,27 @@ fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
                                      kwlist, &bits, &redundancy))
         return -1;
 
-    ret = par2_init_p2(p2, bits, redundancy);
-    if (ret < 0) {
-        if (ret == PAR2_INVALID_BITS_ERROR)
-            PyErr_Format(pypar2_Par2Error,
-                "must chose 4, 8, 16 or 24 for bits.");
-        else if (ret == PAR2_INVALID_REDUNDANCY_ERROR) {
-            if (bits == 4 || bits == 8) {
-                rds = p2->rds;
-                max_redundancy = rds->gf_max;
-            }
-            else {
-                max_redundancy = PYPAR2_MAX_REDUNDANCY;
-            }
-            PyErr_Format(pypar2_Par2Error,
-                "redundancy(=%d) must be 2 <= redundancy <= %d.",
-                redundancy, max_redundancy);
+        // fprintf(stderr, "redundancy is %d, bits = %d\n", redundancy, bits);
+    ret = par2_init_p2(p2, bits, redundancy, errmsg);
+    if (redundancy > PYPAR2_MAX_REDUNDANCY || ret < 0) {
+        if (p2->rds && p2->rds->gf_max > PYPAR2_MAX_REDUNDANCY) {
+            max_redundancy = PYPAR2_MAX_REDUNDANCY;
+            sprintf(errmsg, "redundancy(=%d) must be 2 <= redundancy <= %d.",
+                                        redundancy, max_redundancy);
         }
-        else
-            PyErr_Format(pypar2_Par2Error,
-                "unknown return code that is %d.", ret);
+        else if (ret == PAR2_INVALID_BITS_ERROR ||
+             ret == PAR2_INVALID_REDUNDANCY_ERROR ) {
+             errmsg[strlen(errmsg)-1] = '\0';
+        }
+        else {
+            sprintf(errmsg, "unknown return code that is %d.", ret);
+        }
+        PyErr_Format(pypar2_Par2Error, errmsg);
+
         /*
         par2_view_p2(p2);
         */
-        return -1;
+        return ret;
     }
     self->object_used_size = sizeof(PyPar2Object) + p2->allocate_size;
 
