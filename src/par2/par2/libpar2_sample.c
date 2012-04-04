@@ -367,10 +367,11 @@ int main(int argc, char *argv[])
     }
 
     if (opts->encode == ENABLE) {
-        encoded = par2_encode_file(bits, redundancy, opts->path);
+        encoded = par2_encode_file(p2, opts->path);
         fprintf(stdout, "encoded = %d\n", encoded);
     }
 
+    par2_free_memory(p2);
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
