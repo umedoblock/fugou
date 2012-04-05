@@ -430,13 +430,16 @@ class Par2MixIn:
     def _calculate_size(self, data_size):
         if not 1 <= data_size <= DATA_SIZE_MAX:
             ValueError('data_size must be 1 <= data_size <= 2 ** 64 - 1')
-        snip_size = (data_size + TAIL_SIZE) % self.vertical_size
+        snip_size = data_size % self.vertical_size
         if not snip_size:
             padding_size = 0
         else:
             padding_size = self.vertical_size - snip_size
-        encode_size = data_size + padding_size + TAIL_SIZE
-        if encode_size % self.redundancy:
+        encode_size = data_size + padding_size
+      # vertical_size = redundancy * octets
+      # modulus = vertical_size (mod redundancy)
+        modulus = encode_size % self.redundancy
+        if modulus:
             raise ValueError('encode_size % self.redundancy ='.format(encode_size % self.redundancy))
         slot_size = encode_size // self.redundancy
       # print('redundancy = {}'.format(self.redundancy))

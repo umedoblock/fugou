@@ -1,3 +1,1 @@
-TAIL_SIZE = 8
-DATA_SIZE_MAX = (1 << (TAIL_SIZE * 8)) - 1
 MAX_REDUNDANCY = (1 << 13)
