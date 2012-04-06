@@ -370,7 +370,10 @@ int main(int argc, char *argv[])
     if (opts->encode == ENABLE) {
         ret = par2_encode_file(p2, opts->path, header);
         fprintf(stdout, "ret = %d\n", ret);
-        fprintf(stdout, "header = \"%s\"\n", header);
+        if (ret >= 0) {
+            fprintf(stdout, "header = \n");
+            fprintf(stdout, "%s\n", header);
+        }
     }
 
     par2_free_memory(p2);
