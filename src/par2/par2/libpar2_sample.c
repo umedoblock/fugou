@@ -9,6 +9,7 @@ typedef struct _opts_t {
     int redundancy;
     int bits;
     char *path;
+    char *header;
 } opts_t;
 
 void view_args(int argc, char *argv[])
@@ -34,7 +35,7 @@ void usage(void)
     fprintf(stderr, "libpar2_sample --encode " \
                     "--redundancy=NUM --bits=NUM --file=NAME\n");
     fprintf(stderr, "or\n");
-    fprintf(stderr, "libpar2_sample --decode --file=NAME\n");
+    fprintf(stderr, "libpar2_sample --decode --header=NAME\n");
 }
 
 int invalid_opts(opts_t *opts)
@@ -70,6 +71,10 @@ int invalid_opts(opts_t *opts)
             fprintf(stderr, "no need to use --redundancy option.\n");
         if (opts->bits != 0)
             fprintf(stderr, "no need to use --bits option.\n");
+        if (opts->header == NULL) {
+            fprintf(stderr, "must use --header option.\n");
+            goto err;
+        }
     }
 
     invalid = 0;
@@ -169,6 +174,13 @@ int parse_file(opts_t *opts, int argc, char *argv[])
     return 0;
 }
 
+int parse_header(opts_t *opts, int argc, char *argv[])
+{
+    opts->header = parse_string_arg(opts, "--header", argc, argv);
+
+    return 0;
+}
+
 int parse_args(opts_t *opts, int argc, char *argv[])
 {
     int help;
@@ -185,6 +197,7 @@ int parse_args(opts_t *opts, int argc, char *argv[])
     parse_encode_or_decode(opts, argc, argv);
     parse_redundancy_and_bits(opts, argc, argv);
     parse_file(opts, argc, argv);
+    parse_header(opts, argc, argv);
 
     return 0;
 }
@@ -337,6 +350,8 @@ int main(int argc, char *argv[])
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
 
+    memset(opts, 0, sizeof(opts_t));
+
     help = parse_args(opts, argc, argv);
     if (invalid_opts(opts) || help) {
         view_args(argc, argv);
@@ -347,8 +362,16 @@ int main(int argc, char *argv[])
 
     /* MAIN ROUTINE for libpar2. */
     /* below three variant need to use libpar2. */
-    redundancy = opts->redundancy;
-    bits = opts->bits;
+    if (opts->encode == ENABLE) {
+        redundancy = opts->redundancy;
+        bits = opts->bits;
+    }
+    else if (opts->decode == ENABLE) {
+        /* read header */
+    }
+    else {
+        return -201;
+    }
 
     /* occured par2 big bang !!! */
     ret = par2_big_bang();
@@ -372,6 +395,19 @@ int main(int argc, char *argv[])
 
     if (opts->encode == ENABLE) {
         ret = par2_encode_file(p2, opts->path, header);
+        if (ret >= 0) {
+            fprintf(stdout, "%s\n", header);
+            ret = SEE_YOU;
+        }
+        else {
+            fprintf(stderr, "failed par2_encode_file() = %d\n", ret);
+        }
+    }
+    else if (opts->decode == ENABLE) {
+        /*
+        ret = par2_decode_file(p2, opts->path, header);
+        */
+        ret = -10000;
         if (ret >= 0) {
             fprintf(stdout, "%s\n", header);
             ret = SEE_YOU;
