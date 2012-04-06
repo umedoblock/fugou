@@ -330,12 +330,12 @@ int close_par2_files(char **names, FILE **files, int names_num)
 
 int main(int argc, char *argv[])
 {
-    int help = 0, done, ret;
+    int help = 0, done, ret = -1;
     int redundancy, bits;
     opts_t opts_, *opts = &opts_;
+    char header[80];
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
-    size_t encoded = 0;
 
     help = parse_args(opts, argc, argv);
     if (invalid_opts(opts) || help) {
@@ -367,8 +367,9 @@ int main(int argc, char *argv[])
     }
 
     if (opts->encode == ENABLE) {
-        encoded = par2_encode_file(p2, opts->path);
-        fprintf(stdout, "encoded = %d\n", encoded);
+        ret = par2_encode_file(p2, opts->path, header);
+        fprintf(stdout, "ret = %d\n", ret);
+        fprintf(stdout, "header = \"%s\"\n", header);
     }
 
     par2_free_memory(p2);
