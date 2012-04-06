@@ -374,11 +374,11 @@ int main(int argc, char *argv[])
         ret = par2_encode_file(p2, opts->path, header);
         if (ret >= 0) {
             fprintf(stdout, "%s\n", header);
+            ret = SEE_YOU;
         }
         else {
             fprintf(stderr, "failed par2_encode_file() = %d\n", ret);
         }
-        ret = SEE_YOU;
     }
     else {
         ret = -200;
