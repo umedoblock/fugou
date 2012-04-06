@@ -357,7 +357,8 @@ int main(int argc, char *argv[])
         return PAR2_MALLOC_ERROR;
     }
 
-    fprintf(stderr, "bits = %d, redundancy = %d\n", bits, redundancy);
+    fprintf(stderr, "bits = %d, redundancy = %d in main()\n", \
+                     bits, redundancy);
 
     /* please see par2/pypar2.c Par2_init() in detail. */
     /* you can call par2_init_p2() in sample_init_p2() */
