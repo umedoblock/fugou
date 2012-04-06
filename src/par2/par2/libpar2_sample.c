@@ -330,7 +330,7 @@ int close_par2_files(char **names, FILE **files, int names_num)
 
 int main(int argc, char *argv[])
 {
-    int help = 0, done, ret = -1;
+    int help = 0, ret = -1;
     int redundancy, bits;
     opts_t opts_, *opts = &opts_;
     char header[80];
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
     if (invalid_opts(opts) || help) {
         view_args(argc, argv);
         usage();
-        return -1;
+        return -100;
     }
     /* view_opts_t(opts); */
 
@@ -351,35 +351,45 @@ int main(int argc, char *argv[])
     bits = opts->bits;
 
     /* occured par2 big bang !!! */
-    done = par2_big_bang();
-    if (done == PAR2_MALLOC_ERROR){
+    ret = par2_big_bang();
+    if (ret < 0) {
         fprintf(stderr, "par2_big_bang() failed for memory.\n");
-        return PAR2_MALLOC_ERROR;
+        return ret;
     }
 
-    fprintf(stderr, "bits = %d, redundancy = %d in main()\n", \
+    /*
+    fprintf(stdout, "bits = %d, redundancy = %d in main()\n", \
                      bits, redundancy);
+    fprintf(stdout, "path = \n");
+    fprintf(stdout, "%s\n", opts->path);
+    */
 
     /* please see par2/pypar2.c Par2_init() in detail. */
-    /* you can call par2_init_p2() in sample_init_p2() */
     ret = par2_init_p2(p2, bits, redundancy, NULL);
     if (ret < 0) {
-        return ret;
+        goto err;
     }
 
     if (opts->encode == ENABLE) {
         ret = par2_encode_file(p2, opts->path, header);
-        fprintf(stdout, "ret = %d\n", ret);
         if (ret >= 0) {
-            fprintf(stdout, "header = \n");
             fprintf(stdout, "%s\n", header);
         }
+        else {
+            fprintf(stderr, "failed par2_encode_file() = %d\n", ret);
+        }
+        ret = SEE_YOU;
+    }
+    else {
+        ret = -200;
     }
 
     par2_free_memory(p2);
+
+err:
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
     /* THANK YOU. */
-    return SEE_YOU;
+    return ret;
 }
