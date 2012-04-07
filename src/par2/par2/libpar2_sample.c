@@ -392,6 +392,7 @@ int main(int argc, char *argv[])
                              ret, p2f->header_file);
             fclose(p2f->header_file);
         }
+        fprintf(stderr, "par2_read_header() = %d ok.\n", ret);
     }
     else {
         return -201;
