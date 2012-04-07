@@ -380,11 +380,6 @@ int main(int argc, char *argv[])
         }
         fprintf(stderr, "opened \"%s\"\n", opts->header);
 
-        /* read header */
-        to_hashed_name(ss, hash, 160);
-        fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
-                        "data_size=%u, " "hash=\"%s\"\n", \
-                         bits, poly, redundancy, data_size, ss);
         ret = par2_read_header(header_file, \
                                &bits, &poly, &redundancy, &data_size, \
                                hash);
