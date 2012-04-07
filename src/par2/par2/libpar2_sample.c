@@ -428,6 +428,7 @@ int main(int argc, char *argv[])
         }
     }
     else if (opts->decode == ENABLE) {
+        /* ret = par2_decode_file(p2); */
         if (ret >= 0) {
             fprintf(stdout, "%s\n", header);
             ret = SEE_YOU;
