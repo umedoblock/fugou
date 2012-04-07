@@ -370,13 +370,15 @@ int main(int argc, char *argv[])
         bits = opts->bits;
     }
     else if (opts->decode == ENABLE) {
-        fprintf(stderr, "opts->header = \"%s\"\n", opts->header);
+        /* fprintf(stderr, "opts->header = \"%s\"\n", opts->header); */
         header_file = fopen(opts->header, "r");
         if (header_file == NULL) {
-            view_args(argc, argv);
+            /* view_args(argc, argv); */
+            fprintf(stderr, "cannot open \"%s\"\n", opts->header);
             usage();
             return -203;
         }
+        fprintf(stderr, "opened \"%s\"\n", opts->header);
 
         /* read header */
         to_hashed_name(ss, hash, 160);
