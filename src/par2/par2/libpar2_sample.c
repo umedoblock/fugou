@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
     char ss[80], header[80];
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
-    FILE *header_file = NULL;
+    par2_file_t *p2f = &p2->p2f_;
 
     memset(opts, 0, sizeof(opts_t));
 
@@ -371,8 +371,8 @@ int main(int argc, char *argv[])
     }
     else if (opts->decode == ENABLE) {
         /* fprintf(stderr, "opts->header = \"%s\"\n", opts->header); */
-        header_file = fopen(opts->header, "r");
-        if (header_file == NULL) {
+        p2f->header_file = fopen(opts->header, "r");
+        if (p2f->header_file == NULL) {
             /* view_args(argc, argv); */
             fprintf(stderr, "cannot open \"%s\"\n", opts->header);
             usage();
@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
         }
         fprintf(stderr, "opened \"%s\"\n", opts->header);
 
-        ret = par2_read_header(header_file, \
+        ret = par2_read_header(p2f->header_file, \
                                &bits, &poly, &redundancy, &data_size, \
                                hash);
         to_hashed_name(ss, hash, 160);
@@ -388,8 +388,9 @@ int main(int argc, char *argv[])
                         "data_size=%u, " "hash=\"%s\"\n", \
                          bits, poly, redundancy, data_size, ss);
         if (ret < 0) {
-            fprintf(stderr, "ret = %d, header_file = %p\n", ret, header_file);
-            fclose(header_file);
+            fprintf(stderr, "ret = %d, p2f->header_file = %p\n", \
+                             ret, p2f->header_file);
+            fclose(p2f->header_file);
         }
     }
     else {
@@ -427,10 +428,6 @@ int main(int argc, char *argv[])
         }
     }
     else if (opts->decode == ENABLE) {
-        /*
-        ret = par2_decode_file(p2, opts->path, header);
-        */
-        ret = -204;
         if (ret >= 0) {
             fprintf(stdout, "%s\n", header);
             ret = SEE_YOU;
