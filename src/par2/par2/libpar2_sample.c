@@ -33,9 +33,9 @@ void view_opts_t(opts_t *opts)
 void usage(void)
 {
     fprintf(stderr, "libpar2_sample --encode " \
-                    "--redundancy=NUM --bits=NUM --file=NAME\n");
+                    "--redundancy=NUM --bits=NUM --file=PATH\n");
     fprintf(stderr, "or\n");
-    fprintf(stderr, "libpar2_sample --decode --header=NAME\n");
+    fprintf(stderr, "libpar2_sample --decode --header=PATH\n");
 }
 
 int invalid_opts(opts_t *opts)
@@ -344,11 +344,14 @@ int close_par2_files(char **names, FILE **files, int names_num)
 int main(int argc, char *argv[])
 {
     int help = 0, ret = -1;
-    int redundancy, bits;
+    uint redundancy, bits, poly;
+    size_t data_size;
     opts_t opts_, *opts = &opts_;
-    char header[80];
+    uchar hash[160/8] = {0};
+    char ss[80], header[80];
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
+    FILE *header_file = NULL;
 
     memset(opts, 0, sizeof(opts_t));
 
@@ -367,7 +370,30 @@ int main(int argc, char *argv[])
         bits = opts->bits;
     }
     else if (opts->decode == ENABLE) {
+        fprintf(stderr, "opts->header = \"%s\"\n", opts->header);
+        header_file = fopen(opts->header, "r");
+        if (header_file == NULL) {
+            view_args(argc, argv);
+            usage();
+            return -203;
+        }
+
         /* read header */
+        to_hashed_name(ss, hash, 160);
+        fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
+                        "data_size=%u, " "hash=\"%s\"\n", \
+                         bits, poly, redundancy, data_size, ss);
+        ret = par2_read_header(header_file, \
+                               &bits, &poly, &redundancy, &data_size, \
+                               hash);
+        to_hashed_name(ss, hash, 160);
+        fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
+                        "data_size=%u, " "hash=\"%s\"\n", \
+                         bits, poly, redundancy, data_size, ss);
+        if (ret < 0) {
+            fprintf(stderr, "ret = %d, header_file = %p\n", ret, header_file);
+            fclose(header_file);
+        }
     }
     else {
         return -201;
@@ -379,7 +405,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "par2_big_bang() failed for memory.\n");
         return ret;
     }
-
     /*
     fprintf(stdout, "bits = %d, redundancy = %d in main()\n", \
                      bits, redundancy);
@@ -392,6 +417,7 @@ int main(int argc, char *argv[])
     if (ret < 0) {
         goto err;
     }
+    fprintf(stderr, "par2_init_p2() success.\n");
 
     if (opts->encode == ENABLE) {
         ret = par2_encode_file(p2, opts->path, header);
@@ -407,13 +433,13 @@ int main(int argc, char *argv[])
         /*
         ret = par2_decode_file(p2, opts->path, header);
         */
-        ret = -10000;
+        ret = -204;
         if (ret >= 0) {
             fprintf(stdout, "%s\n", header);
             ret = SEE_YOU;
         }
         else {
-            fprintf(stderr, "failed par2_encode_file() = %d\n", ret);
+            fprintf(stderr, "failed par2_decode_file() = %d\n", ret);
         }
     }
     else {
