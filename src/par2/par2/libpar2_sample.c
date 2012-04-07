@@ -347,7 +347,6 @@ int main(int argc, char *argv[])
     uint redundancy, bits, poly;
     size_t data_size;
     opts_t opts_, *opts = &opts_;
-    uchar hash[160/8] = {0};
     char ss[80], header[80];
     /* need p2 for libpar2. */
     par2_t p2_, *p2 = &p2_;
@@ -380,17 +379,16 @@ int main(int argc, char *argv[])
         }
         fprintf(stderr, "opened \"%s\"\n", opts->header);
 
-        ret = par2_read_header(p2f->header_file, \
-                               &bits, &poly, &redundancy, &data_size, \
-                               hash);
-        to_hashed_name(ss, hash, 160);
-        fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
-                        "data_size=%u, " "hash=\"%s\"\n", \
-                         bits, poly, redundancy, data_size, ss);
+        ret = par2_read_header_of_kernel(p2f->header_file, \
+                               &bits, &poly, &redundancy, &data_size);
         if (ret < 0) {
             fprintf(stderr, "ret = %d, p2f->header_file = %p\n", \
                              ret, p2f->header_file);
+            fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
+                            "data_size=%u\n", \
+                             bits, poly, redundancy, data_size);
             fclose(p2f->header_file);
+            return -204;
         }
         fprintf(stderr, "par2_read_header() = %d ok.\n", ret);
     }
@@ -429,9 +427,20 @@ int main(int argc, char *argv[])
         }
     }
     else if (opts->decode == ENABLE) {
+        ret = par2_read_header_of_hash(p2f, p2->redundancy);
+        to_hashed_name(ss, p2f->hash, 160);
+        if (ret < 0) {
+            fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
+                            "data_size=%u, hash=\"%s\"\n", \
+                             bits, poly, redundancy, data_size, ss);
+        }
+        else {
+            fprintf(stdout, "par2_read_header_of_hash() = %d\n", ret);
+        }
+
         /* ret = par2_decode_file(p2); */
         if (ret >= 0) {
-            fprintf(stdout, "%s\n", header);
+            fprintf(stdout, "decoded file hash value is =>\n%s\n", ss);
             ret = SEE_YOU;
         }
         else {
