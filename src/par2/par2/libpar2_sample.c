@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
     else if (opts->decode == ENABLE) {
         ret = par2_recover_file(ss, opts->header);
         if (ret >= 0) {
-            fprintf(stdout, "recovered file hash value is =>\n%s\n", ss);
+            fprintf(stdout, "recovered file hash value is =>\n\"%s\"\n", ss);
             ret = SEE_YOU;
         }
         else {
