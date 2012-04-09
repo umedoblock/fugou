@@ -347,10 +347,9 @@ int main(int argc, char *argv[])
     uint redundancy, bits, poly;
     size_t data_size;
     opts_t opts_, *opts = &opts_;
-    char ss[80], header[80];
-    /* need p2 for libpar2. */
-    par2_t p2_, *p2 = &p2_;
-    par2_file_t *p2f = &p2->p2f_;
+    char hashed_header[80];
+    /* need p2e for libpar2. */
+    FILE *header_file = NULL;
 
     memset(opts, 0, sizeof(opts_t));
 
@@ -370,8 +369,8 @@ int main(int argc, char *argv[])
     }
     else if (opts->decode == ENABLE) {
         /* fprintf(stderr, "opts->header = \"%s\"\n", opts->header); */
-        p2f->header_file = fopen(opts->header, "r");
-        if (p2f->header_file == NULL) {
+        header_file = fopen(opts->header, "r");
+        if (header_file == NULL) {
             /* view_args(argc, argv); */
             fprintf(stderr, "cannot open \"%s\"\n", opts->header);
             usage();
@@ -379,15 +378,15 @@ int main(int argc, char *argv[])
         }
         fprintf(stderr, "opened \"%s\"\n", opts->header);
 
-        ret = par2_read_header_of_kernel(p2f->header_file, \
+        ret = par2_read_header_of_kernel(header_file, \
                                &bits, &poly, &redundancy, &data_size);
         if (ret < 0) {
-            fprintf(stderr, "ret = %d, p2f->header_file = %p\n", \
-                             ret, p2f->header_file);
+            fprintf(stderr, "ret = %d, header_file = %p\n", \
+                             ret, header_file);
             fprintf(stderr, "bits=%u, poly=%u, redundancy=%u, " \
                             "data_size=%u\n", \
                              bits, poly, redundancy, data_size);
-            fclose(p2f->header_file);
+            fclose(header_file);
             return -204;
         }
         fprintf(stderr, "par2_read_header() = %d ok.\n", ret);
@@ -410,16 +409,11 @@ int main(int argc, char *argv[])
     */
 
     /* please see par2/pypar2.c Par2_init() in detail. */
-    ret = par2_init_p2(p2, bits, redundancy, NULL);
-    if (ret < 0) {
-        goto err;
-    }
-    fprintf(stderr, "par2_init_p2() success.\n");
 
     if (opts->encode == ENABLE) {
-        ret = par2_encode_file(p2, opts->path, header);
+        ret = par2_encode_file(hashed_header, opts->path, bits, redundancy);
         if (ret >= 0) {
-            fprintf(stdout, "%s\n", header);
+            fprintf(stdout, "%s\n", hashed_header);
             ret = SEE_YOU;
         }
         else {
@@ -427,6 +421,7 @@ int main(int argc, char *argv[])
         }
     }
     else if (opts->decode == ENABLE) {
+        /*
         ret = par2_read_header_of_hash(p2f, p2->redundancy);
         to_hashed_name(ss, p2f->hash, 160);
         if (ret < 0) {
@@ -437,23 +432,22 @@ int main(int argc, char *argv[])
         else {
             fprintf(stdout, "par2_read_header_of_hash() = %d\n", ret);
         }
+        fprintf(stderr, "plain data hash value is\n%s\n", ss);
 
-        /* ret = par2_decode_file(p2); */
+        ret = par2_decode_file(p2);
         if (ret >= 0) {
-            fprintf(stdout, "decoded file hash value is =>\n%s\n", ss);
+            fprintf(stdout, "recovered file hash value is =>\n%s\n", ss);
             ret = SEE_YOU;
         }
         else {
             fprintf(stderr, "failed par2_decode_file() = %d\n", ret);
         }
+        */
     }
     else {
         ret = -200;
     }
 
-    par2_free_memory(p2);
-
-err:
     /* black hole appered. */
     par2_ultimate_fate_of_the_universe();
 
