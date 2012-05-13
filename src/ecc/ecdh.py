@@ -1,3 +1,8 @@
+# author: 梅どぶろく(umedoblock)
+# references: 妖精現実フェアリアル http://deztecc.jp/x/05/faireal/23-index.html
+#           : Elliptic curve       http://en.wikipedia.org/wiki/Elliptic_curve
+# Copyright 平成24年(2012)
+
 from ecc import *
 
 __all__ = ['ECDH', 'ECDHError']

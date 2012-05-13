@@ -1,4 +1,8 @@
-# Copyright 2011 梅どぶろく(umedoblock)
+# author: 梅どぶろく(umedoblock)
+# references: 妖精現実フェアリアル http://deztecc.jp/x/05/faireal/23-index.html
+#           : Elliptic curve       http://en.wikipedia.org/wiki/Elliptic_curve
+# Copyright 平成24年(2012)
+
 import unittest
 
 from ecc import *
