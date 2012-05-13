@@ -199,6 +199,16 @@ class ECC(EC):
         x3 %= self.prime
         y3 %= self.prime
 
+      # print('double_y1_inv(={:d}) = (2*{:d}, {:d})'.
+      #         format(double_y1_inv, y1, self.prime))
+      # print('lmd(={:d}) = (3 * ({:d} ** 2) + {:d}) * {:d}'.
+      #         format(lmd, x1, self.a, double_y1_inv))
+      # print('x3(={:d}) = lmd(={:d}) ** 2 - x1(={:d}) - x2(={:d})'.
+      #         format(x3, lmd, x1, x2))
+      # print('y3(={:d}) = lmd(={:d}) * (x1(={:d}) - x3(={:d})) - y1(={:d})'.
+      #         format(y3, lmd, x1, x3, y1))
+      # print('x3(={:d}), y3(={:d})'.format(x3, y3))
+
         R = ECCPoint(x3, y3, self)
         return R
 
