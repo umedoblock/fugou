@@ -184,7 +184,7 @@ class ECC(EC):
         x2, y2 = Q.x, Q.y
         if P == Q:
             gcd, double_y1_inv, _n = gcdext(2 * y1, self.prime)
-            lmd = (3 * (x1 ** 2) + self.a) * double_y1_inv
+            lmd = (3 * (x1 ** 2) + self.a) * double_y1_inv % self.prime
         elif x1 == x2:
             # P is not qual to Q.
             # P and Q are on same y coordinate.
