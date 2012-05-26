@@ -1,7 +1,7 @@
 import math
 
 class Oraga:
-    '''独自の割り算'''
+    '''独自の割り算 refs 65'''
     def __init__(self, n):
         self.n = n
 
