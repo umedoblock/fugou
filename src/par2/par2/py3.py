@@ -7,6 +7,7 @@ import pprint
 from sys import modules
 import os
 import pickle
+import hashlib
 
 try:
     import _par2
@@ -79,10 +80,22 @@ class ReedSolomon(object):
         path = 'gf_gfi_{}bits.pickle'.format(self.bits)
         if os.path.exists(path):
             print('os.path.exists({}) is True.'.format(path))
+            sha1sums = {
+                 4: 'dd8147807c230054c36539e0b2bf2699f2f94c79',
+                 8: '287e3e18d461315911960e4897bad23e69f893b2',
+                16: 'bf2c30e9b85800dd37c7501c9468904ec3bac5fa',
+                24: 'fcae9c673f64584a34360daaeb18c53b61dc1f05',
+            }
+
             with open(path, 'rb') as f:
-                gf_gfi = pickle.load(f)
-                self.gf = gf_gfi['gf']
-                self.gfi = gf_gfi['gfi']
+                data = f.read()
+            if sha1sums[self.bits] != hashlib.sha1(data).hexdigest():
+                raise Par2Error('bits={}, sha1sum mismatched.', self.bits)
+
+            gf_gfi = pickle.loads(data)
+            self.gf = gf_gfi['gf']
+            self.gfi = gf_gfi['gfi']
+
             return
 
         self.gf = [None] * self.w
