@@ -28,7 +28,7 @@ class Par2Archive:
             data_size = len(data)
         if not 1 <= data_size <= DATA_SIZE_MAX:
             msg = 'data_size must be 1 <= data_size <= 2 ** {} - 1'
-            ValueError(msg.format(TAIL_SIZE * 8))
+            raise ValueError(msg.format(TAIL_SIZE * 8))
         self.data_size = data_size
       # print('data_size =', data_size, 'in take_data()')
         self._set_size(data_size)

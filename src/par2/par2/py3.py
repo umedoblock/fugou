@@ -388,7 +388,7 @@ class Par2MixIn:
             data_size = len(data)
         if not 1 <= data_size <= DATA_SIZE_MAX:
             msg = 'data_size must be 1 <= data_size <= 2 ** {} - 1'
-            ValueError(msg.format(TAIL_SIZE * 8))
+            raise ValueError(msg.format(TAIL_SIZE * 8))
         self.data_size = data_size
         self._set_size(data_size)
         tail_bytes = int.to_bytes(data_size, self.octets, 'big')
