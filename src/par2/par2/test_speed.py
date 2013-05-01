@@ -24,7 +24,7 @@ parser.add_argument('--kilobytes', metavar='N', dest='kb',
                    type=int, nargs='?', default=256,
                    help='kilo bytes (default: 256)')
 
-parser.add_argument('--redundancy', metavar='N', dest='redundancy',
+parser.add_argument('--division', metavar='N', dest='division',
                    type=int, nargs='?', default=15,
                    help='kilo bytes (default: 15)')
 
@@ -32,7 +32,7 @@ def run():
     args = parser.parse_args()
     MB = args.mb
     KB = args.kb
-    redundancy = args.redundancy
+    division = args.division
 
     mega = MB * 1024 ** 2
     kilo = KB * 1024 ** 1
@@ -48,9 +48,9 @@ def run():
     bitss = (24,)
     bitss = (8, 16, 24)
     for bits in bitss:
-        print('{} bits symbol {} redundancy {:f} MB memory encode/decode speed'.
-                format(bits, redundancy, mb))
-        archive = Par2Archive(bits, redundancy)
+        print('{} bits symbol {} division {:f} MB memory encode/decode speed'.
+                format(bits, division, mb))
+        archive = Par2Archive(bits, division)
         archive.take_data(data)
         # make parities
         s = datetime.datetime.now()
@@ -62,8 +62,8 @@ def run():
             format(encode_seconds, encode_speed))
 
         # delete all parts
-        archive.slots[:archive.par2.redundancy] = \
-            [None] * archive.par2.redundancy
+        archive.slots[:archive.par2.division] = \
+            [None] * archive.par2.division
 
         # fix up
         s = datetime.datetime.now()

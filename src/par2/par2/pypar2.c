@@ -9,7 +9,7 @@ PyObject *pypar2_Par2Error;
 
 static PyMemberDef Par2_members[] = {
 // #define offsetof(type, member) ( (int) & ((type*)0) -> member )
-    {"redundancy", T_INT, offsetof(PyPar2Object, par2.redundancy), 0, ""},
+    {"division", T_INT, offsetof(PyPar2Object, par2.division), 0, ""},
     {"object_used_size", T_UINT, \
         offsetof(PyPar2Object, object_used_size), 0, ""},
     {"vertical_size", T_INT, offsetof(PyPar2Object, par2.vertical_size), 0, ""},
@@ -47,24 +47,24 @@ static int
 Par2_init(PyPar2Object *self, PyObject *args, PyObject *kwds)
 {
     par2_t *p2 = &self->par2;
-    int ret, bits = -1, redundancy = -1, max_redundancy = -1;
-    char *kwlist[] = {"bits", "redundancy", NULL};
+    int ret, bits = -1, division = -1, max_division = -1;
+    char *kwlist[] = {"bits", "division", NULL};
     char errmsg[80];
 
 /*
 fprintf(stderr, "Par2_init(self=%p, args=%p, kwds=%p)\n", self, args, kwds);
 */
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii",
-                                     kwlist, &bits, &redundancy))
+                                     kwlist, &bits, &division))
         return -1;
 
-        // fprintf(stderr, "redundancy is %d, bits = %d\n", redundancy, bits);
-    ret = par2_init_p2(p2, bits, redundancy, errmsg);
-    if (redundancy > PYPAR2_MAX_REDUNDANCY || ret < 0) {
+        // fprintf(stderr, "division is %d, bits = %d\n", division, bits);
+    ret = par2_init_p2(p2, bits, division, errmsg);
+    if (division > PYPAR2_MAX_REDUNDANCY || ret < 0) {
         if (p2->rds && p2->rds->gf_max > PYPAR2_MAX_REDUNDANCY) {
-            max_redundancy = PYPAR2_MAX_REDUNDANCY;
-            sprintf(errmsg, "redundancy(=%d) must be 2 <= redundancy <= %d.",
-                                        redundancy, max_redundancy);
+            max_division = PYPAR2_MAX_REDUNDANCY;
+            sprintf(errmsg, "division(=%d) must be 2 <= division <= %d.",
+                                        division, max_division);
         }
         else if (ret == PAR2_INVALID_BITS_ERROR ||
              ret == PAR2_INVALID_REDUNDANCY_ERROR ) {
@@ -378,7 +378,7 @@ static int _set_merged_slots(PyTupleObject *merged_slots_obj, \
     int data_slot_index, parity_slot_index;
     int i, count = 0;
 
-    for (i=0;i<p2->redundancy;i++) {
+    for (i=0;i<p2->division;i++) {
         slot_obj = NULL;
 
         data_slot_index = \
@@ -424,7 +424,7 @@ Par2__merge_slots(PyPar2Object *self, PyObject *args)
     len_data_slots = PySequence_Length((PyObject *)data_slots_obj);
     len_parity_slots = PySequence_Length((PyObject *)parity_slots_obj);
     len_slots = len_data_slots + len_parity_slots;
-    if (len_slots < p2->redundancy * 2) {
+    if (len_slots < p2->division * 2) {
         /* to avoid noisy compiler */
     }
 
@@ -438,7 +438,7 @@ Par2__merge_slots(PyPar2Object *self, PyObject *args)
     merged_matrix.ptr = (void *)PyBytes_AS_STRING(merged_matrix_obj);
     par2_merge_slots(p2, merged_matrix);
 
-    merged_slots_obj = (PyTupleObject *)PyTuple_New(p2->redundancy);
+    merged_slots_obj = (PyTupleObject *)PyTuple_New(p2->division);
 
     _set_merged_slots(merged_slots_obj, \
                       data_slots_obj, \
@@ -473,8 +473,8 @@ Par2__solve_inverse_matrix(PyPar2Object *self, PyObject *args)
         if (ret == PAR2_RANK_ERROR){
             /* Par2Error */
             PyErr_Format(pypar2_Par2Error,
-                "cannot make inverse_matrix. bits = %d, redundancy = %d.",
-                                             p2->rds->bits, p2->redundancy);
+                "cannot make inverse_matrix. bits = %d, division = %d.",
+                                             p2->rds->bits, p2->division);
         }
         else {
             PyErr_Format(pypar2_Par2Error,

@@ -12,7 +12,7 @@ print('_p2.dump(_p2) =')
 _p2.dump(_p2, _p2.__sizeof__())
 print()
 
-p2 = Par2(4, redundancy=15)
+p2 = Par2(4, division=15)
 print('p2 =', p2)
 print('p2.__sizeof__() =', p2.__sizeof__())
 print('p2.__dict__ =', p2.__dict__)

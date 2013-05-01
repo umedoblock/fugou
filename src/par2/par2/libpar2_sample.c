@@ -6,7 +6,7 @@
 typedef struct _opts_t {
     int encode;
     int decode;
-    int redundancy;
+    int division;
     int bits;
     char *path;
     char *header;
@@ -26,14 +26,14 @@ void view_opts_t(opts_t *opts)
     fprintf(stderr, "view_opts_t(opts=%p)\n", opts);
     fprintf(stderr, "encode = %d\n", opts->encode);
     fprintf(stderr, "decode = %d\n", opts->decode);
-    fprintf(stderr, "redundancy = %d\n", opts->redundancy);
+    fprintf(stderr, "division = %d\n", opts->division);
     fprintf(stderr, "bits = %d\n", opts->bits);
 }
 
 void usage(void)
 {
     fprintf(stderr, "libpar2_sample --encode " \
-                    "--redundancy=NUM --bits=NUM --file=PATH\n");
+                    "--division=NUM --bits=NUM --file=PATH\n");
     fprintf(stderr, "or\n");
     fprintf(stderr, "libpar2_sample --decode --header=PATH\n");
 }
@@ -55,20 +55,20 @@ int invalid_opts(opts_t *opts)
             fprintf(stderr, "Therefore canceled --decode option.\n");
             opts->decode = 0;
         }
-        if (opts->redundancy <= 1 ||
+        if (opts->division <= 1 ||
             opts->bits <= 0) {
             fprintf(stderr, "when use --encode option,\n");
-            fprintf(stderr, "have to use --redundancy >= 2 and " \
+            fprintf(stderr, "have to use --division >= 2 and " \
                             "--bits=(4, 8, 16 or 24).\n");
             goto err;
         }
     }
     if (opts->decode == ENABLE) {
-        if (opts->redundancy != 0 ||
+        if (opts->division != 0 ||
             opts->bits != 0)
             fprintf(stderr, "when use --decode option.\n");
-        if (opts->redundancy != 0)
-            fprintf(stderr, "no need to use --redundancy option.\n");
+        if (opts->division != 0)
+            fprintf(stderr, "no need to use --division option.\n");
         if (opts->bits != 0)
             fprintf(stderr, "no need to use --bits option.\n");
         if (opts->header == NULL) {
@@ -159,9 +159,9 @@ int parse_string_arg_about_existential(
     return existence;
 }
 
-int parse_redundancy_and_bits(opts_t *opts, int argc, char *argv[])
+int parse_division_and_bits(opts_t *opts, int argc, char *argv[])
 {
-    opts->redundancy = parse_numeric_arg(opts, "--redundancy", argc, argv);
+    opts->division = parse_numeric_arg(opts, "--division", argc, argv);
     opts->bits = parse_numeric_arg(opts, "--bits", argc, argv);
 
     return 0;
@@ -195,7 +195,7 @@ int parse_args(opts_t *opts, int argc, char *argv[])
     memset(opts, 0, sizeof(opts_t));
 
     parse_encode_or_decode(opts, argc, argv);
-    parse_redundancy_and_bits(opts, argc, argv);
+    parse_division_and_bits(opts, argc, argv);
     parse_file(opts, argc, argv);
     parse_header(opts, argc, argv);
 
@@ -287,7 +287,7 @@ void *allocate_resource(
     char **names_;
     int i;
 
-    /* header + data * redundancy + parity * redundancy */
+    /* header + data * division + parity * division */
     mem_size = 0;
     mem_size += sizeof(FILE *) * names_num;
     mem_size += sizeof(char *) * names_num;
@@ -344,7 +344,7 @@ int close_par2_files(char **names, FILE **files, int names_num)
 int main(int argc, char *argv[])
 {
     int help = 0, ret = -1;
-    uint redundancy, bits;
+    uint division, bits;
     opts_t opts_, *opts = &opts_;
     char hashed_header[80], ss[80];
     /* need p2e for libpar2. */
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
     /* MAIN ROUTINE for libpar2. */
     /* below three variant need to use libpar2. */
     if (opts->encode == ENABLE) {
-        redundancy = opts->redundancy;
+        division = opts->division;
         bits = opts->bits;
     }
     else if (opts->decode == ENABLE) {
@@ -378,8 +378,8 @@ int main(int argc, char *argv[])
         return ret;
     }
     /*
-    fprintf(stdout, "bits = %d, redundancy = %d in main()\n", \
-                     bits, redundancy);
+    fprintf(stdout, "bits = %d, division = %d in main()\n", \
+                     bits, division);
     fprintf(stdout, "path = \n");
     fprintf(stdout, "%s\n", opts->path);
     */
@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
     /* please see par2/pypar2.c Par2_init() in detail. */
 
     if (opts->encode == ENABLE) {
-        ret = par2_encode_file(hashed_header, opts->path, bits, redundancy);
+        ret = par2_encode_file(hashed_header, opts->path, bits, division);
         if (ret >= 0) {
             fprintf(stdout, "%s\n", hashed_header);
             ret = SEE_YOU;

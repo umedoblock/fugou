@@ -11,12 +11,12 @@ class Par2ArchiveError(BaseException):
     pass
 
 class Par2Archive:
-    def __init__(self, bits, redundancy=0, data=None, data_size=None):
+    def __init__(self, bits, division=0, data=None, data_size=None):
         '''
         [part, part, .., parity, parity, ...]
         '''
-        self.par2 = par2.Par2(bits, redundancy)
-        self.redundancy = self.par2.redundancy
+        self.par2 = par2.Par2(bits, division)
+        self.division = self.par2.division
         self._init_attr()
         if data:
             self.take_data(data, data_size)
@@ -37,17 +37,17 @@ class Par2Archive:
         self.encode_data = \
             data + self._padding(self.padding_size) + tail_bytes
         sp = self.par2.split(self.encode_data, self.slot_size)
-        self.slots[:self.redundancy] = sp
+        self.slots[:self.division] = sp
         return sp
 
     def make_parities(self):
-        parities = self.par2.encode(self.slots[:self.redundancy])
-        self.slots[self.redundancy:] = parities
+        parities = self.par2.encode(self.slots[:self.division])
+        self.slots[self.division:] = parities
         return parities
 
     def fix_up_data(self):
         if self.enable_decode():
-            # memo: slots[:redundancy] に入れる。
+            # memo: slots[:division] に入れる。
             self.decode_data = self.par2.decode(self.slots)
         else:
             raise Par2ArchiveError(('fix_up_data() cannot run. '
@@ -57,22 +57,22 @@ class Par2Archive:
     def get_part(self, index):
         self._check_part_or_parity(index)
         if index < 0:
-            index += self.redundancy
+            index += self.division
         return self.slots[index]
 
     def get_parity(self, index):
         self._check_part_or_parity(index)
-        return self.slots[self.redundancy + index]
+        return self.slots[self.division + index]
 
     def set_part(self, index, part):
         self._check_part_or_parity(index, part)
         if index < 0:
-            index += self.redundancy
+            index += self.division
         self.slots[index] = part
 
     def set_parity(self, index, parity):
         self._check_part_or_parity(index, parity)
-        self.slots[self.redundancy + index] = parity
+        self.slots[self.division + index] = parity
 
     def enable_slots(self):
         return [slot for slot in self.slots if slot]
@@ -84,7 +84,7 @@ class Par2Archive:
       # 10 ** 7 p3 li1.py  24.16s user 0.04s system 99% cpu 24.222 total
 
     def enable_decode(self):
-        if len(self.enable_slots()) >= self.redundancy:
+        if len(self.enable_slots()) >= self.division:
             return True
         else:
             return False
@@ -93,7 +93,7 @@ class Par2Archive:
         self._init_attr()
 
     def _init_attr(self):
-        self.slots = [None] * (self.redundancy * 2)
+        self.slots = [None] * (self.division * 2)
         self.data_size = 0
         self.slot_size, self.snip_size, \
         self.padding_size, self.encode_size = [0] * 4
@@ -102,8 +102,8 @@ class Par2Archive:
     def _check_part_or_parity(self, index, part_or_parity=None):
         if part_or_parity and len(part_or_parity) < self.slot_size:
             raise ValueError('len(part or parity) < slot_size.')
-        if not -self.redundancy <= index < self.redundancy:
-            raise IndexError('index must be less than par2.redundancy.')
+        if not -self.division <= index < self.division:
+            raise IndexError('index must be less than par2.division.')
 
     def _padding(self, padding_size):
         return b'\x00' * padding_size

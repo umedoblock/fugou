@@ -47,8 +47,8 @@ class _TestPar2(unittest.TestCase):
         mts = [mt0, mt1, mt2, mt3, mt4, mt5]
 
         redundancies = {4: 4, 8: 4, 16: 4, 24: 4}
-        for bits, redundancy in redundancies.items():
-            par2 = Par2(bits, redundancy)
+        for bits, division in redundancies.items():
+            par2 = Par2(bits, division)
 
             for mt in mts:
                 if Par2.C_EXTENSION:
@@ -59,40 +59,40 @@ class _TestPar2(unittest.TestCase):
                 with self.assertRaises(Par2Error) as raiz:
                     inverse_matrix = par2._solve_inverse_matrix(matrix)
                 args = raiz.exception.args
-                tup = (par2.bits, par2.redundancy)
+                tup = (par2.bits, par2.division)
                 message = ('cannot make inverse_matrix. '
-                           'bits = {}, redundancy = {}.').format(*tup)
+                           'bits = {}, division = {}.').format(*tup)
                 self.assertEqual(message, args[0])
 
-    def test_bits_and_redundancy(self):
+    def test_bits_and_division(self):
         p4 = Par2(4, 2)
-        self.assertEqual(2, p4.redundancy)
+        self.assertEqual(2, p4.division)
         p4 = Par2(4, 10)
-        self.assertEqual(10, p4.redundancy)
+        self.assertEqual(10, p4.division)
         p4 = Par2(4, (1 << 4) - 1)
-        self.assertEqual((1 << 4) - 1, p4.redundancy)
+        self.assertEqual((1 << 4) - 1, p4.division)
 
         p8 = Par2(8, 2)
-        self.assertEqual(2, p8.redundancy)
+        self.assertEqual(2, p8.division)
         p8 = Par2(8, 122)
-        self.assertEqual(122, p8.redundancy)
+        self.assertEqual(122, p8.division)
         p8 = Par2(8, (1 << 8) - 1)
-        self.assertEqual((1 << 8) - 1, p8.redundancy)
+        self.assertEqual((1 << 8) - 1, p8.division)
 
         if Par2.C_EXTENSION:
             p16 = Par2(16, 2)
-            self.assertEqual(2, p16.redundancy)
+            self.assertEqual(2, p16.division)
             p16 = Par2(16, 1000)
-            self.assertEqual(1000, p16.redundancy)
+            self.assertEqual(1000, p16.division)
             p16 = Par2(16, MAX_REDUNDANCY)
-            self.assertEqual(MAX_REDUNDANCY, p16.redundancy)
+            self.assertEqual(MAX_REDUNDANCY, p16.division)
 
             p24 = Par2(24, 2)
-            self.assertEqual(2, p24.redundancy)
+            self.assertEqual(2, p24.division)
             p24 = Par2(24, 1234)
-            self.assertEqual(1234, p24.redundancy)
+            self.assertEqual(1234, p24.division)
           # p24 = Par2(24, MAX_REDUNDANCY)
-          # self.assertEqual(MAX_REDUNDANCY, p24.redundancy)
+          # self.assertEqual(MAX_REDUNDANCY, p24.division)
 
     def test_exception(self):
         with self.assertRaises(Par2Error) as raiz:
@@ -101,54 +101,54 @@ class _TestPar2(unittest.TestCase):
         self.assertEqual('must chose 4, 8, 16 or 24 for bits.', args[0])
 
         redundancies = (-1, 0, 1, 1 << 4)
-        for redundancy in redundancies:
+        for division in redundancies:
             with self.assertRaises(Par2Error) as raiz:
-                Par2(4, redundancy)
+                Par2(4, division)
             args = raiz.exception.args
-            self.assertEqual(('redundancy(={}) must be '
-                              '2 <= redundancy <= 15.').
-                              format(int(redundancy)), args[0])
+            self.assertEqual(('division(={}) must be '
+                              '2 <= division <= 15.').
+                              format(int(division)), args[0])
 
         redundancies = (-1, 0, 1, 1 << 8)
-        for redundancy in redundancies:
+        for division in redundancies:
             with self.assertRaises(Par2Error) as raiz:
-                Par2(8, redundancy)
+                Par2(8, division)
             args = raiz.exception.args
-            self.assertEqual(('redundancy(={}) must be '
-                              '2 <= redundancy <= 255.').
-                              format(redundancy), args[0])
+            self.assertEqual(('division(={}) must be '
+                              '2 <= division <= 255.').
+                              format(division), args[0])
 
         redundancies = (-1, 0, 1, MAX_REDUNDANCY + 1, 1 << 16)
-        for redundancy in redundancies:
+        for division in redundancies:
             with self.assertRaises(Par2Error) as raiz:
-                Par2(16, redundancy)
+                Par2(16, division)
             args = raiz.exception.args
-            self.assertEqual(('redundancy(={}) must be '
-                              '2 <= redundancy <= 8192.').
-                              format(redundancy), args[0])
+            self.assertEqual(('division(={}) must be '
+                              '2 <= division <= 8192.').
+                              format(division), args[0])
 
         redundancies = (-1, 0, 1, MAX_REDUNDANCY + 1, 1 << 24)
-        for redundancy in redundancies:
+        for division in redundancies:
             with self.assertRaises(Par2Error) as raiz:
-                Par2(24, redundancy)
+                Par2(24, division)
             args = raiz.exception.args
-            self.assertEqual(('redundancy(={}) must be '
-                              '2 <= redundancy <= 8192.').
-                              format(redundancy), args[0])
+            self.assertEqual(('division(={}) must be '
+                              '2 <= division <= 8192.').
+                              format(division), args[0])
 
     def test_mul_and_div(self):
         if Par2.C_EXTENSION:
             return
 
         dic = {\
-            4: {'redundancy': 10, 'w': None, 'gf_max': None},
-            8: {'redundancy': 100, 'w': None, 'gf_max': None},
-            16: {'redundancy': 50, 'w': 50, 'gf_max': 50},
-            24: {'redundancy': 50, 'w': 50, 'gf_max': 50}
+            4: {'division': 10, 'w': None, 'gf_max': None},
+            8: {'division': 100, 'w': None, 'gf_max': None},
+            16: {'division': 50, 'w': 50, 'gf_max': 50},
+            24: {'division': 50, 'w': 50, 'gf_max': 50}
         }
         for bits, attrs in dic.items():
-            redundancy = attrs['redundancy']
-            par2 = Par2(bits, redundancy)
+            division = attrs['division']
+            par2 = Par2(bits, division)
             w = attrs['w'] or par2.w
             gf_max = attrs['gf_max'] or par2.gf_max
             for a in range(w):
@@ -166,20 +166,20 @@ class _TestPar2(unittest.TestCase):
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
-        for bits, redundancy in redundancies.items():
-            par2 = Par2(bits, redundancy)
-            vm = [None] * par2.redundancy
+        for bits, division in redundancies.items():
+            par2 = Par2(bits, division)
+            vm = [None] * par2.division
 
-            for j in range(par2.redundancy):
-                vm[j] = [None] * par2.redundancy
-                for i in range(par2.redundancy):
+            for j in range(par2.division):
+                vm[j] = [None] * par2.division
+                for i in range(par2.division):
                     vm[j][i] = par2.rds._pow(i + 1, j)
 
             if Par2.C_EXTENSION:
                 _vm = par2._get_vandermonde_matrix()
         #       print('_vm =', _vm)
                 _vm = bytes_to_matrix(_vm, \
-                                      par2.redundancy, par2.horizontal_size,
+                                      par2.division, par2.horizontal_size,
                                       par2.code_size)
                 vandermonde_matrix = _vm
             else:
@@ -196,13 +196,13 @@ class _TestPar2(unittest.TestCase):
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
-        for bits, redundancy in redundancies.items():
-            par2 = Par2(bits, redundancy)
+        for bits, division in redundancies.items():
+            par2 = Par2(bits, division)
             e_matrix = par2._make_e_matrix()
 
             matrix = []
-            for i in range(par2.redundancy):
-                foo = [x % par2.w for x in range(i, par2.redundancy + i)]
+            for i in range(par2.division):
+                foo = [x % par2.w for x in range(i, par2.division + i)]
                 matrix.append(foo)
           # print('matrix =')
           # pp = pprint.PrettyPrinter(indent=4)
@@ -230,14 +230,14 @@ class _TestPar2(unittest.TestCase):
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {24: 10}
         redundancies = {4: 15, 8:50, 16:50, 24: 50}
-        for bits, redundancy in redundancies.items():
-            par2 = Par2(bits, redundancy)
+        for bits, division in redundancies.items():
+            par2 = Par2(bits, division)
 
-          # print('bits = {}, redundancy = {}'.format(bits, redundancy))
+          # print('bits = {}, division = {}'.format(bits, division))
             if par2.C_EXTENSION:
                 _vm = par2._get_vandermonde_matrix()
                 _vm = bytes_to_matrix(_vm,
-                                      par2.redundancy, par2.horizontal_size,
+                                      par2.division, par2.horizontal_size,
                                       par2.code_size)
                 matrix = _vm
             else:
@@ -247,7 +247,7 @@ class _TestPar2(unittest.TestCase):
             by = matrix_to_bytes(matrix, par2.code_size)
           # print('bytes =')
           # pp.pprint(by)
-            mt = bytes_to_matrix(by, par2.redundancy, par2.horizontal_size,
+            mt = bytes_to_matrix(by, par2.division, par2.horizontal_size,
                                      par2.code_size)
           # print('mt =')
           # pp.pprint(mt)
@@ -267,8 +267,8 @@ class _TestPar2(unittest.TestCase):
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
-        for bits, redundancy in redundancies.items():
-            par2 = Par2(bits, redundancy)
+        for bits, division in redundancies.items():
+            par2 = Par2(bits, division)
 
             if Par2.C_EXTENSION:
                 matrix = par2._get_vandermonde_matrix()
@@ -278,7 +278,7 @@ class _TestPar2(unittest.TestCase):
               # pp.pprint(matrix)
                 by = matrix_to_bytes(matrix, par2.code_size)
                 mt = bytes_to_matrix(
-                        by, par2.redundancy, par2.horizontal_size,
+                        by, par2.division, par2.horizontal_size,
                         par2.code_size)
               # print('mt =')
               # pp.pprint(mt)
@@ -305,10 +305,10 @@ class _TestPar2(unittest.TestCase):
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
-        for bits, redundancy in redundancies.items():
-            archive = Par2Archive(bits, redundancy)
+        for bits, division in redundancies.items():
+            archive = Par2Archive(bits, division)
             self.assertEqual(list, type(archive.slots))
-            self.assertEqual(redundancy * 2, len(archive.slots))
+            self.assertEqual(division * 2, len(archive.slots))
 
             # make test data
             # >>> int.from_bytes(b'\x01\x0f', 'big')
@@ -322,11 +322,11 @@ class _TestPar2(unittest.TestCase):
             # take data
             archive.take_data(data)
             # print('1 slots =', archive.slots)
-            for i, p in enumerate(archive.slots[:redundancy]):
+            for i, p in enumerate(archive.slots[:division]):
                 self.assertEqual(bytes, type(p))
                 self.assertEqual(parity_size, len(p),
                     'i = {}, p = {}'.format(i, p))
-            for i, p in enumerate(archive.slots[redundancy:]):
+            for i, p in enumerate(archive.slots[division:]):
                 self.assertEqual(None, p, 'i = {}, p = {}'.format(i, p))
 
             # make parities
@@ -348,12 +348,12 @@ class _TestPar2(unittest.TestCase):
           # pp.pprint(archive.slots)
 
             # make expected data for assert
-            expected_decode_data = [None] * redundancy
+            expected_decode_data = [None] * division
             data_size_bytes = \
                 int.to_bytes(data_size, 8, 'big')
             pad = b'\x00' * padding_size
             data_pad = (data + pad + data_size_bytes)
-            for i in range(redundancy):
+            for i in range(division):
                 index = i * parity_size
                 expected_decode_data[i] = data_pad[index:index+parity_size]
             self.assertDecodeData(archive.par2, expected_decode_data,
@@ -364,8 +364,8 @@ class _TestPar2(unittest.TestCase):
 
     def test_archive_p4_lack_of_slots(self):
         # make par2 archive
-        bits, redundancy = 4, 15
-        archive = Par2Archive(bits, redundancy)
+        bits, division = 4, 15
+        archive = Par2Archive(bits, division)
 
         # make test data
         # >>> int.from_bytes(b'\x01\x0f', 'big')
@@ -396,11 +396,11 @@ class _TestPar2(unittest.TestCase):
 
     def assertDecodeData(self, par2, edd, decode_data, data_size):
         self.assertEqual(list, type(decode_data))
-        self.assertEqual(par2.redundancy, len(decode_data))
+        self.assertEqual(par2.division, len(decode_data))
         parity_size, snip_size, padding_size, encode_size = \
                     par2._calculate_size(data_size)
         # print('decode_data', decode_data)
-        for i in range(par2.redundancy):
+        for i in range(par2.division):
             dd = decode_data[i]
             self.assertEqual(bytes, type(dd))
             self.assertEqual(parity_size, len(dd))

@@ -155,17 +155,17 @@ class Par2_:
         self.rds = ReedSolomon.get_reed_solomon(self.bits)
 
     def _encode(self, parity_slots, data_slots, symbol_num):
-        redundancy = self.redundancy
+        division = self.division
         octets = self.octets
         vector = self._make_vector()
         parity = self._make_vector()
         for i in range(symbol_num):
-            for j in range(redundancy):
+            for j in range(division):
                 num_bytes = data_slots[j][i*octets:(i+1)*octets]
                 num = int.from_bytes(num_bytes, 'big')
                 vector[j] = num
             self._mul_matrix_vector(parity, self.vandermonde_matrix, vector)
-            for j in range(redundancy):
+            for j in range(division):
                 num = parity[j]
                 parity_slots[j][i*octets:(i+1)*octets] = \
                     int.to_bytes(num, octets, 'big')
@@ -178,21 +178,21 @@ class Par2_:
         vertical_data = self._make_vector()
 
         for i in range(symbol_num):
-            for j in range(self.redundancy):
+            for j in range(self.division):
                 num_bytes = merged_slots[j][i*octets:(i+1)*octets]
                 num = int.from_bytes(num_bytes, 'big')
                 vector[j] = num
 
             self._mul_matrix_vector(vertical_data, inverse_matrix, vector)
-            for j in range(self.redundancy):
+            for j in range(self.division):
                 num = vertical_data[j]
                 decode_data[j][i*octets:(i+1)*octets] = \
                     int.to_bytes(num, octets, 'big')
 
     def _mul_matrix_vector(self, answer, matrix, pari):
-        for j in range(self.redundancy):
+        for j in range(self.division):
             part = 0
-            for i in range(self.redundancy):
+            for i in range(self.division):
               # print('_mul_matrix_vector() =', matrix[j], pari[i])
                 tmp = self.rds._mul(matrix[j][i], pari[i])
               # print('_add({}, {})'.format(part, tmp))
@@ -205,11 +205,11 @@ class Par2_:
 
       # self._at_a_glance(matrix, im)
       # print()
-        for k in range(self.redundancy):
+        for k in range(self.division):
             # self._at_a_glance(matrix, im)
             if not matrix[k][k]:
                 swap = False
-                for j in range(k + 1, self.redundancy):
+                for j in range(k + 1, self.division):
                     if matrix[j][k]:
                         matrix[k], matrix[j] = matrix[j], matrix[k]
                         im[k], im[j] = im[j], im[k]
@@ -218,20 +218,20 @@ class Par2_:
                 if not swap:
                     message = \
                         ('cannot make inverse_matrix. bits = {}, '
-                         'redundancy = {}.').format(self.bits, self.redundancy)
+                         'division = {}.').format(self.bits, self.division)
                     raise Par2Error(message)
 
             if matrix[k][k] != 1:
                 tmp = matrix[k][k]
-                for i in range(self.redundancy):
+                for i in range(self.division):
                     matrix[k][i] = self.rds._div(matrix[k][i], tmp)
                     im[k][i] = self.rds._div(im[k][i], tmp)
 
-            for j in range(k + 1, self.redundancy):
+            for j in range(k + 1, self.division):
                 foo = matrix[j][k]
                 if not foo:
                     continue
-                for i in range(self.redundancy):
+                for i in range(self.division):
                     tmp1 = matrix[k][i]
                     tmp2 = self.rds._mul(foo, tmp1)
                     tmp3 = matrix[j][i]
@@ -243,14 +243,14 @@ class Par2_:
                     im[j][i] = self.rds._add(im3, im2)
       # print('前進完了') # moving front done
 
-        for k in range(self.redundancy - 1):
-            for j in range(self.redundancy - 1 - k):
-                z = self.redundancy - 1 - k
-                x = self.redundancy - 1 - k
-                y = self.redundancy - 1 - k - j - 1
+        for k in range(self.division - 1):
+            for j in range(self.division - 1 - k):
+                z = self.division - 1 - k
+                x = self.division - 1 - k
+                y = self.division - 1 - k - j - 1
                 foo = matrix[y][x]
 
-                for i in range(self.redundancy):
+                for i in range(self.division):
               #     tmp1 = matrix[z][i]
               #     tmp2 = self._mul(foo, tmp1)
               #     tmp3 = matrix[y][i]
@@ -266,26 +266,26 @@ class Par2_:
 
     def _mul_matrixes(self, a, b):
         answer = self._make_square_matrix()
-        for j in range(self.redundancy):
+        for j in range(self.division):
             # print('koko 2')
-            for i in range(self.redundancy):
+            for i in range(self.division):
                 tmp = 0
-                # bb = [b[h][i] for h in range(self.redundancy)]
-                for k in range(self.redundancy):
+                # bb = [b[h][i] for h in range(self.division)]
+                for k in range(self.division):
                     muled = self.rds._mul(a[j][k], b[k][i])
                     tmp = self.rds._add(tmp, muled)
                 answer[j][i] = tmp
         return answer
 
     def _merge_slots(self, data_slots, parity_slots):
-        merged_slots = [None] * self.redundancy
+        merged_slots = [None] * self.division
         merged_matrix = self._make_e_matrix()
         j = 0
 
         vandermonde_matrix = self.vandermonde_matrix
       # print('vandermonde_matrix =')
       # pp.pprint(vandermonde_matrix)
-        for i in range(self.redundancy):
+        for i in range(self.division):
             if data_slots[i]:
                 merged_slots[i] = data_slots[i]
             else:
@@ -301,32 +301,32 @@ class Par2_:
         return merged_slots, merged_matrix
 
     def _make_square_matrix(self, value=None):
-        square_matrix = [None] * self.redundancy
-        for i in range(self.redundancy):
-            square_matrix[i] = [value] * self.redundancy
+        square_matrix = [None] * self.division
+        for i in range(self.division):
+            square_matrix[i] = [value] * self.division
         return square_matrix
 
     def _make_e_matrix(self):
         e = self._make_square_matrix(0)
-        for i in range(self.redundancy):
+        for i in range(self.division):
             e[i][i] = 1
       # self.view_matrix(e)
         return e
 
     def _make_vandermonde_matrix(self):
-        vandermonde_matrix = [None] * self.redundancy
+        vandermonde_matrix = [None] * self.division
         vm = vandermonde_matrix
-        vm[0] = [1] * self.redundancy
-        for j in range(1, self.redundancy):
-            vm[j] = [None] * self.redundancy
-            for i in range(self.redundancy):
+        vm[0] = [1] * self.division
+        for j in range(1, self.division):
+            vm[j] = [None] * self.division
+            for i in range(self.division):
                 vm[j][i] = self.rds._mul(vm[j-1][i], i + 1)
         self.vandermonde_matrix = vm
       # self.view_matrix(vm)
 
 class Par2MixIn:
 
-    def _init_self(self, bits, redundancy):
+    def _init_self(self, bits, division):
       # refs #22 and galois_{4,8,16,24}bits.log
       # poly = {4: 25, 8: 361, 16: 87749, 24: 16777435}
         poly = {4: 19, 8: 285, 16: 65581, 24: 16777243}
@@ -339,25 +339,25 @@ class Par2MixIn:
         self.gf_max = self.w - 1
         self.digits = int(math.log(self.gf_max, 10)) + 1
 
-        self.redundancy = redundancy
-        if self.redundancy < 2 or self.redundancy > MAX_REDUNDANCY or \
-           self.redundancy > self.gf_max:
+        self.division = division
+        if self.division < 2 or self.division > MAX_REDUNDANCY or \
+           self.division > self.gf_max:
             if self.bits in (4, 8):
-                max_redundancy = self.gf_max
+                max_division = self.gf_max
             else:
-                max_redundancy = MAX_REDUNDANCY
-            message = 'redundancy(={}) must be '.format(redundancy)
-            message += '2 <= redundancy <= {}.'.format(max_redundancy)
+                max_division = MAX_REDUNDANCY
+            message = 'division(={}) must be '.format(division)
+            message += '2 <= division <= {}.'.format(max_division)
             raise Par2Error(message)
         octets = {4: 1, 8: 1, 16: 2, 24: 3}
         self.octets = octets[bits]
-        self.vertical_size = self.redundancy * self.octets
+        self.vertical_size = self.division * self.octets
         code_size_ = {4: 2, 8: 2, 16: 2, 24: 4}
         self.code_size = code_size_[self.bits]
-        self.horizontal_size = self.code_size * self.redundancy
+        self.horizontal_size = self.code_size * self.division
 
-    def __init__(self, bits, redundancy):
-        self._init_self(bits, redundancy)
+    def __init__(self, bits, division):
+        self._init_self(bits, division)
         self._allocate_memory()
 
         self._make_vandermonde_matrix()
@@ -395,7 +395,7 @@ class Par2MixIn:
         self.encode_data = \
             data + self._padding(self.padding_size) + tail_bytes
         sp = self.par2.split(self.encode_data, self.slot_size)
-        self.slots[:self.redundancy] = sp
+        self.slots[:self.division] = sp
         return sp
 
     def decode(self, slots):
@@ -403,8 +403,8 @@ class Par2MixIn:
         if not slot_size:
             raise()
 
-        data_slots = slots[:self.redundancy]
-        parity_slots = slots[self.redundancy:]
+        data_slots = slots[:self.division]
+        parity_slots = slots[self.division:]
         merged_slots, merged_matrix = \
             self._merge_slots(data_slots, parity_slots)
 
@@ -427,15 +427,15 @@ class Par2MixIn:
 
     def split(self, encode_data, slot_size):
         sp = []
-        for i in range(self.redundancy):
+        for i in range(self.division):
             sp.append(encode_data[i*slot_size:(i+1)*slot_size])
         return sp
 
     def view_matrix(self, matrix):
         if self.bits >= 8:
             return
-        fmt = ('{:' + str(self.digits + 1) + 'x}') * self.redundancy
-        for i in range(self.redundancy):
+        fmt = ('{:' + str(self.digits + 1) + 'x}') * self.division
+        for i in range(self.division):
             message = fmt.format(*matrix[i])
             print(message)
         print()
@@ -449,13 +449,13 @@ class Par2MixIn:
         else:
             padding_size = self.vertical_size - snip_size
         encode_size = data_size + padding_size
-      # vertical_size = redundancy * octets
-      # modulus = vertical_size (mod redundancy)
-        modulus = encode_size % self.redundancy
+      # vertical_size = division * octets
+      # modulus = vertical_size (mod division)
+        modulus = encode_size % self.division
         if modulus:
-            raise ValueError('encode_size % self.redundancy ='.format(encode_size % self.redundancy))
-        slot_size = encode_size // self.redundancy
-      # print('redundancy = {}'.format(self.redundancy))
+            raise ValueError('encode_size % self.division ='.format(encode_size % self.division))
+        slot_size = encode_size // self.division
+      # print('division = {}'.format(self.division))
       # print('data_size = {}'.format(data_size))
       # print('slot_size = {}'.format(slot_size))
       # print('snip_size = {}'.format(snip_size))
@@ -477,13 +477,13 @@ class Par2MixIn:
         return super()._pow(a, x)
 
     def _make_part_or_parity_slots(self, slot_size):
-        part_or_parity_slots = [None] * self.redundancy
-        for i in range(self.redundancy):
+        part_or_parity_slots = [None] * self.division
+        for i in range(self.division):
             part_or_parity_slots[i] = bytearray(b'\x00' * slot_size)
         return part_or_parity_slots
 
     def _make_vector(self):
-        return [None] * self.redundancy
+        return [None] * self.division
 
     def _bytearray2bytes_all(self, _bytearray):
         _bytes = _bytearray
@@ -508,16 +508,16 @@ else:
     class Par2(Par2MixIn, Par2_, Par2_abstract): pass
 
 if __name__ == '__main__':
-    redundancy = 15
+    division = 15
     data = b'\x00' * 3855 # 0xf0f
 
-    archive = Par2Archive(4, redundancy)
+    archive = Par2Archive(4, division)
     archive.take_data(data)
     # make parities
     archive.make_parities()
 
     # delete all parts
-    archive.slots[:archive.par2.redundancy] = [None] * archive.par2.redundancy
+    archive.slots[:archive.par2.division] = [None] * archive.par2.division
 
     # fix up
     raw_data = archive.fix_up_data()
