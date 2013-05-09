@@ -10,6 +10,7 @@ typedef struct _opts_t {
     int bits;
     char *path;
     char *header;
+    int logger;
 } opts_t;
 
 void view_args(int argc, char *argv[])
@@ -198,6 +199,8 @@ int parse_args(opts_t *opts, int argc, char *argv[])
     parse_division_and_bits(opts, argc, argv);
     parse_file(opts, argc, argv);
     parse_header(opts, argc, argv);
+    opts->logger = \
+        parse_string_arg_about_existential(opts, "--logger", argc, argv);;
 
     return 0;
 }
@@ -369,6 +372,13 @@ int main(int argc, char *argv[])
     }
     else {
         return -201;
+    }
+
+    if (opts->logger) {
+        par2_set_logger(stderr);
+    }
+    else {
+        par2_set_logger(NULL);
     }
 
     /* occured par2 big bang !!! */
