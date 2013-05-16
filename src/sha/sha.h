@@ -23,26 +23,17 @@ typedef unsigned long long int long_size_t;
  * format: "%lld", "%ulld"
  */
 
-#include "libsha_private.h"
+#include "sha_private.h"
 
 #define elementof(x) (sizeof((x)) / sizeof((x[0])))
-
-#define EIGHT (8ULL)
-#define OCTET EIGHT
-#define SHA1SUM_HASH_BITS (160ULL)
 #define SHA1SUM_HASH_SIZE (SHA1SUM_HASH_BITS / OCTET)
-#define SHA1SUM_BLOCK_BITS (512ULL)
-#define SHA1SUM_BLOCK_SIZE (SHA1SUM_BLOCK_BITS / OCTET)
-#define SHA1SUM_ORIGINAL_MESSAGE_LENGTH_AREA_BITS (64ULL)
-#define SHA1SUM_ORIGINAL_MESSAGE_LENGTH_AREA_SIZE \
-       (SHA1SUM_ORIGINAL_MESSAGE_LENGTH_AREA_BITS / OCTET)
 
 typedef struct {
-    uchar value[20]; /* convert H[5] to octets stream. */
+    uchar value[SHA1SUM_HASH_SIZE]; /* convert H[5] to octets stream. */
     uint H[5];  /* see fip180-1.html */
     uint W[80]; /* see fip180-1.html */
-    unsigned long long int message_size; /* sha1 hash text_size */
-    unsigned long long int length; /* length = message_size * OCTET */
+    ulonglong message_size; /* sha1 hash text_size */
+    ulonglong length; /* length = message_size * OCTET */
 } sha1sum_t;
 
 /*****************************************************************************/
