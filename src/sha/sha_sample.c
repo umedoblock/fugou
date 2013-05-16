@@ -1,4 +1,4 @@
-#include "libsha.h"
+#include "sha.h"
 
 typedef unsigned char uchar;
 

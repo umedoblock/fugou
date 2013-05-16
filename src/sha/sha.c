@@ -17,9 +17,9 @@
  * "message" を使う。
  * 最初に意識して、仕様・用語を把握しなかった事が問題であった。
  */
-#include "libsha.h"
+#include "sha.h"
 #ifdef DEBUG
-#include "libsha_test.h"
+#include "sha_test.h"
 #endif
 
 void _sha1_compute(sha1sum_t *sha1sum);
