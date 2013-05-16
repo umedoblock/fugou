@@ -206,6 +206,15 @@ void sha1_test_appendix_A_with_load(void)
 
 int main(void)
 {
+    #ifdef PACKAGE_STRING
+    fprintf(stdout, "\"%s\"\n", PACKAGE_STRING);
+    #endif
+    #ifdef PACKAGE_NAME
+    fprintf(stdout, "\"%s\" test start\n", PACKAGE_NAME);
+    #endif
+    #ifdef PACKAGE_VERSION
+    fprintf(stdout, "sha versions is \"%s\"\n", PACKAGE_VERSION);
+    #endif
     sha1_test_appendix_A_with_load();
     sha1_test_appendix_A();
     sha1_test_appendix_B();
