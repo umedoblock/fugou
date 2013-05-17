@@ -1,5 +1,5 @@
-#include "libsha.h"
-#include "libsha_test.h"
+#include "sha.h"
+#include "sha_test.h"
 
 void _sha1_dump_block_of_W(sha1sum_t *sha1sum)
 {
