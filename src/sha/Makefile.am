@@ -1,6 +1,13 @@
-lib_LIBRARIES=libsha.a
-libsha_a_SOURCES=sha.c sha.h sha_private.h
-libsha_a_CFLAGS=-O3 -Wall -W -fPIC -pg -DNDEBUG -I$(SHA_INCLUDE)
+# lib_LIBRARIES=libsha.a
+# libsha_a_SOURCES=sha.c sha.h sha_private.h
+
+lib_LTLIBRARIES=libsha.la
+libsha_la_SOURCES=sha.c sha.h sha_private.h
+
+# AM_CFLAGS=-A @CFLAGS@ -Z
+# @CFLAGS@=-g -O2
+# libsha_a_CFLAGS=-O3 -Wall -W -fPIC -pg -DNDEBUG -I$(SHA_INCLUDE)
+# libsha_a_LDADD=libsha.a
 
 bin_PROGRAMS=sha_sample
 sha_sample_SOURCES=sha_sample.c sha.h sha_private.h
