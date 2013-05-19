@@ -4,6 +4,7 @@
 
 #include "camellia.h"
 
+void camellia_F(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
 void camellia_F_tashika(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
 inline void camellia_F_fast(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
 void camellia_F_test(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
