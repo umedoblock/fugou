@@ -21,7 +21,6 @@ libcamellia_la_SOURCES = \
   camellia/camellia_putx.c
 
 lib_LTLIBRARIES = libfugou.la
-libfugou_la_SOURCES =
 libfugou_la_LIBADD = \
   sha/libsha.la \
   camellia/libcamellia.la
