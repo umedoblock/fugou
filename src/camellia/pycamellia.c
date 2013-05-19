@@ -48,6 +48,7 @@ Camellia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static void
 Camellia_dealloc(CamelliaObject* self)
 {
+    camellia_destroy(&CM_KEY(self));
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
