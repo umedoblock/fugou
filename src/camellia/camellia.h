@@ -1,5 +1,5 @@
 /* camellia.h
- * Copyright (C) 2008 梅どぶろく umedoblock
+ * Copyright (C) 平成17-20(2005-2008)年 梅どぶろく(umedoblock)
  */
 
 #ifndef __CAMELLIA_H__
@@ -50,12 +50,8 @@ _asm{
 #define camellia_zero(x); (*(x))=(0);(*((x)+1))=(0);
 #define camellia_FL(x, y); x[0]^=_rotl((x[1]&y[1]),1);x[1]^=(x[0]|y[0]);
 #define camellia_FL_1(x, y); x[1]^=((x[0])|y[0]);x[0]^=_rotl((x[1]&y[1]),1);
-void camellia_F(unt *, unt *, unt *);
-void camellia_SP32(void);
 
 void camellia_hkaiten(unt *hkaiten, int bLen);
-/*void camellia_FL(unt *Y_FL, unt *X_FL, unt *key_FL);*/
-/*void camellia_FL_1(unt *X_FL_1, unt *Y_FL_1, unt *key_FL_1);*/
 
 void camellia_keyset(CAMELLIA_KEY *ck, uchar *data, int kLen);
 void camellia_encrypt(uchar *c, uchar *m, CAMELLIA_KEY *cmENkey);
