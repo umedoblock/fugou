@@ -16,4 +16,6 @@ typedef unsigned long long int long_size_t;
 #define EIGHT (8ULL)
 #define OCTET EIGHT
 
+#define BUFFER_SIZE 80
+
 #endif /* __LIBFUGOU_BASE_H__ */

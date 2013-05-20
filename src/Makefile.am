@@ -14,6 +14,7 @@
 
 lib_LTLIBRARIES = libfugou.la
 libfugou_la_SOURCES = \
+    libfugou.c \
     camellia/camellia.h camellia/camellia.c \
     sha/sha.h sha/sha.c
 # libfugou_la_LIBADD = \

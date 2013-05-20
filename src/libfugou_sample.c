@@ -49,13 +49,24 @@ int main(int argc, char *argv[])
     camellia_encrypt(c, m, cm);
     camellia_decrypt(d, c, cm);
     fprintf(f, "平文 0x88 を 256 bit 長の対象鍵 0xc9 で暗号化して\n");
-    fprintf(f, "復号分を得てみると、、、\n");
+    fprintf(f, "復号文を得てみると、、、\n");
+    fprintf(f, "対象鍵が、\n");
+    dump(key, sizeof(key), 16);
+    fprintf(f, "その対象鍵の副鍵が、\n");
+    dump(cm, sizeof(cm_), 16);
+    fprintf(f, "平文が、\n");
+    dump(m, sizeof(m), 16);
+    fprintf(f, "暗号文が、\n");
+    dump(c, sizeof(c), 16);
+    fprintf(f, "復号文が、\n");
+    dump(d, sizeof(d), 16);
+    fprintf(f, "でしたので、\n平文と復号文が");
     cmp = memcmp(m, d, CAMELLIA_BLOCK_SIZE);
     if (m != d && cmp == 0) {
-        fprintf(f, "平文と復号分が一致しました。\n");
+        fprintf(f, "一致しました。\n");
     }
     else {
-        fprintf(f, "平文と復号分が一致しませんでした。\n");
+        fprintf(f, "一致しませんでした。\n");
     }
     /* CBC mode についてはその内書く。*/
 
