@@ -1,0 +1,65 @@
+# Makefile
+# Copyright (C) 平成20-25(2008-2013)年 梅どぶろく(umedoblock)
+
+CC		= cc
+SOURCES	= libpar2.c libsha.c tool.c
+OBJS	= libpar2.o libsha.o tool.o
+TARGET	= libpar2.so
+OPTION	= -Wall -W -O0 -fPIC -g
+OPTION_DEBUG = -Wall -W -O0 -fPIC -g -pg -DDEBUG
+#OPTION	= -Wall -W -O0 -fPIC -g -pg
+LINKLIB	=
+MAJOR_V	= 0
+MINOR_V	= 0.0
+SONAME	= $(TARGET).$(MAJOR_V)
+RLNAME	= $(TARGET).$(MAJOR_V).$(MINOR_V)
+
+$(TARGET): $(OBJS) libpar2.h libsha.h
+	$(CC) -shared -Wl,-soname,$(SONAME) -o $(RLNAME) $(OPTION) $(OBJS) $(LINKLIB)
+	ln -sf $(RLNAME) $(SONAME)
+	ln -sf $(SONAME) $(TARGET)
+
+.c.o:
+	$(CC) -c $(OPTION) $<
+
+debug: $(SOURCES) libpar2.h libsha.h tool.h
+	$(CC) -c $(OPTION_DEBUG) $(SOURCES) libsha_test.c
+	$(CC) -shared -Wl,-soname,$(SONAME) -o $(RLNAME) $(OPTION_DEBUG) $(OBJS) libsha_test.o $(LINKLIB)
+	ln -sf $(RLNAME) $(SONAME)
+	ln -sf $(SONAME) $(TARGET)
+
+test:
+	rm -f h*
+	LD_LIBRARY_PATH=. ./libpar2_sample --logger --encode --division=2 --bits=8 --file=./par2_sample.dat > hashed.log
+	echo 'sha1sum(par2_sample.dat) ='
+	echo ha42303fd314c6ae600d7332babb344e43f85dfb3
+	# remove text data or recoveried file.
+	rm -f ha42303fd314c6ae600d7332babb344e43f85dfb3
+	# remove two data part.
+	rm -f ha5bf13e5010361a878e1f61a463fd63fd9e1ed10
+	rm -f hca47ec71a7315edca78061a777b1d75c44133a7a
+#	h24f8218fee71ea174c70bbe91a4a312955f05f3a
+	LD_LIBRARY_PATH=. ./libpar2_sample --logger --decode --header=h24f8218fee71ea174c70bbe91a4a312955f05f3a
+#	sha1sum h*
+	ls -l ha42303fd314c6ae600d7332babb344e43f85dfb3
+
+sample:
+	gcc -Werror -Wall -g \
+		-o 	libpar2_sample \
+			libpar2_sample.c \
+			-L. -lpar2
+
+clean:
+	rm -f $(OBJS) $(TARGET)*
+	rm -f core*
+
+# gcc -Werror -Wall -g par2/libpar2_sample.c par2/libpar2.c par2/libsha.c \
+# 	-o par2/libpar2_sample && \
+# h=`./par2/libpar2_sample --encode --division=8 --bits=8 \
+# 	--file=par2/par2_sample.dat` && \
+# echo $h && \
+# sha1sum h* > sha1sum.txt && \
+# echo ----------------------------------------- && \
+# cat $h && \
+# # rm -f h* \
+# echo success
