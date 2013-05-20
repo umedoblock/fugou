@@ -5620,7 +5620,6 @@ unt camellia_cBytes(unt nByte)
 	return nByte;
 }
 
-#ifdef __cplusplus
 #define BUFFERSIZE (1024)
 
 uchar *camellia_encrypt_cbc_block(uchar *c, uchar *m, uchar *iv, unt blocks, CAMELLIA_KEY *cmENkey)
@@ -6018,6 +6017,7 @@ int camellia_encrypt_cbc_DataBase64(char *base64, uchar *data, unt nBytes, CAMEL
 	return 1;
 }
 
+#if 0
 unt camellia_decrypt_cbc_Base64Data(uchar *data, char *base64, CAMELLIA_KEY *cmDEkey)
 {
 	uchar *cp;

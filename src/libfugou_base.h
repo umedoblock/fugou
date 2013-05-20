@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef unsigned int unt;
 typedef unsigned int uint;
 typedef unsigned char uchar;
 typedef unsigned long long int ulonglong;
