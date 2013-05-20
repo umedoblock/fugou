@@ -1,0 +1,85 @@
+['par2/galois.py', '4']
+n_bits = 4
+galois_field =
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 1
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 3
+bit_pattern = 6
+bit_pattern = 12
+bit_pattern = 11
+bit_pattern = 5
+bit_pattern = 10
+bit_pattern = 7
+bit_pattern = 14
+bit_pattern = 15
+bit_pattern = 13
+bit_pattern = 9
+19, 0b10011
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 5
+bit_pattern = 10
+bit_pattern = 1
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 7
+bit_pattern = 14
+bit_pattern = 11
+bit_pattern = 1
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 9
+bit_pattern = 11
+bit_pattern = 15
+bit_pattern = 7
+bit_pattern = 14
+bit_pattern = 5
+bit_pattern = 10
+bit_pattern = 13
+bit_pattern = 3
+bit_pattern = 6
+bit_pattern = 12
+25, 0b11001
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 11
+bit_pattern = 13
+bit_pattern = 1
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 13
+bit_pattern = 7
+bit_pattern = 14
+bit_pattern = 1
+
+bit_pattern = 1
+bit_pattern = 2
+bit_pattern = 4
+bit_pattern = 8
+bit_pattern = 15
+bit_pattern = 1
+
+
