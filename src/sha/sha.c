@@ -327,6 +327,8 @@ void _sha1_get_hex(char *hex, sha1sum_t *sha1sum)
     hex[i*2] = '\0';
 }
 
+#define elementof(x) (sizeof((x)) / sizeof((x[0])))
+
 void _sha1_set_value(sha1sum_t *sha1sum)
 {
     uint i;

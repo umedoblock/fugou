@@ -11,22 +11,12 @@
  * まあ、過去頑張っていたって事で残しはしますが。。。
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef unsigned int uint;
-typedef unsigned char uchar;
-typedef unsigned long long int ulonglong;
-typedef unsigned long long int long_size_t;
-/* signed: LL, unsigned: ULL
- * format: "%lld", "%ulld"
- */
+#include "../libfugou_base.h"
 
 #include "sha_private.h"
 
-#define elementof(x) (sizeof((x)) / sizeof((x[0])))
 #define SHA1SUM_HASH_SIZE (SHA1SUM_HASH_BITS / OCTET)
+#define SHA1SUM_BLOCK_SIZE (SHA1SUM_BLOCK_BITS / OCTET)
 
 typedef struct {
     uchar value[SHA1SUM_HASH_SIZE]; /* convert H[5] to octets stream. */

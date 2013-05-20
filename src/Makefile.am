@@ -19,3 +19,7 @@ libfugou_la_SOURCES = \
 # libfugou_la_LIBADD = \
 #   sha/libsha.la \
 #   camellia/libcamellia.la
+
+bin_PROGRAMS = libfugou_sample
+libfugou_sample_SOURCES = libfugou_sample.c libfugou.h
+libfugou_sample_LDADD = libfugou.la
