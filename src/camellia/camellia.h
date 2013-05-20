@@ -4,6 +4,7 @@
 
 #ifndef __CAMELLIA_H__
 #define __CAMELLIA_H__
+#include "../libfugou_base.h"
 
 #include <memory.h>
 #ifdef __cplusplus
@@ -17,7 +18,10 @@ extern "C"{
 #include <stdio.h>
 #include <stdlib.h>
 
-#define CM_BLOCKSIZE (128/8)
+#define CM_BLOCKSIZE (128/8) /* 不可侵, 過去の資産大事に */
+
+#define CAMELLIA_BLOCK_BITS (128)
+#define CAMELLIA_BLOCK_SIZE (CAMELLIA_BLOCK_BITS / OCTET)
 
 #ifndef __CRYPT__
 #define __CRYPT__
