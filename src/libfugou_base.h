@@ -14,9 +14,22 @@ typedef unsigned long long int long_size_t;
  * format: "%lld", "%ulld"
  */
 
+enum _log_levels {
+    DEBUG_, INFO, WARN, ERROR, FATAL, BUG
+};
+
 #define EIGHT (8ULL)
 #define OCTET EIGHT
 
 #define BUFFER_SIZE 80
+
+/* copied camellia/pycamellia.c */
+typedef struct {
+    size_t text_size;
+    size_t cipher_size;
+    size_t snip_size;
+    size_t padding_size;
+    size_t block_size;
+} _cipher_size_brother;
 
 #endif /* __LIBFUGOU_BASE_H__ */

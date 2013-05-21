@@ -62,6 +62,16 @@ void camellia_keyset(CAMELLIA_KEY *ck, uchar *data, int kLen);
 void camellia_encrypt(uchar *c, uchar *m, CAMELLIA_KEY *cmENkey);
 void camellia_decrypt(uchar *m, uchar *c, CAMELLIA_KEY *cmDEkey);
 
+size_t camellia_encrypt_cbc(uchar *c,
+                            uchar *m,
+                            uchar *iv,
+                            CAMELLIA_KEY *key,
+                            size_t text_size);
+size_t camellia_decrypt_cbc(uchar *m,
+                            uchar *c,
+                            CAMELLIA_KEY *key,
+                            size_t cipher_size);
+
 /****************************ENCRYPT*****************************/
 int camellia_encrypt_cbc_DataData(uchar *c, uchar *m, uchar *iv, unt Byte, CAMELLIA_KEY *cmENkey);
 int camellia_encrypt_cbc_FileFile(FILE *fc, FILE *fm, uchar *iv, ulong Hi, ulong Low, CAMELLIA_KEY *cmENkey);

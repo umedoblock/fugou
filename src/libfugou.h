@@ -8,6 +8,7 @@ extern "C"{
 #define PACKAGE_NAME "libfugou"
 #define PACKAGE_STRING "libfugou 0.0.0"
 */
+#include <stdarg.h>
 
 /*****************************************************************************/
 /* for libfugou **************************************************************/

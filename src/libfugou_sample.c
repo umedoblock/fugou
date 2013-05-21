@@ -9,15 +9,19 @@ int main(int argc, char *argv[])
     uchar m[CAMELLIA_BLOCK_SIZE];
     uchar c[CAMELLIA_BLOCK_SIZE];
     uchar d[CAMELLIA_BLOCK_SIZE];
-    uchar *message, *cipher, *decipher, *iv;
+    uchar iv[CAMELLIA_BLOCK_SIZE];
+    uchar *message, *cipher, *decipher;
 
     sha1sum_t sha1sum_, *sha1sum = &sha1sum_;
     uchar digest[SHA1SUM_HASH_SIZE], hex[256];
     long_size_t bit_length;
     FILE *fp = NULL, *f = stdout;
     int i, cmp;
-    size_t text_size = BUFFER_SIZE + 11, mem_size, encode_size, cipher_size;
+    size_t text_size = BUFFER_SIZE + 11, mem_size;
+    size_t encode_size, decode_size, cipher_size;
     char *mem, *mem_;
+
+    set_logger(stderr);
 
     encode_size = CAMELLIA_NORMED_SIZE(text_size);
     cipher_size = CAMELLIA_BLOCK_SIZE + encode_size;
@@ -32,9 +36,8 @@ int main(int argc, char *argv[])
     memset(mem, '\0', mem_size);
 
      message = mem; mem += encode_size;
-          iv = mem; mem += cipher_size;
+      cipher = mem; mem += cipher_size;
     decipher = mem; mem += encode_size;
-      cipher = iv + CAMELLIA_BLOCK_SIZE;
 
     for(i=0;argv[i]!=NULL;i++){
     }
@@ -90,18 +93,32 @@ int main(int argc, char *argv[])
     }
     fprintf(f, "\n");
 
-    memset(message, 0x33, text_size);
-    memset(iv, 0x88, CAMELLIA_BLOCK_SIZE);
-    memset(cipher, 0xcc, cipher_size - CAMELLIA_BLOCK_SIZE);
+    bury_memory(message, text_size);
+    memset(cipher, 0xcc, cipher_size);
+    memset(iv, 0x11, CAMELLIA_BLOCK_SIZE);
     memset(decipher, 0xdd, text_size);
 
-    /*
-    */
-    camellia_encrypt_cbc_DataData(cipher, message, iv, text_size, cm);
-    camellia_decrypt_cbc_DataData(decipher, cipher, iv, cipher_size, cm);
+    fprintf(f, "復号文の領域、\n");
+    dump(decipher, encode_size, 16);
+
+    /* 重要なお知らせ。
+     * camellia_encrypt_cbc_DataData(), camellia_decrypt_cbc_DataData()
+     * は bug っているであろうということ。
+     * camellia/camellia.c の中で悉く comment にされていた。
+     * camellia/pycamellia.c では独自に encrypt_mode_cbc() を
+     * 実装していた事からして、xxx_cbc_DataData() は bug っているのだろう。
+     * camellia_encrypt_cbc_DataData(cipher, message, iv, text_size, cm);
+     * camellia_decrypt_cbc_DataData(decipher, cipher, iv, cipher_size, cm);
+     * 曰く付きの関数様ですぜ〜。
+     * いつか成仏させてやろう。
+     */
+    cipher_size = camellia_encrypt_cbc(cipher, message, iv, cm, text_size);
+    decode_size = camellia_decrypt_cbc(decipher, cipher, cm, cipher_size);
     fprintf(f, "平文 0x33 を 256 bit 長の対象鍵 0xc9 で "
                "CBC mode にて暗号化して\n");
     fprintf(f, "復号文を得てみると、、、\n");
+    fprintf(f, "text_size = %u, decode_size = %u, cipher_size = %u\n",
+                text_size, decode_size, cipher_size);
     fprintf(f, "対象鍵が、\n");
     dump(key, sizeof(key), 16);
     fprintf(f, "その対象鍵の副鍵が、\n");

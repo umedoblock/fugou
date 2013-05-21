@@ -1,5 +1,211 @@
 #include "libfugou.h"
 
+static FILE *_log = NULL;
+
+void set_logger(FILE *fp)
+{
+    _log = fp;
+}
+
+const char *_log_level_names[] = {
+    "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "BUG"
+};
+
+static int _log_level = DEBUG_;
+
+void logger(const char *log_name, const int level, const char *fmt, ...)
+{
+    va_list ap;
+
+    if (_log != NULL && level >= _log_level) {
+        fprintf(_log, "[%s] [%s] ", log_name, _log_level_names[level]);
+        /*
+        n = vsnprintf(p, size, fmt, ap);
+        */
+        va_start(ap, fmt);
+        vfprintf(_log, fmt, ap);
+        va_end(ap);
+    }
+}
+
+void _fugou_debug(const char *fmt, ...)
+{
+    va_list ap;
+
+    if (_log != NULL && DEBUG_ >= _log_level) {
+        fprintf(_log, "[%s] [%s] ", "libfugou", _log_level_names[DEBUG_]);
+        va_start(ap, fmt);
+        vfprintf(_log, fmt, ap);
+        va_end(ap);
+    }
+}
+
+void
+_calc_cipher_size(_cipher_size_brother *csb,
+                   size_t text_size,
+                   size_t block_size)
+{
+    csb->text_size = text_size;
+    csb->block_size = block_size;
+    csb->snip_size = text_size % block_size;
+    if(csb->snip_size == 0)
+        csb->padding_size = block_size;
+    else
+        csb->padding_size = block_size - csb->snip_size;
+    csb->cipher_size = block_size + text_size + csb->padding_size;
+}
+
+void
+_view_cipher_size(_cipher_size_brother *csb)
+{
+    _fugou_debug("   csb->text_size = %u\n", csb->text_size);
+    _fugou_debug(" csb->cipher_size = %u\n", csb->cipher_size);
+    _fugou_debug("   csb->snip_size = %u\n", csb->snip_size);
+    _fugou_debug("csb->padding_size = %u\n", csb->padding_size);
+    _fugou_debug("  csb->block_size = %u\n", csb->block_size);
+}
+
+size_t _encrypt_cbc(
+    uchar *c,
+    uchar *m,
+    uchar *iv,
+    void *key,
+    size_t text_size,
+    size_t block_size,
+    void (*encrypt)(uchar *,uchar *,void *)
+)
+{
+    int i;
+    size_t encrypted_size = 0;
+    uchar last_octet, *c_ = c;
+    _cipher_size_brother csb_, *csb = &csb_;
+
+    _calc_cipher_size(csb, text_size, block_size);
+    _view_cipher_size(csb);
+
+    if (c != iv)
+        memcpy(c, iv, block_size);
+    encrypted_size = block_size;
+    _fugou_debug("encrypt=%p in _encrypt_cbc()\n", encrypt);
+    /*
+    [libfugou] [DEBUG] encrypt=(nil) in _encrypt_cbc()
+    予想外でしたわ。もう諦めようかと思っていた。
+    */
+
+    while(encrypted_size < csb->cipher_size - block_size){
+        _fugou_debug("encrypted_size=%u < csb->cipher_size=%u\n",
+                      encrypted_size, csb->cipher_size);
+        c += block_size;
+        _fugou_debug("koko0\n");
+        for(i=0;i<block_size;i++)
+            c[i] = iv[i] ^ m[i];
+        _fugou_debug("koko1\n");
+        encrypt(c, c, key);
+        _fugou_debug("koko2\n");
+#if 0
+#endif
+        iv = c;
+        _fugou_debug("koko3\n");
+        m += block_size;
+        _fugou_debug("koko4\n");
+        encrypted_size += block_size;
+        _fugou_debug("koko5\n");
+    }
+        _fugou_debug("koko6\n");
+    c += block_size;
+
+    memcpy(c, m,  csb->snip_size);
+    memset(c + csb->snip_size, 0x00, csb->padding_size);
+    last_octet = c[block_size - 1];
+    last_octet |= csb->snip_size;
+    _fugou_debug("   csb->snip_size = %u, 0x%02x in _encrypt_cbc().\n", csb->snip_size, csb->snip_size);
+    _fugou_debug("csb->padding_size = %u, 0x%02x in _encrypt_cbc().\n", csb->padding_size, csb->padding_size);
+    _fugou_debug("last_octet = 0x%02x in _encrypt_cbc().\n", last_octet);
+
+    c[block_size - 1] = last_octet;
+
+    for(i=0;i<csb->block_size;i++)
+        c[i] ^= iv[i];
+    encrypt(c, c, key);
+#if 0
+#endif
+    encrypted_size += block_size;
+    _fugou_debug("c - c_ = %u in _encrypt_cbc()\n", (unt )(c + block_size - c_));
+    _fugou_debug("encrypted_size = %u in _encrypt_cbc()\n", encrypted_size);
+
+    return encrypted_size;
+}
+
+size_t _decrypt_cbc(
+    uchar *d,
+    uchar *c,
+    void *key,
+    size_t cipher_size,
+    size_t block_size,
+    void (*decrypt)(uchar *,uchar *,void *)
+)
+{
+    int i;
+    uchar *m = d, *iv, last_octet, *d_ = d;
+    size_t text_size, decrypted_size = 0;
+    size_t snip_size;
+    _cipher_size_brother csb_, *csb = &csb_;
+
+    _fugou_debug("_calc_cipher_size() cipher_size = %u in _decrypt_cbc() \n", cipher_size);
+    iv = c;
+    c += block_size;
+    /*
+    うわー、以下が camellia_decrypt_cbc_DataData() のbugの元凶では？
+    while(decrypted_size < csb->cipher_size){
+    なんか同じbug出てきた。。。
+    */
+    while(decrypted_size < cipher_size - block_size){
+#if 0
+        decrypt(d, c, key);
+#endif
+        for(i=0;i<block_size;i++)
+            m[i] = iv[i] ^ d[i];
+        iv = c;
+        c += block_size;
+        d += block_size;
+        m = d;
+        decrypted_size += block_size;
+    }
+
+    d[-1] = 0x0b;
+    _fugou_debug("d[-1] = 0x%02x in _decrypt_cbc() \n", d[-1]);
+    snip_size = d[-1] % block_size;
+    _fugou_debug("   snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, snip_size);
+    _fugou_debug("_calc_cipher_size() snip_size = %u in _decrypt_cbc() \n", snip_size);
+    text_size = cipher_size - block_size * 2 + snip_size;
+    _fugou_debug("_calc_cipher_size() before text_size = %u in _decrypt_cbc() \n", text_size);
+    _calc_cipher_size(csb, text_size, block_size);
+    _fugou_debug("_calc_cipher_size()  after text_size = %u in _decrypt_cbc() \n", text_size);
+    _fugou_debug("_decrypt_cbc()\n");
+    _view_cipher_size(csb);
+    _fugou_debug("\n");
+
+    _fugou_debug("   csb->snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, csb->snip_size);
+    _fugou_debug("csb->padding_size = %u, 0x%02x in _decrypt_cbc().\n", csb->padding_size, csb->padding_size);
+    _fugou_debug("last_octet = 0x%02x in _decrypt_cbc().\n", last_octet);
+    _fugou_debug("d - d_ = %u in _encrypt_cbc()\n", (unt )(d - d_));
+
+    return text_size;
+}
+
+void bury_memory(void *ptr, size_t length)
+{
+    size_t i, index = (size_t )ptr;
+    uchar *mem = (uchar *)ptr;
+
+    for(i=0;i<sizeof(void *);i++) {
+        mem[i] = (uint )ptr >> (8 * (sizeof(void *) - i - 1));
+    }
+    for(;i<length;i++) {
+        mem[i] = (uchar )(index + i);
+    }
+}
+
 void dump(void *ptr, int length, int width)
 {
     int i;
@@ -7,7 +213,8 @@ void dump(void *ptr, int length, int width)
     char fmt[BUFFER_SIZE];
 
     sprintf(fmt, "0x%%0%dx ", sizeof(void *) * 2);
-    fprintf(stderr, "dump() start = %p\n", ptr);
+    fprintf(stderr, "dump(ptr=%p, length=%d, width=%d) start\n",
+                          ptr, length, width);
 
     fprintf(stderr, "%*s", 3 + sizeof(void *) * 2, "");
     for (i=0;i<width;i++){
