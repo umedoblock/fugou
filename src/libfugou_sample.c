@@ -9,8 +9,8 @@ int main(int argc, char *argv[])
     uchar m[CAMELLIA_BLOCK_SIZE];
     uchar c[CAMELLIA_BLOCK_SIZE];
     uchar d[CAMELLIA_BLOCK_SIZE];
-    uchar iv[CAMELLIA_BLOCK_SIZE];
-    uchar *message, *cipher, *decipher;
+    uchar iv_[CAMELLIA_BLOCK_SIZE];
+    uchar *message, *cipher, *decipher, *iv;
 
     sha1sum_t sha1sum_, *sha1sum = &sha1sum_;
     uchar digest[SHA1SUM_HASH_SIZE];
@@ -98,6 +98,8 @@ int main(int argc, char *argv[])
 
     bury_memory(message, text_size);
     memset(cipher, 0xcc, cipher_size);
+    iv = iv_;
+    iv = cipher;
     memset(iv, 0x11, CAMELLIA_BLOCK_SIZE);
     memset(decipher, 0xdd, text_size);
 
