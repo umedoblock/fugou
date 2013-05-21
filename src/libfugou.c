@@ -100,19 +100,12 @@ size_t _encrypt_cbc(
         _fugou_debug("koko0\n");
         for(i=0;i<block_size;i++)
             c[i] = iv[i] ^ m[i];
-        _fugou_debug("koko1\n");
         encrypt(c, c, key);
-        _fugou_debug("koko2\n");
-#if 0
-#endif
+
         iv = c;
-        _fugou_debug("koko3\n");
         m += block_size;
-        _fugou_debug("koko4\n");
         encrypted_size += block_size;
-        _fugou_debug("koko5\n");
     }
-        _fugou_debug("koko6\n");
     c += block_size;
 
     memcpy(c, m,  csb->snip_size);
@@ -128,8 +121,7 @@ size_t _encrypt_cbc(
     for(i=0;i<csb->block_size;i++)
         c[i] ^= iv[i];
     encrypt(c, c, key);
-#if 0
-#endif
+
     encrypted_size += block_size;
     _fugou_debug("c - c_ = %u in _encrypt_cbc()\n", (unt )(c + block_size - c_));
     _fugou_debug("encrypted_size = %u in _encrypt_cbc()\n", encrypted_size);
@@ -163,8 +155,6 @@ size_t _decrypt_cbc(
     */
     while(decrypted_size < cipher_size - block_size){
         decrypt(d, c, key);
-#if 0
-#endif
         for(i=0;i<block_size;i++)
             m[i] = iv[i] ^ d[i];
         iv = c;
