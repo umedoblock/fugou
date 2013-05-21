@@ -4,6 +4,20 @@
 
 #include "camellia.h"
 
+void _camellia_debug(const char *fmt, ...)
+{
+    #ifdef DEBUG
+    va_list ap;
+
+    if (_log != NULL && DEBUG_ >= _log_level) {
+        fprintf(_log, "[%s] [%s] ", "camellia", _log_level_names[DEBUG_]);
+        va_start(ap, fmt);
+        vfprintf(_log, fmt, ap);
+        va_end(ap);
+    }
+    #endif
+}
+
 void camellia_F(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
 void camellia_F_tashika(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
 inline void camellia_F_fast(unt *mdr_F, unt *iroha_F, unt *nihohe_F);
@@ -4957,8 +4971,7 @@ size_t camellia_encrypt_cbc(uchar *c,
 ...
 [libfugou] [DEBUG] encrypt=(nil) in _encrypt_cbc()
 */
-    logger("camellia", DEBUG_, "camellia_encrypt() = %p\n",
-                        (void *)camellia_encrypt);
+    _camellia_debug("camellia_encrypt() = %p\n", (void *)camellia_encrypt);
     cipher_size = _encrypt_cbc(c, m, iv, key,
                                text_size,
                                CAMELLIA_BLOCK_SIZE,
@@ -4985,7 +4998,7 @@ size_t camellia_decrypt_cbc(uchar *m,
 {
     size_t text_size;
 
-    logger("camellia", DEBUG_, "camellia_decrypt() = %p\n", camellia_decrypt);
+    _camellia_debug("camellia_decrypt() = %p\n", camellia_decrypt);
     text_size = _decrypt_cbc(m, c, key,
                              cipher_size,
                              CAMELLIA_BLOCK_SIZE,

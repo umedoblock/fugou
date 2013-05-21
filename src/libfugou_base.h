@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 typedef unsigned int unt;
 typedef unsigned int uint;
@@ -17,6 +18,15 @@ typedef unsigned long long int long_size_t;
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
 };
+
+#ifdef DEBUG
+    #ifndef __LOG__
+    #define __LOG__
+    extern FILE *_log;
+    extern int _log_level;
+    extern const char *_log_level_names[];
+    #endif /* #ifndef __LOG__ */
+#endif /*#ifdef DEBUG */
 
 #define EIGHT (8ULL)
 #define OCTET EIGHT

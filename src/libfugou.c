@@ -1,13 +1,13 @@
 #include "libfugou.h"
 
-static FILE *_log = NULL;
+FILE *_log = NULL;
 
 void set_logger(FILE *log)
 {
     _log = log;
 }
 
-static int _log_level = DEBUG_;
+int _log_level = DEBUG_;
 
 void set_logger_level(int log_level)
 {
@@ -36,6 +36,7 @@ void logger(char *log_name, int level, char *fmt, ...)
 
 void _fugou_debug(const char *fmt, ...)
 {
+    #ifdef DEBUG
     va_list ap;
 
     if (_log != NULL && DEBUG_ >= _log_level) {
@@ -44,6 +45,7 @@ void _fugou_debug(const char *fmt, ...)
         vfprintf(_log, fmt, ap);
         va_end(ap);
     }
+    #endif
 }
 
 void
@@ -103,7 +105,6 @@ size_t _encrypt_cbc(
         _fugou_debug("encrypted_size=%u < csb->cipher_size=%u\n",
                       encrypted_size, csb->cipher_size);
         c += block_size;
-        _fugou_debug("koko0\n");
         for(i=0;i<block_size;i++)
             c[i] = iv[i] ^ m[i];
         encrypt(c, c, key);

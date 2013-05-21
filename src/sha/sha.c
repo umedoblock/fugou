@@ -18,7 +18,7 @@
  * 最初に意識して、仕様・用語を把握しなかった事が問題であった。
  */
 #include "sha.h"
-#ifdef DEBUG
+#ifdef SHA_DEBUG
 #include "sha_test.h"
 #endif
 
@@ -193,7 +193,7 @@ void _sha1_compute(sha1sum_t *sha1sum)
         W[t] = Sn((W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]), 1);
     }
 
-    #ifdef DEBUG
+    #ifdef SHA_DEBUG
     fprintf(stdout, "_sha1_compute(sha1sum=0x%p)\n", sha1sum);
     _sha1_dump_block_of_W(sha1sum);
     #endif
@@ -205,7 +205,7 @@ void _sha1_compute(sha1sum_t *sha1sum)
     d = H[3];
     e = H[4];
 
-    #ifdef DEBUG
+    #ifdef SHA_DEBUG
     _sha1_dump_ABCDE_header();
     _sha1_dump_ABCDE(-1, a, b, c, d, e);
     #endif
@@ -227,7 +227,7 @@ void _sha1_compute(sha1sum_t *sha1sum)
         c = Sn(b, 30);
         b = a;
         a = temp;
-        #ifdef DEBUG
+        #ifdef SHA_DEBUG
         _sha1_dump_ABCDE(t, a, b, c, d, e);
         #endif
     }
@@ -296,7 +296,7 @@ void _sha1_pad_final_block(sha1sum_t *sha1sum,
     ULL2UCHARS(m + SHA1SUM_BLOCK_SIZE - \
                    SHA1SUM_ORIGINAL_MESSAGE_LENGTH_AREA_SIZE, sha1sum->length);
 
-    #ifdef DEBUG
+    #ifdef SHA_DEBUG
     fprintf(stdout, "at_least_size = %u\n", at_least_size);
     fprintf(stdout, "zero_padding_size = %u\n", zero_padding_size);
     fprintf(stdout, "remained_text_size = %llu\n", remained_text_size);

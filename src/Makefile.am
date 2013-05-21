@@ -12,6 +12,7 @@
 # showing nested convenience libraries
 # libcamellia_la_SOURCES = camellia/camellia.h camellia/camellia.c
 
+CFLAGS=-pg -Wall -O3 -DDEBUG
 CFLAGS=-pg -Wall -O3
 
 lib_LTLIBRARIES = libfugou.la
