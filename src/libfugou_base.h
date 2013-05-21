@@ -66,6 +66,6 @@ typedef struct {
     size_t snip_size;
     size_t padding_size;
     size_t block_size;
-} _cipher_size_brother;
+} _cipher_size_brother_t;
 
 #endif /* __LIBFUGOU_BASE_H__ */

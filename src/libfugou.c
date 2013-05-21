@@ -49,7 +49,7 @@ void _fugou_debug(const char *fmt, ...)
 }
 
 void
-_calc_cipher_size(_cipher_size_brother *csb,
+_calc_cipher_size(_cipher_size_brother_t *csb,
                    size_t text_size,
                    size_t block_size)
 {
@@ -64,7 +64,7 @@ _calc_cipher_size(_cipher_size_brother *csb,
 }
 
 void
-_view_cipher_size(_cipher_size_brother *csb)
+_view_cipher_size(_cipher_size_brother_t *csb)
 {
     _fugou_debug("   csb->text_size = %u\n", csb->text_size);
     _fugou_debug(" csb->cipher_size = %u\n", csb->cipher_size);
@@ -86,7 +86,7 @@ size_t _encrypt_cbc(
     int i;
     size_t encrypted_size = 0;
     uchar last_octet, *c_ = c;
-    _cipher_size_brother csb_, *csb = &csb_;
+    _cipher_size_brother_t csb_, *csb = &csb_;
 
     _calc_cipher_size(csb, text_size, block_size);
     _view_cipher_size(csb);
@@ -149,7 +149,7 @@ size_t _decrypt_cbc(
     uchar *m = d, *iv, *d_ = d;
     size_t text_size, decrypted_size = 0;
     size_t snip_size;
-    _cipher_size_brother csb_, *csb = &csb_;
+    _cipher_size_brother_t csb_, *csb = &csb_;
 
     _fugou_debug("decrypt=%p in _decrypt_cbc() くっそー。\n", decrypt);
     _fugou_debug("_calc_cipher_size() cipher_size = %u in _decrypt_cbc() \n", cipher_size);
