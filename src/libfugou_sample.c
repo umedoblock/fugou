@@ -92,9 +92,11 @@ int main(int argc, char *argv[])
 
     memset(message, 0x33, text_size);
     memset(iv, 0x88, CAMELLIA_BLOCK_SIZE);
-    memset(cipher, 0xbb, cipher_size - CAMELLIA_BLOCK_SIZE);
+    memset(cipher, 0xcc, cipher_size - CAMELLIA_BLOCK_SIZE);
     memset(decipher, 0xdd, text_size);
 
+    /*
+    */
     camellia_encrypt_cbc_DataData(cipher, message, iv, text_size, cm);
     camellia_decrypt_cbc_DataData(decipher, cipher, iv, cipher_size, cm);
     fprintf(f, "平文 0x33 を 256 bit 長の対象鍵 0xc9 で "
