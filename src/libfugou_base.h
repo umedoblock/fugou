@@ -33,6 +33,15 @@ size_t _encrypt_cbc(
     void (*encrypt)(uchar *,uchar *,void *)
 );
 
+size_t _decrypt_cbc(
+    uchar *d,
+    uchar *c,
+    void *key,
+    size_t cipher_size,
+    size_t block_size,
+    void (*decrypt)(uchar *,uchar *,void *)
+);
+
 /* copied camellia/pycamellia.c */
 typedef struct {
     size_t text_size;

@@ -86,7 +86,8 @@ size_t _encrypt_cbc(
     if (c != iv)
         memcpy(c, iv, block_size);
     encrypted_size = block_size;
-    _fugou_debug("encrypt=%p in _encrypt_cbc()\n", encrypt);
+    _fugou_debug("encrypt=%p in _encrypt_cbc() 想像できんっつーのっ！\n",
+                  encrypt);
     /*
     [libfugou] [DEBUG] encrypt=(nil) in _encrypt_cbc()
     予想外でしたわ。もう諦めようかと思っていた。
@@ -151,6 +152,7 @@ size_t _decrypt_cbc(
     size_t snip_size;
     _cipher_size_brother csb_, *csb = &csb_;
 
+    _fugou_debug("decrypt=%p in _decrypt_cbc() くっそー。\n", decrypt);
     _fugou_debug("_calc_cipher_size() cipher_size = %u in _decrypt_cbc() \n", cipher_size);
     iv = c;
     c += block_size;
@@ -160,8 +162,8 @@ size_t _decrypt_cbc(
     なんか同じbug出てきた。。。
     */
     while(decrypted_size < cipher_size - block_size){
-#if 0
         decrypt(d, c, key);
+#if 0
 #endif
         for(i=0;i<block_size;i++)
             m[i] = iv[i] ^ d[i];

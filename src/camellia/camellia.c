@@ -4984,6 +4984,7 @@ size_t camellia_decrypt_cbc(uchar *m,
 {
     size_t text_size;
 
+    logger("camellia", DEBUG_, "camellia_decrypt() = %p\n", camellia_decrypt);
     text_size = _decrypt_cbc(m, c, key,
                              cipher_size,
                              CAMELLIA_BLOCK_SIZE,
