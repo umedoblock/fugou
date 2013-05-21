@@ -12,10 +12,11 @@ static int _log_level = DEBUG_;
 void set_logger_level(int log_level)
 {
     _log_level = log_level;
+    fprintf(_log, "called set_logger_level(log_level=%d)\n", log_level);
 }
 
 const char *_log_level_names[] = {
-    "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "BUG"
+    "DUMP", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "BUG"
 };
 
 void logger(char *log_name, int level, char *fmt, ...)
@@ -207,34 +208,38 @@ void dump(void *ptr, int length, int width)
     unsigned char *data = (unsigned char *)ptr;
     char fmt[BUFFER_SIZE];
 
+    if (! (_log_level == DEBUG_ || _log_level == DUMP)) {
+        return;
+    }
+
     sprintf(fmt, "0x%%0%dx ", sizeof(void *) * 2);
-    fprintf(stderr, "dump(ptr=%p, length=%d, width=%d) start\n",
+    fprintf(_log, "dump(ptr=%p, length=%d, width=%d) start\n",
                           ptr, length, width);
 
-    fprintf(stderr, "%*s", 3 + sizeof(void *) * 2, "");
+    fprintf(_log, "%*s", 3 + sizeof(void *) * 2, "");
     for (i=0;i<width;i++){
-        fprintf(stderr, "%02x ", (unsigned int )(data + i) & 0x0f);
+        fprintf(_log, "%02x ", (unsigned int )(data + i) & 0x0f);
         if ((i + 1) % 4 == 0) {
-            fprintf(stderr, "| ");
+            fprintf(_log, "| ");
         }
     }
     if (((i + 1) % width) != 0)
-        fprintf(stderr, "\n");
+        fprintf(_log, "\n");
 
     for (i=0;i<length;i++) {
         if (i % width == 0) {
-            fprintf(stderr, fmt, data + i);
+            fprintf(_log, fmt, data + i);
         }
-        fprintf(stderr, "%02x ", data[i]);
+        fprintf(_log, "%02x ", data[i]);
         if ((i + 1) % 4 == 0) {
-            fprintf(stderr, "| ");
+            fprintf(_log, "| ");
         }
         if ((i + 1) % width == 0) {
-            fprintf(stderr, "\n");
+            fprintf(_log, "\n");
         }
     }
     if (((length) % width) != 0)
-        fprintf(stderr, "\n");
+        fprintf(_log, "\n");
 }
 
 /* omoide/src/base64/base64.c */

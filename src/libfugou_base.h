@@ -15,7 +15,7 @@ typedef unsigned long long int long_size_t;
  */
 
 enum _log_levels {
-    DEBUG_, INFO, WARN, ERROR, FATAL, BUG
+    DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
 };
 
 #define EIGHT (8ULL)

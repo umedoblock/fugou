@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     uchar *mem, *mem_;
 
     set_logger(stderr);
-    set_logger_level(INFO);
+    set_logger_level(DUMP);
 
     encode_size = CAMELLIA_NORMED_SIZE(text_size);
     cipher_size = CAMELLIA_BLOCK_SIZE + encode_size;
