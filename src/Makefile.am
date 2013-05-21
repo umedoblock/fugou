@@ -24,3 +24,7 @@ libfugou_la_SOURCES = \
 bin_PROGRAMS = libfugou_sample
 libfugou_sample_SOURCES = libfugou_sample.c libfugou.h
 libfugou_sample_LDADD = libfugou.la
+
+noinst_PROGRAMS = test_libfugou
+test_libfugou_SOURCES = test_libfugou.c libfugou.h
+test_libfugou_LDADD = libfugou.la
