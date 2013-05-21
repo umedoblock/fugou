@@ -13,6 +13,11 @@ extern "C"{
 /*****************************************************************************/
 /* for libfugou **************************************************************/
 /*****************************************************************************/
+void set_logger(FILE *log);
+void set_logger_level(int log_level);
+void logger(char *log_name, int level, char *fmt, ...);
+
+void bury_memory(void *ptr, size_t length);
 void dump(void *ptr, int length, int width);
 
 /*****************************************************************************/

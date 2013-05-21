@@ -4957,11 +4957,12 @@ size_t camellia_encrypt_cbc(uchar *c,
 ...
 [libfugou] [DEBUG] encrypt=(nil) in _encrypt_cbc()
 */
-    logger("camellia", DEBUG_, "camellia_encrypt() = %p\n", camellia_encrypt);
+    logger("camellia", DEBUG_, "camellia_encrypt() = %p\n",
+                        (void *)camellia_encrypt);
     cipher_size = _encrypt_cbc(c, m, iv, key,
                                text_size,
                                CAMELLIA_BLOCK_SIZE,
-                               camellia_encrypt);
+                               (code_function )camellia_encrypt);
     /*
 size_t _encrypt_cbc(
     uchar *c,
@@ -4988,7 +4989,7 @@ size_t camellia_decrypt_cbc(uchar *m,
     text_size = _decrypt_cbc(m, c, key,
                              cipher_size,
                              CAMELLIA_BLOCK_SIZE,
-                             camellia_decrypt);
+                             (code_function )camellia_decrypt);
 
     return text_size;
 }

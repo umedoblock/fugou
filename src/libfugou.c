@@ -2,18 +2,23 @@
 
 static FILE *_log = NULL;
 
-void set_logger(FILE *fp)
+void set_logger(FILE *log)
 {
-    _log = fp;
+    _log = log;
+}
+
+static int _log_level = DEBUG_;
+
+void set_logger_level(int log_level)
+{
+    _log_level = log_level;
 }
 
 const char *_log_level_names[] = {
     "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "BUG"
 };
 
-static int _log_level = DEBUG_;
-
-void logger(const char *log_name, const int level, const char *fmt, ...)
+void logger(char *log_name, int level, char *fmt, ...)
 {
     va_list ap;
 
@@ -72,7 +77,7 @@ size_t _encrypt_cbc(
     void *key,
     size_t text_size,
     size_t block_size,
-    void (*encrypt)(uchar *,uchar *,void *)
+    code_function encrypt
 )
 {
     int i;
@@ -135,11 +140,11 @@ size_t _decrypt_cbc(
     void *key,
     size_t cipher_size,
     size_t block_size,
-    void (*decrypt)(uchar *,uchar *,void *)
+    code_function decrypt
 )
 {
     int i;
-    uchar *m = d, *iv, last_octet, *d_ = d;
+    uchar *m = d, *iv, *d_ = d;
     size_t text_size, decrypted_size = 0;
     size_t snip_size;
     _cipher_size_brother csb_, *csb = &csb_;
@@ -164,7 +169,6 @@ size_t _decrypt_cbc(
         decrypted_size += block_size;
     }
 
-    d[-1] = 0x0b;
     _fugou_debug("d[-1] = 0x%02x in _decrypt_cbc() \n", d[-1]);
     snip_size = d[-1] % block_size;
     _fugou_debug("   snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, snip_size);
@@ -179,7 +183,6 @@ size_t _decrypt_cbc(
 
     _fugou_debug("   csb->snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, csb->snip_size);
     _fugou_debug("csb->padding_size = %u, 0x%02x in _decrypt_cbc().\n", csb->padding_size, csb->padding_size);
-    _fugou_debug("last_octet = 0x%02x in _decrypt_cbc().\n", last_octet);
     _fugou_debug("d - d_ = %u in _encrypt_cbc()\n", (unt )(d - d_));
 
     return text_size;

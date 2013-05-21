@@ -23,6 +23,11 @@ enum _log_levels {
 
 #define BUFFER_SIZE 80
 
+typedef void (*code_function)(uchar *, uchar *, void *);
+/*
+void (*decrypt)(uchar *,uchar *,void *)
+*/
+
 size_t _encrypt_cbc(
     uchar *c,
     uchar *m,
@@ -30,7 +35,7 @@ size_t _encrypt_cbc(
     void *key,
     size_t text_size,
     size_t block_size,
-    void (*encrypt)(uchar *,uchar *,void *)
+    code_function encrypt
 );
 
 size_t _decrypt_cbc(
@@ -39,8 +44,10 @@ size_t _decrypt_cbc(
     void *key,
     size_t cipher_size,
     size_t block_size,
-    void (*decrypt)(uchar *,uchar *,void *)
+    code_function decrypt
 );
+
+void logger(char *log_name, int level, char *fmt, ...);
 
 /* copied camellia/pycamellia.c */
 typedef struct {

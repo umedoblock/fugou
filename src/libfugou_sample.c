@@ -13,20 +13,22 @@ int main(int argc, char *argv[])
     uchar *message, *cipher, *decipher;
 
     sha1sum_t sha1sum_, *sha1sum = &sha1sum_;
-    uchar digest[SHA1SUM_HASH_SIZE], hex[256];
+    uchar digest[SHA1SUM_HASH_SIZE];
+    char hex[256];
     long_size_t bit_length;
     FILE *fp = NULL, *f = stdout;
     int i, cmp;
     size_t text_size = BUFFER_SIZE + 11, mem_size;
     size_t encode_size, decode_size, cipher_size;
-    char *mem, *mem_;
+    uchar *mem, *mem_;
 
     set_logger(stderr);
+    set_logger_level(INFO);
 
     encode_size = CAMELLIA_NORMED_SIZE(text_size);
     cipher_size = CAMELLIA_BLOCK_SIZE + encode_size;
     mem_size = encode_size * 2 + cipher_size;
-    mem = (char *)malloc(mem_size);
+    mem = (uchar *)malloc(mem_size);
 
     if (mem == NULL) {
         fprintf(stderr, "cannot allocate mem_size %u\n", mem_size);
@@ -48,6 +50,7 @@ int main(int argc, char *argv[])
 
     bit_length = sha1(sha1sum, (uchar *)"abc", 3);
     sha1_get_hex(hex, sha1sum);
+    sha1_get_digest(digest, sha1sum);
     fprintf(f, "sha1(\"abc\") =\n");
     fprintf(f, "%s\n", hex);
     fprintf(f, "bit 長 = %lld bits\n", bit_length);

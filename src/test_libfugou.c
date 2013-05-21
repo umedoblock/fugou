@@ -27,7 +27,7 @@ void test_camellia_normed_size(void)
                  text_size < CAMELLIA_BLOCK_SIZE * 2) {
             success = (encode_size == 2 * CAMELLIA_BLOCK_SIZE);
         }
-        else if (text_size = CAMELLIA_BLOCK_SIZE * 2) {
+        else if (text_size >= CAMELLIA_BLOCK_SIZE * 2) {
             success = (encode_size == 3 * CAMELLIA_BLOCK_SIZE);
         }
         snprintf(msg, BUFFER_SIZE, "test_camellia_normed_size(), "
