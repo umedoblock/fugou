@@ -19,15 +19,7 @@ enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
 };
 
-#ifdef DEBUG
-    #ifndef __LOG__
-    #define __LOG__
-    extern FILE *_log;
-    extern int _log_level;
-    extern const char *_log_level_names[];
-    #endif /* #ifndef __LOG__ */
-#endif /*#ifdef DEBUG */
-
+void set_logger(FILE *log);
 void vlogger(char *log_name, int level, const char *fmt, va_list ap);
 
 #define EIGHT (8ULL)

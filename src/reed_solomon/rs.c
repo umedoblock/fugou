@@ -29,6 +29,12 @@ static reed_solomon_t *_rs_get_rs(uint bits);
 static int _rs_init_the_universe(big_bang_t *universe);
 static int _rs_init_gf_gfi(big_bang_t *universe);
 
+static void _rs_view_rs(reed_solomon_t *rs);
+static void _rs_view_encode(rs_encode_t *rse);
+static void _rs_view_decode(rs_decode_t *rsd);
+static void _rs_view_big_bang(void);
+static void _rs_view_matrix16(ushort *matrix, uint division);
+
 /*****************************************************************************/
 /* for logger and debug ******************************************************/
 /*****************************************************************************/
@@ -37,12 +43,9 @@ static void _rs_debug(const char *fmt, ...)
     #ifdef DEBUG
     va_list ap;
 
-    if (_log != NULL && DEBUG_ >= _log_level) {
-        fprintf(_log, "[rs] [DEBUG] ");
-        va_start(ap, fmt);
-        vfprintf(_log, fmt, ap);
-        va_end(ap);
-    }
+    va_start(ap, fmt);
+    vlogger("rs", DEBUG_, fmt, ap);
+    va_end(ap);
     #endif
 }
 
@@ -616,7 +619,7 @@ static int _rs_init_the_universe(big_bang_t *universe)
     char *mem;
 
     #ifdef DEBUG
-    _rs_set_logger(stderr);
+    set_logger(stderr);
     #endif
 
     universe = _rs_bright();

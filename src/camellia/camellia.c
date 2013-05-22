@@ -9,12 +9,9 @@ void _camellia_debug(const char *fmt, ...)
     #ifdef DEBUG
     va_list ap;
 
-    if (_log != NULL && DEBUG_ >= _log_level) {
-        fprintf(_log, "[%s] [%s] ", "camellia", _log_level_names[DEBUG_]);
-        va_start(ap, fmt);
-        vfprintf(_log, fmt, ap);
-        va_end(ap);
-    }
+    va_start(ap, fmt);
+    vlogger("camellia", DEBUG_, fmt, ap);
+    va_end(ap);
     #endif
 }
 
