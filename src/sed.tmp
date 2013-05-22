@@ -1,0 +1,15 @@
+s:par2:rs:g
+s:PAR2:RS:g
+s:rds:rs:g
+s:rs_matrix_t:rs_decode_t:g
+s:p2e:rse:g
+s:p2m:rsd:g
+s:P2E:RSE:g
+s:P2M:RSD:g
+s:_size_brother_t:_rs_size_brother_t:g
+s:sb:rsb:g
+s:_p2:_rse:g
+s:_rs_view_matrix:_rs_view_decode:g
+s:decode16:matrix16:g
+s:LIBRS:RS:g
+s:librs:rs:g
