@@ -158,8 +158,10 @@ extern "C" {
 #endif
 
 #include "../libfugou_base.h"
+#include "../sha/sha.h"
 
 #define RS_BUFFER_SIZE 80
+#define ALIGHNMENT_SIZE (sizeof(void *))
 
 typedef union {
     /* assign available memory address to ptr */
@@ -184,6 +186,23 @@ typedef struct {
 
     size_t allocate_size;
 } reed_solomon_t;
+
+typedef struct {
+    size_t remainder_size;
+    size_t padding_size;
+    size_t norm_size;
+    size_t slot_size;
+} _slot_size_brother_t;
+
+typedef struct {
+    /*
+    size_t slot_size;
+    */
+    uchar *slot;
+    FILE *fp;
+    sha1sum_t sha1sum[1];
+    _slot_size_brother_t ssb_;
+} rs_slot_t;
 
 typedef struct {
     reed_solomon_t *rs;
@@ -235,13 +254,16 @@ typedef struct {
 
 int rs_big_bang(void);
 int rs_ultimate_fate_of_the_universe(void);
-int rs_init_gf_gfi(big_bang_t *universe);
-int rs_set_rs(reed_solomon_t **rs, uint bits, uint division);
 
-reed_solomon_t *rs_get_reed_solomon(uint bits);
-int rs_init_rse(rs_encode_t *rse, uint bits, uint division, char *errmsg);
-void rs_view_rse(rs_encode_t *rse);
-void rs_view_big_bang(void);
+void rs_encode_slots(rs_slot_t *parity,
+                     rs_slot_t *norm,
+                     rs_encode_t *rse,
+                     uint symbol_num);
+void rs_decode_slots(rs_slot_t *recover,
+                     rs_slot_t *merged,
+                     rs_decode_t *rsd,
+                     uint symbol_num);
+
 #ifdef __cplusplus
 }
 #endif

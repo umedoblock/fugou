@@ -3,10 +3,38 @@
  */
 
 #include "rs.h"
-#define rs_ADD(a, b) (a ^ b)
+#define _rs_ADD(a, b) (a ^ b)
 
+/*****************************************************************************/
+/* prototype *****************************************************************/
+/*****************************************************************************/
+static big_bang_t *_rs_bright(void);
+static void _rs_encode16_slots(rs_slot_t *parity,
+                               rs_slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num);
+static void _rs_encode32_slots(rs_slot_t *parity,
+                               rs_slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num);
+static void _rs_decode16_slots(rs_slot_t *recover,
+                               rs_slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num);
+static void _rs_decode32_slots(rs_slot_t *recover,
+                               rs_slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num);
+static reed_solomon_t *_rs_get_rs(uint bits);
+static int _rs_init_the_universe(big_bang_t *universe);
+static int _rs_init_gf_gfi(big_bang_t *universe);
+
+/*****************************************************************************/
+/* for logger and debug ******************************************************/
+/*****************************************************************************/
 static void _rs_debug(const char *fmt, ...)
 {
+    #ifdef DEBUG
     va_list ap;
 
     if (_log != NULL && DEBUG_ >= _log_level) {
@@ -15,23 +43,8 @@ static void _rs_debug(const char *fmt, ...)
         vfprintf(_log, fmt, ap);
         va_end(ap);
     }
+    #endif
 }
-
-void rs_set_logger(FILE *fp)
-{
-    _log = fp;
-}
-
-static enum _log_levels {
-    DEBUG_, INFO, WARN, ERROR, FATAL, BUG
-};
-
-static const char *_log_level_names[] = {
-    "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "BUG"
-};
-
-static int _log_level = DEBUG_;
-static FILE *_log = NULL;
 
 static void rs_logger(const int level, const char *fmt, ...)
 {
@@ -42,16 +55,61 @@ static void rs_logger(const int level, const char *fmt, ...)
     fprintf(stderr, "(_log=%p != NULL && level=%d >= _log_level=%d)\n",
                       _log, level, _log_level);
                       */
-    if (_log != NULL && level >= _log_level) {
-        fprintf(_log, "[rs] [%s] ", _log_level_names[level]);
-        /*
-        n = vsnprintf(p, size, fmt, ap);
-        */
-        va_start(ap, fmt);
-        vfprintf(_log, fmt, ap);
-        va_end(ap);
-    }
+    va_start(ap, fmt);
+    vlogger("rs", level, fmt, ap);
+    va_end(ap);
 }
+
+/*****************************************************************************/
+/* API ***********************************************************************/
+/*****************************************************************************/
+
+/* rs.c **********************************************************************/
+int rs_big_bang(void)
+{
+    big_bang_t *universe = _rs_bright();
+
+    if (_rs_init_the_universe(universe) < 0)
+        return RS_MALLOC_ERROR;
+    _rs_init_gf_gfi(universe);
+
+    return RS_SCUCCESS;
+}
+
+int rs_ultimate_fate_of_the_universe(void)
+{
+    big_bang_t *universe = _rs_bright();
+    free(universe->mem);
+    return RS_SCUCCESS;
+}
+
+/* for slots *****************************************************************/
+
+void rs_encode_slots(rs_slot_t *parity,
+                     rs_slot_t *norm,
+                     rs_encode_t *rse,
+                     uint symbol_num)
+{
+    if (rse->rs->register_size == 2)
+        _rs_encode16_slots(parity, norm, rse, symbol_num);
+    else
+        _rs_encode32_slots(parity, norm, rse, symbol_num);
+}
+
+void rs_decode_slots(rs_slot_t *recover,
+                     rs_slot_t *merged,
+                     rs_decode_t *rsd,
+                     uint symbol_num)
+{
+    if (rsd->rs->register_size == 2)
+        _rs_decode16_slots(recover, merged, rsd, symbol_num);
+    else
+        _rs_decode32_slots(recover, merged, rsd, symbol_num);
+}
+
+/*****************************************************************************/
+/* private functions *********************************************************/
+/*****************************************************************************/
 
 static inline ushort _rs_mul16(reed_solomon_t *rs, ushort a, ushort b)
 {
@@ -107,6 +165,7 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
     return rs->gfi.u32[c + rs->gf_max];
 }
 
+#if 0
 static ushort _rs_pow16(reed_solomon_t *rs, ushort a, ushort x)
 {
     int i;
@@ -141,6 +200,7 @@ static uint _rs_pow32(reed_solomon_t *rs, uint a, uint x)
         c = _rs_mul32(rs, c, a);
     return c;
 }
+#endif
 
 static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
 {
@@ -187,8 +247,8 @@ static inline void _rs_mul_matrix_vector16(
     for (j=0;j<division;j++){
         ans = 0;
         for (i=0;i<division;i++){
-            tmp = _rs_mul16(rs, \
-                             matrix.u16[j * division + i], \
+            tmp = _rs_mul16(rs,
+                             matrix.u16[j * division + i],
                              vec.u16[i]);
             ans = _rs_ADD(ans, tmp);
             answer.u16[j] = ans;
@@ -198,8 +258,8 @@ static inline void _rs_mul_matrix_vector16(
 
 static inline void
 _rs_mul_matrix_vector32(
-                reed_solomon_t *rs, \
-                _ptr_t answer, _ptr_t matrix, _ptr_t vec, \
+                reed_solomon_t *rs,
+                _ptr_t answer, _ptr_t matrix, _ptr_t vec,
                 uint division)
 {
     register uint i, j;
@@ -209,8 +269,8 @@ _rs_mul_matrix_vector32(
         ans = 0;
         for (i=0;i<division;i++){
                           /* matrix.u32[index] */
-            tmp = _rs_mul32(rs, \
-                             matrix.u32[j * division + i], \
+            tmp = _rs_mul32(rs,
+                             matrix.u32[j * division + i],
                              vec.u32[i]);
             ans = _rs_ADD(ans, tmp);
             answer.u32[j] = ans;
@@ -224,7 +284,7 @@ static void _rs_make_e_matrix(_ptr_t e_matrix,
 {
     uint i;
 
-    memset(e_matrix.ptr, '\0', \
+    memset(e_matrix.ptr, '\0',
            division * division * rs->register_size);
 
     if (rs->register_size == 2) {
@@ -279,16 +339,16 @@ static int _rs_solve_inverse(_ptr_t inverse,
                     */
                     index_j = j * division * rs->register_size;
                     index_k = k * division * rs->register_size;
-                    memcpy(rsd->_row.ptr, mt.ptr + index_j, \
+                    memcpy(rsd->_row.ptr, mt.ptr + index_j,
                            rsd->_row_size);
-                    memcpy(mt.ptr + index_j, mt.ptr + index_k, \
+                    memcpy(mt.ptr + index_j, mt.ptr + index_k,
                            rsd->_row_size);
-                    memcpy(mt.ptr + index_k, rsd->_row.ptr, \
+                    memcpy(mt.ptr + index_k, rsd->_row.ptr,
                            rsd->_row_size);
                     memcpy(rsd->_row.ptr, im.ptr + index_j, rsd->_row_size);
-                    memcpy(im.ptr+ index_j, im.ptr + index_k, \
+                    memcpy(im.ptr+ index_j, im.ptr + index_k,
                            rsd->_row_size);
-                    memcpy(im.ptr+ index_k, rsd->_row.ptr, \
+                    memcpy(im.ptr+ index_k, rsd->_row.ptr,
                            rsd->_row_size);
                     break;
                 }
@@ -408,34 +468,27 @@ static int _rs_solve_inverse(_ptr_t inverse,
     return RS_SCUCCESS;
 }
 
-/* public functions */
-
-int rs_big_bang(void)
+int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
 {
-    big_bang_t *universe = _rs_bright();
+    reed_solomon_t *rs_;
 
-    if (_rs_init_the_universe(universe) < 0)
-        return RS_MALLOC_ERROR;
-    _rs_init_gf_gfi(universe);
+    rs_ = _rs_get_rs(bits);
+    if (rs_ == NULL) {
+        rs_logger(ERROR, "bits(=%u) must chose 4, 8, 16 or 24 for bits.\n",
+                            bits);
+        return RS_INVALID_BITS_ERROR;
+    }
+    if (division < 2 || division > rs_->gf_max) {
+        rs_logger(ERROR, "division(=%u) must be 2 <= division <= %u.\n",
+                            division, rs_->gf_max);
+        return RS_INVALID_DIVISION_ERROR;
+    }
+    *rs = rs_;
 
-    return RS_SCUCCESS;
-}
-
-int rs_ultimate_fate_of_the_universe(void)
-{
-    big_bang_t *universe = _rs_bright();
-    free(universe->mem);
     return RS_SCUCCESS;
 }
 
 /* private functions */
-
-static big_bang_t *_rs_bright(void)
-{
-    return &_dokkaan;
-}
-
-/* essence functions */
 
 static size_t _aligned_size(size_t size)
 {
@@ -446,8 +499,6 @@ static size_t _aligned_size(size_t size)
         padding_size = 0;
     return size + padding_size;
 }
-
-big_bang_t *_rs_bright(void);
 
 static big_bang_t _dokkaan = {
 /* allocate_size       mem */
@@ -460,7 +511,12 @@ static big_bang_t _dokkaan = {
     }
 };
 
-static void _rs_view_reed_solomon(reed_solomon_t *rs)
+static big_bang_t *_rs_bright(void)
+{
+    return &_dokkaan;
+}
+
+static void _rs_view_rs(reed_solomon_t *rs)
 {
     rs_logger(INFO, "rs = %p\n", rs);
     rs_logger(INFO, "             bits = %u\n", rs->bits);
@@ -514,11 +570,11 @@ static void _rs_view_big_bang(void)
     rs_logger(INFO, "               mem = %p\n", big_bang->mem);
     rs_logger(INFO, "\n");
     for (i=0;i<RS_GF_NUM;i++) {
-        _rs_view_reed_solomon(big_bang->rs + i);
+        _rs_view_rs(big_bang->rs + i);
     }
 }
 
-static reed_solomon_t *_rs_get_reed_solomon(uint bits)
+static reed_solomon_t *_rs_get_rs(uint bits)
 {
     int i;
     big_bang_t *universe = _rs_bright();
@@ -546,7 +602,7 @@ static int _rs_init_rs(reed_solomon_t *rs)
     rs->allocate_size = rs->gf_size * 2;
 
     #ifdef DEBUG
-    _rs_view_reed_solomon(rs);
+    _rs_view_rs(rs);
     #endif
 
     return 0;
@@ -623,7 +679,7 @@ static size_t _rs_calc_rse_memory_size(rs_encode_t *rse,
     rse->_row_size = division * rs->register_size;
     rse->_row_size = _aligned_size(rse->_row_size);
 
-    rse->allocate_size = rse->matrix_size + \
+    rse->allocate_size = rse->matrix_size +
                          rse->_row_size * 2;
     return rse->allocate_size;
 }
@@ -658,8 +714,8 @@ static size_t _rs_calc_rsd_memory_size(rs_decode_t *rsd,
     rsd->_column_size = rsd->division * rs->symbol_size;
     rsd->_column_size = _aligned_size(rsd->_column_size);
 
-    rsd->allocate_size = rsd->matrix_size * 2 + \
-                         rsd->_row_size * 2 + \
+    rsd->allocate_size = rsd->matrix_size * 2 +
+                         rsd->_row_size * 2 +
                          rsd->_column_size;
     return rsd->allocate_size;
 }
@@ -694,35 +750,15 @@ static void _rs_make_vandermonde(rs_encode_t *rse)
     if (rs->register_size == 2) {
         for(j=1;j<division;j++)
             for(i=0;i<division;i++)
-                vm.u16[j * division + i] = \
+                vm.u16[j * division + i] =
                     _rs_mul16(rs, vm.u16[(j-1) * division + i], i + 1);
     }
     else {
         for(j=1;j<division;j++)
             for(i=0;i<division;i++)
-                vm.u32[j * division + i] = \
+                vm.u32[j * division + i] =
                     _rs_mul32(rs, vm.u32[(j-1) * division + i], i + 1);
     }
-}
-
-static int _rs_set_rs(reed_solomon_t **rs, uint bits, uint division)
-{
-    reed_solomon_t *rs_;
-
-    rs_ = _rs_get_reed_solomon(bits);
-    if (rs_ == NULL) {
-        rs_logger(ERROR, "bits(=%u) must chose 4, 8, 16 or 24 for bits.\n",
-                            bits);
-        return RS_INVALID_BITS_ERROR;
-    }
-    if (division < 2 || division > rs_->gf_max) {
-        rs_logger(ERROR, "division(=%u) must be 2 <= division <= %u.\n",
-                            division, rs_->gf_max);
-        return RS_INVALID_DIVISION_ERROR;
-    }
-    *rs = rs_;
-
-    return RS_SCUCCESS;
 }
 
 static void _rs_view_matrix16(ushort *matrix, uint division)
@@ -743,3 +779,154 @@ static void _rs_view_matrix16(ushort *matrix, uint division)
         rs_logger(INFO, "\n");
     }
 }
+
+static void _rs_encode16_slots(rs_slot_t *parity,
+                               rs_slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num)
+{
+    reed_solomon_t *rs = rse->rs;
+    uint i, j, k;
+    size_t symbol_size = rs->symbol_size;
+    register uint division = rse->division;
+    uchar unum;
+    uint num;
+    _ptr_t vandermonde = rse->vandermonde;
+    _ptr_t _vector = rse->_row;
+    _ptr_t _parity = rse->_row2;
+
+    for (i=0;i<symbol_num;i++) {
+        for (j=0;j<division;j++) {
+            num = 0;
+            for (k=0;k<symbol_size;k++) {
+                num <<= 8;
+                num += norm[j].slot[i * symbol_size + k];
+            }
+            _vector.u16[j] = num;
+        }
+
+        _rs_mul_matrix_vector16(rs, _parity, vandermonde, _vector,
+                                division);
+
+        for (j=0;j<division;j++) {
+            num = _parity.u16[j];
+            for (k=0;k<symbol_size;k++) {
+                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
+                parity[j].slot[i * symbol_size + k] = unum;
+            }
+        }
+    }
+}
+
+static void _rs_encode32_slots(rs_slot_t *parity,
+                               rs_slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num)
+{
+    reed_solomon_t *rs = rse->rs;
+    uint i, j, k;
+    size_t symbol_size = rs->symbol_size;
+    register uint division = rse->division;
+    uchar unum;
+    uint num;
+    _ptr_t vandermonde = rse->vandermonde;
+    _ptr_t _vector = rse->_row;
+    _ptr_t _parity = rse->_row2;
+
+    for (i=0;i<symbol_num;i++) {
+        for (j=0;j<division;j++) {
+            num = 0;
+            for (k=0;k<symbol_size;k++) {
+                num <<= 8;
+                num += norm[j].slot[i * symbol_size + k];
+            }
+            _vector.u32[j] = num;
+        }
+
+        _rs_mul_matrix_vector32(rs, _parity, vandermonde, _vector,
+                                division);
+
+        for (j=0;j<division;j++) {
+            num = _parity.u32[j];
+            for (k=0;k<symbol_size;k++) {
+                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
+                parity[j].slot[i * symbol_size + k] = unum;
+            }
+        }
+    }
+}
+
+static void _rs_decode16_slots(rs_slot_t *recover,
+                               rs_slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num)
+{
+    reed_solomon_t *rs = rsd->rs;
+    uint i, j, k;
+    size_t symbol_size = rs->symbol_size;
+    register uint division = rsd->division;
+    uchar unum;
+    uint num;
+    _ptr_t _vector = rsd->_row;
+    _ptr_t _recover = rsd->_row2;
+
+    for (i=0;i<symbol_num;i++) {
+        for (j=0;j<division;j++) {
+            num = 0;
+            for (k=0;k<symbol_size;k++) {
+                num <<= 8;
+                num += merged[j].slot[i * symbol_size + k];
+            }
+            _vector.u16[j] = num;
+        }
+
+        _rs_mul_matrix_vector16(rs, _recover, rsd->inverse, _vector,
+                                division);
+
+        for (j=0;j<division;j++) {
+            num = _recover.u16[j];
+            for (k=0;k<symbol_size;k++) {
+                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
+                recover[j].slot[i * symbol_size + k] = unum;
+            }
+        }
+    }
+}
+
+static void _rs_decode32_slots(rs_slot_t *recover,
+                               rs_slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num)
+{
+    reed_solomon_t *rs = rsd->rs;
+    uint i, j, k;
+    size_t symbol_size = rs->symbol_size;
+    register uint division = rsd->division;
+    uchar unum;
+    uint num;
+    _ptr_t _vector = rsd->_row;
+    _ptr_t _recover = rsd->_row2;
+
+    for (i=0;i<symbol_num;i++) {
+        for (j=0;j<division;j++) {
+            num = 0;
+            for (k=0;k<symbol_size;k++) {
+                num <<= 8;
+                num += merged[j].slot[i * symbol_size + k];
+            }
+            _vector.u32[j] = num;
+        }
+
+        _rs_mul_matrix_vector32(rs, _recover, rsd->inverse, _vector,
+                                division);
+
+        for (j=0;j<division;j++) {
+            num = _recover.u32[j];
+            for (k=0;k<symbol_size;k++) {
+                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
+                recover[j].slot[i * symbol_size + k] = unum;
+            }
+        }
+    }
+}
+

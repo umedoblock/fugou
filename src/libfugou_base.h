@@ -28,6 +28,8 @@ enum _log_levels {
     #endif /* #ifndef __LOG__ */
 #endif /*#ifdef DEBUG */
 
+void vlogger(char *log_name, int level, const char *fmt, va_list ap);
+
 #define EIGHT (8ULL)
 #define OCTET EIGHT
 

@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include "rs.h"
+
 #define RSF_BREATH_SIZE 1024
 #define RSF_PATH_MAX_SIZE 256
 #define RSF_HASH_BIT_LENGTH SHA1SUM_HASH_BITS
@@ -14,7 +16,6 @@ extern "C" {
  */
 #define MODE_ENCODE 0
 #define MODE_RECOVERY 1
-#define ALIGHNMENT_SIZE (sizeof(void *))
 
 #define RSF_FP 1
 #define RSF_SS 2
@@ -28,29 +29,13 @@ extern "C" {
 #define RSF_FWRITE_ERROR (-13)
 #define RSF_P2F_ERROR (-14)
 
+/* #288: recover, restore, redo, back, ... を決めよう。*/
 /* file */
-typedef struct {
-    size_t remainder_size;
-    size_t padding_size;
-    size_t norm_size;
-    size_t slot_size;
-} _slot_size_brother_t;
-
-typedef struct {
-    /*
-    size_t slot_size;
-    */
-    uchar *slot;
-    FILE *fp;
-    sha1sum_t sha1sum[1];
-    _slot_size_brother_t ssb_;
-} _slot_t;
-
 typedef struct {
     char *mem;
 
     FILE *text;
-    FILE *redo;
+    FILE *restored;
     sha1sum_t sha1sum[1];
 
     size_t text_size;
@@ -66,7 +51,7 @@ typedef struct {
 
     rs_encode_t *rse;
     rs_decode_t *rsd;
-    _slot_t *norm, *parity, *merged, *recovery;
+    rs_slot_t *norm, *parity, *merged, *recover;
 
     size_t allocate_size;
     size_t hash_size;
@@ -77,11 +62,11 @@ typedef struct {
     size_t base_name_size;
 } rs_file_t;
 
-int rsf_encode_file(char *hashed_header,
-                             const char *path,
-                             uint bits,
-                             uint division);
-int rsf_decode_redo(char *redo_file_name, char *header);
+int rsf_encode_text(char *hashed_header,
+                    const char *path,
+                    uint bits,
+                    uint division);
+int rsf_decode_restored(char *restored_file_name, char *header);
 
 #ifdef __cplusplus
 }

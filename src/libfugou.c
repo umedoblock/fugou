@@ -34,6 +34,16 @@ void logger(char *log_name, int level, char *fmt, ...)
     }
 }
 
+void vlogger(char *log_name, int level, const char *fmt, va_list ap)
+{
+    /* like a vfprintf(), vsnprintf() */
+
+    if (_log != NULL && level >= _log_level) {
+        fprintf(_log, "[%s] [%s] ", log_name, _log_level_names[level]);
+        vfprintf(_log, fmt, ap);
+    }
+}
+
 void _fugou_debug(const char *fmt, ...)
 {
     #ifdef DEBUG

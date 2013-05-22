@@ -17,9 +17,11 @@ CFLAGS=-pg -Wall -O3
 
 lib_LTLIBRARIES = libfugou.la
 libfugou_la_SOURCES = \
-    libfugou.c \
     camellia/camellia.h camellia/camellia.c \
-    sha/sha.h sha/sha.c
+    reed_solomon/rs.h reed_solomon/rs.c \
+    sha/sha.h sha/sha.c \
+    libfugou.c
+#   reed_solomon/rsf.h reed_solomon/rsf.c \
 # libfugou_la_LIBADD = \
 #   sha/libsha.la \
 #   camellia/libcamellia.la
