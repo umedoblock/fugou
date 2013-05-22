@@ -10,6 +10,8 @@ extern "C" {
 #define RSF_PATH_MAX_SIZE 256
 #define RSF_HASH_BIT_LENGTH SHA1SUM_HASH_BITS
 #define RSF_HASH_SIZE SHA1SUM_HASH_SIZE
+#define RSF_BUFFER_SIZE 80
+
 /* please check your environment PATH_MAX_SIZE.
  * you may got disaster if it is smaller than RSF_PATH_MAX_SIZE.
  * however it's none of my business.
@@ -20,14 +22,15 @@ extern "C" {
 #define RSF_FP 1
 #define RSF_SS 2
 
-#define RSF_NORM_SIZE_ERROR (-10)
-#define RSF_LACK_OF_SLOTS_ERROR (-9)
-#define RSF_TEXT_SIZE_ERROR (-4)
-#define RSF_INVALID_PATH_ERROR (-7)
-#define RSF_INVALID_MODE_ERROR (-8)
-#define RSF_FREAD_ERROR (-12)
-#define RSF_FWRITE_ERROR (-13)
-#define RSF_P2F_ERROR (-14)
+#define RSF_SCUCCESS (0)
+#define RSF_INVALID_PATH_ERROR (-1)
+#define RSF_INVALID_MODE_ERROR (-2)
+#define RSF_LACK_OF_SLOTS_ERROR (-3)
+#define RSF_CONSTRUCT_ERROR (-4)
+#define RSF_NORM_SIZE_ERROR (-5)
+#define RSF_FREAD_ERROR (-6)
+#define RSF_FWRITE_ERROR (-7)
+#define RSF_DIVISION_ERROR (-8)
 
 /* #288: recover, restore, redo, back, ... を決めよう。*/
 /* file */

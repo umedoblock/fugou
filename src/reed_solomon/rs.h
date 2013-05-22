@@ -188,20 +188,17 @@ typedef struct {
 } reed_solomon_t;
 
 typedef struct {
-    size_t remainder_size;
-    size_t padding_size;
     size_t norm_size;
     size_t slot_size;
+    size_t remainder_size;
+    size_t padding_size;
 } _slot_size_brother_t;
 
 typedef struct {
-    /*
-    size_t slot_size;
-    */
     uchar *slot;
     FILE *fp;
     sha1sum_t sha1sum[1];
-    _slot_size_brother_t ssb_;
+    _slot_size_brother_t ssb[1];
 } rs_slot_t;
 
 typedef struct {

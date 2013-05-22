@@ -1,3 +1,67 @@
+#include "rsf.h"
+
+/* proto type ****************************************************************/
+static int _rsf_files_open(uint *len_available_slots,
+                           rs_file_t *rsf,
+                           const char *text_path,
+                           const char *mode);
+static int _rsf_make_decoder(rs_file_t **_rsf, uint bits, uint division);
+static int _rsf_good_night_rsf_for_recover(rs_file_t *rsf,
+                                           char *recovery_file_name);
+static int _calc_slot_size(_slot_size_brother_t *ssb,
+                            rs_file_t *rsf,
+                            size_t text_size,
+                            size_t breath_size,
+                            uint division,
+                            size_t symbol_size);
+static int _ishashstring(char *hashed_string, uint hash_len);
+static void _str2hash(uchar *hash, char *ss, uint len_hash);
+static int _rename_to_hashed_name(char *hashed_name, rs_file_t *rsf, int no);
+static int _rsf_recover_restored(rs_file_t *rsf,
+                                 uint symbols_in_slot,
+                                 uint symbols_in_buffer);
+static int _rsf_merge_slots(rs_decode_t *rsd,
+                            rs_file_t *rsf,
+                            rs_encode_t *rse);
+static uint _update_remained_symbols(uint remained_symbols,
+                                     uint *available_symbols);
+static void _rsf_files_close(rs_file_t *rsf, uint division);
+static char *_rsf_allocate(
+                   rs_file_t *rsf,
+                   rs_decode_t *rsd,
+                   rs_encode_t *rse,
+                   reed_solomon_t *rs,
+                   uint division);
+static size_t _rsf_init(rs_file_t *rsf,
+                        char *mem,
+                        rs_decode_t *rsd,
+                        rs_encode_t *rse,
+                        int mode);
+static void _rsf_view_rsf(rs_file_t *rsf);
+static uint _rsf_get_division(rs_file_t *rsf);
+
+/*****************************************************************************/
+/* for logger and debug ******************************************************/
+/*****************************************************************************/
+static void _rsf_debug(const char *fmt, ...)
+{
+    #ifdef DEBUG
+    va_list ap;
+
+    va_start(ap, fmt);
+    vlogger("rsf", DEBUG_, fmt, ap);
+    va_end(ap);
+    #endif
+}
+
+static void rsf_logger(const int level, const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    vlogger("rsf", level, fmt, ap);
+    va_end(ap);
+}
 
 /* parts functions */
 
@@ -6,8 +70,6 @@ static void _rsf_write_header_of_kernel(rs_file_t *rsf,
                                          int poly,
                                          uint division)
 {
-    _slot_size_brother_t *ssb = &rsf->ssb_;
-
     /* never change info */
     /* because it's kernel info */
     /* reed solomon info */
@@ -16,7 +78,7 @@ static void _rsf_write_header_of_kernel(rs_file_t *rsf,
     /* rs info */
     fprintf(rsf->header, "0x%x\n", division);
     /* about text size */
-    fprintf(rsf->header, "0x%x\n", ssb->text_size);
+    fprintf(rsf->header, "0x%x\n", rsf->text_size);
 
     /* separate, one empty line */
     fprintf(rsf->header, "\n");
@@ -33,7 +95,7 @@ static int _rsf_read_header_of_kernel(
     char ss[RSF_BUFFER_SIZE], *msg = NULL;
 
     /* fprintf(rsf->header, "0x%x\n", bits); */
-    _fgets_(ss, RSF_BUFFER_SIZE, header);
+    sfgets_(ss, RSF_BUFFER_SIZE, header);
     sscanf(ss, "0x%x", bits);
     /* fprintf(rsf->header, "0x%x\n", poly); */
     _fgets_(ss, RSF_BUFFER_SIZE, header);
@@ -158,7 +220,7 @@ rs_file_t *rsf_construct(uint bits, uint division, int build_type)
     _rs_debug("mem = %p\n", mem);
 
     _rs_view_rse(rse);
-    _rsf_view_file(rsf);
+    _rsf_view_rsf(rsf);
     _rs_debug("mem - mem_ is %zu\n", mem - mem_);
     #endif
 
@@ -167,7 +229,7 @@ rs_file_t *rsf_construct(uint bits, uint division, int build_type)
     if (rse != NULL)
         _rs_view_rse(rse);
     if (rsf != NULL)
-        _rsf_view_file(rsf);
+        _rsf_view_rsf(rsf);
 
     _rs_make_vandermonde(rse);
 
@@ -263,23 +325,12 @@ int rsf_decode_restored(char *restored_file_name, char *header)
 err_recover:
 err_fwrite:
 err_fread:
-    rsf_good_night_rsf_for_recover(rsf, restored_file_name);
+    _rsf_good_night_rsf_for_recover(rsf, restored_file_name);
 
     return ret;
 }
 
-static void _rsf_view_size_brother(_rsf_slot_size_brother_t *rssb)
-{
-    rs_logger(INFO, "                rssb = %p\n", rssb);
-    rs_logger(INFO, "         text_size = %zu\n", rssb->text_size);
-    rs_logger(INFO, "         remainder_size = %zu\n", rssb->remainder_size);
-    rs_logger(INFO, "      padding_size = %zu\n", rssb->padding_size);
-    rs_logger(INFO, "       norm_size = %zu\n", rssb->norm_size);
-    rs_logger(INFO, "         slot_size = %zu\n", rssb->slot_size);
-    rs_logger(INFO, "    symbols_in_slot = %u\n", rssb->symbols_in_slot);
-}
-
-int rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header)
+int rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header_path)
 {
     char text_path[RSF_BUFFER_SIZE];
     char header_hashed_name[RSF_BUFFER_SIZE];
@@ -294,23 +345,20 @@ int rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header)
 
     _rs_debug("in rsf_get_up_rsf_for_restored()\n");
 
-    /* _rs_debug("header ="%s\"\n", header); */
-    header = fopen(header, "r");
+    header = fopen(header_path, "r");
+    _rs_debug("fopen(header_path=\"%s\", \"r\")=%p\n", header_path, header);
     if (header == NULL) {
         rs_logger(ERROR, "rs_get_up_rsf_for_recover() failed.\n");
-        rs_logger(ERROR, "cannot open header file"%s\"\n", header);
         /* tekito */
         ret = -203;
         goto err_no_resource;
     }
-    _rs_debug("opened header file"%s\"\n", header);
 
     ret = _rsf_read_header_of_kernel(header,
                            &bits, &poly, &division, &text_size);
     if (ret < 0) {
         rs_logger(ERROR, "rs_get_up_rsf_for_recover() failed.\n");
-        rs_logger(ERROR, "ret = %d, header = %p\n",
-                            ret, header);
+        rs_logger(ERROR, "ret = %d, header = %p\n", ret, header);
         rs_logger(ERROR, "bits=%u, poly=%u, division=%u, "
                            "text_size=%zu\n\n",
                             bits, poly, division, text_size);
@@ -322,8 +370,7 @@ int rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header)
     ret = _rsf_make_decoder(_rsf, bits, division);
     if (ret < 0) {
         rs_logger(ERROR, "rs_get_up_rsf_for_recover() failed.\n");
-        rs_logger(ERROR, "ret = %d, header = %p\n",
-                            ret, header);
+        rs_logger(ERROR, "ret = %d, header = %p\n", ret, header);
         rs_logger(ERROR, "cannot make recoveryer. "
                            "bits=%u, poly=%u, division=%u, "
                            "text_size=%zu\n",
@@ -369,6 +416,7 @@ int rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header)
         goto err_after_rsf_file_open;
     }
     ret = _calc_slot_size(&rsf->ssb_,
+                           rsf,
                            text_size,
                            rsf->breath_size,
                            rsd->division,
@@ -378,31 +426,35 @@ int rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header)
 
     return RSF_SCUCCESS;
 
-    _rs_debug("\n\n");
-
     err_after_rsf_file_open:
         _rsf_files_close(rsf, rsd->division);
     err_after_open_header:
-        fclose(header);
+        fclose(rsf->header);
+        rsf->header = NULL;
+        _rs_debug("fclose(header=%p) header_path=\"%s\"\n",
+                          header,  header_path);
     err_no_resource:
+    rs_logger(ERROR, "header_path=\"%s\"\n", header_path);
+    _rs_debug("\n\n");
 
     return ret;
 }
 
-int rsf_good_night_rsf_for_recover(rs_file_t *rsf, char *recovery_file_name)
+static int _rsf_good_night_rsf_for_recover(rs_file_t *rsf,
+                                           char *recovery_file_name)
 {
     rs_decode_t *rsd = rsf->rsd;
 
     fclose(rsf->header);
     _rsf_files_close(rsf, rsd->division);
     _rsf_free(rsf);
-    _rs_debug("in rsf_good_night_rsf_for_recover()\n");
+    _rs_debug("in _rsf_good_night_rsf_for_recover()\n");
     _rs_debug("closed recovery_file"%s\"\n\n", recovery_file_name);
 
     return RSF_SCUCCESS;
 }
 
-static uint _rsf_get_rsf_division(rs_file_t *rsf)
+static uint _rsf_get_division(rs_file_t *rsf)
 {
     uint division = 0;
 
@@ -413,13 +465,13 @@ static uint _rsf_get_rsf_division(rs_file_t *rsf)
     else {
         rs_logger(ERROR,  "_rsf_get_rsf_division() failed.\n"
                             "cause of that rsd and rse are NULL pointer.\n\n");
-        return RSF_RSD_AND_RSE_SET_ERROR;
+        return RSF_DIVISION_ERROR;
     }
 
     return division;
 }
 
-static void _rsf_view_file(rs_file_t *rsf)
+static void _rsf_view_rsf(rs_file_t *rsf)
 {
     uint i, division = 0;
     char ss[RSF_BUFFER_SIZE];
@@ -443,7 +495,7 @@ static void _rsf_view_file(rs_file_t *rsf)
     rs_logger(INFO, "         temp_tail ="%s\"(=%p)\n",
                                     rsf->temp_tail, rsf->temp_tail);
     rs_logger(INFO, "       header = %p\n", rsf->header);
-    _rsf_view_size_brother(&rsf->ssb_);
+    _view_slot_size_brother(&rsf->norm[0].ssb);
     rs_logger(INFO, "              norm = %p\n", rsf->norm);
     for (i=0;i<division;i++) {
         rs_logger(INFO, "    norm[%5d].fp = %p\n", i, rsf->norm[i].fp);
@@ -509,10 +561,10 @@ static size_t _rsf_calc_rsf_memory_size(rs_file_t *rsf, uint division)
 }
 
 static size_t _rsf_init(rs_file_t *rsf,
-                             char *mem,
-                             rs_decode_t *rsd,
-                             rs_encode_t *rse,
-                             int mode)
+                        char *mem,
+                        rs_decode_t *rsd,
+                        rs_encode_t *rse,
+                        int mode)
 {
     uint i, division = 0;
     char *mem_ = mem;
@@ -620,7 +672,7 @@ static int _rsf_make_encoder(rs_file_t **_rsf, uint bits, uint division)
     rsf = rsf_construct(bits, division, MODE_ENCODE);
     if (rsf == NULL) {
         rs_logger(ERROR, "rsf_construct(bits=%u, division=%u, build_type=MODE_ENCODE) failed.\n", bits, division);
-        return RSF_P2F_ERROR;
+        return RSF_CONSTRUCT_ERROR;
     }
     *_rsf = rsf;
     return RSF_SCUCCESS;
@@ -668,6 +720,7 @@ static int _rsf_get_index_of_slots(rs_slot_t *hunter,
     return index;
 }
 
+#if 0
 static int _rsf_merge_slots(rs_decode_t *rsd,
                             rs_file_t *rsf,
                             rs_encode_t *rse)
@@ -697,6 +750,7 @@ static int _rsf_merge_slots(rs_decode_t *rsd,
 
    return RSF_SCUCCESS;
 }
+#endif
 
 static void _to_hashed_name(char *ss, sha1sum_t *sha1sum)
 {
@@ -722,7 +776,7 @@ static char *_make_tmpnam(rs_file_t *rsf)
 {
     char *p = NULL;
 
-    tmpnam(rsf->temp_path);
+    p = tmpnam(rsf->temp_path);
     /*
     tempnam();
     mkstemp();
@@ -862,7 +916,7 @@ static int _rsf_files_open(uint *len_available_slots,
 
     if (rsf->mode == MODE_ENCODE) {
         sha1_as_file(rsf->sha1sum, rsf->text);
-        ssb->text_size = rsf->sha1sum->message_size;
+        rsf->text_size = rsf->sha1sum->message_size;
         /* need to move file top position for making norm slot. */
         rewind(rsf->text);
     }
@@ -942,7 +996,7 @@ static size_t _fread_from_slots(rs_slot_t *rss,
     return r;
 }
 
-static size_t _fwrite_to_slots(rs_file_t *rss,
+static size_t _fwrite_to_slots(rs_slot_t *rss,
                                size_t symbol_size,
                                uint available_symbols,
                                uint division)
@@ -1173,20 +1227,24 @@ static int rsf_encode_text(char *hashed_header,
 
     rse = rsf->rse;
     rs = rse->rs;
-    ssb = &rsf->ssb_;
 
     ret = _rsf_files_open(&len_available_slots, rsf, path, "rb");
     if (ret < 0) {
         _rsf_free(rsf);
         return ret;
     }
-    ret = _calc_slot_size(ssb,
-                          ssb->text_size,
-                          rsf->breath_size,
-                          rse->division,
-                          rs->symbol_size);
-    if (ret < 0){
-        return ret;
+
+    ret = _calc_symbols(rsf, breath_size, slots_size, symbol_size);
+    for (division=0;division < rsf->division;division++) {
+        ssb = &rsf->norm[division].ssb_;
+        ret = _calc_slot_size(ssb,
+                              text_size,
+                              breath_size,
+                              rse->division,
+                              rs->symbol_size);
+        if (ret < 0) {
+            return ret;
+        }
     }
 
     rsf->header = _fopen_rse(rsf, "wb", 2 * rse->division);
@@ -1198,7 +1256,7 @@ static int rsf_encode_text(char *hashed_header,
      * symbols_in_beffer = also from 1024 to 4096 octets.
      * then, symbols_in_slot >>>>>>> symbols_in_buffer
      */
-    symbols_in_slot = ssb->symbols_in_slot;
+    symbols_in_slot = rsf->symbols_in_slot;
     symbols_in_buffer = rsf->breath_size / rs->symbol_size;
 
     ret = _rsf_split_text(rsf, rs->symbol_size, rse->division,
@@ -1217,13 +1275,20 @@ static int rsf_encode_text(char *hashed_header,
     }
     remained_symbols = symbols_in_slot;
     while (remained_symbols) {
-        _fread_from_norm_fp(rsf, rs->symbol_size, available_symbols,
-                           rse->division);
-        _rs_encode_slots(rsf, rse, available_symbols);
-        _fwrite_to_parity_fp(rsf, rs->symbol_size, available_symbols,
-                            rse->division);
-        remained_symbols = _update_remained_symbols(
-                                remained_symbols, &available_symbols);
+        r = _fread_from_slots(rsf->norm,
+                              rs->symbol_size,
+                              available_symbols,
+                              rse->division);
+        rs_encode_slots(rsf->parity,
+                        rsf->norm,
+                        rse,
+                        available_symbols);
+        w = _fwrite_to_slots(rsf->parity,
+                             rs->symbol_size,
+                             available_symbols,
+                             rse->division);
+        remained_symbols = _update_remained_symbols(remained_symbols,
+                                                   &available_symbols);
     }
 
     _rsf_files_close(rsf, rse->division);
@@ -1307,18 +1372,11 @@ static int _rsf_recover_restored(rs_file_t *rsf,
 
 int _calc_slot_size(_slot_size_brother_t *ssb,
                      size_t text_size,
-                     size_t breath_size,
                      uint division,
                      size_t symbol_size)
 {
     size_t _column_size = division * symbol_size;
-    /*
-    if not 1 <= text_size <= TEXT_SIZE_MAX:
-        ValueError('text_size must be 1 <= text_size <= 2 ** 64 - 1')
-    return RSF_TEXT_SIZE_ERROR;
-    */
 
-    ssb->text_size = text_size;
     ssb->remainder_size = text_size % _column_size;
     if (ssb->remainder_size == 0)
         ssb->padding_size = 0;
@@ -1328,30 +1386,46 @@ int _calc_slot_size(_slot_size_brother_t *ssb,
     ssb->norm_size = text_size + ssb->padding_size;
     if (ssb->norm_size < text_size) {
         rs_logger(ERROR,
-                "_calc_slot_size() failed.\n"
-                "overflowed norm_size(=%u) for "
-                "adding text_size(=%u) and padding_size(=%u)\n",
-                 ssb->norm_size, text_size, ssb->padding_size);
+                 "_calc_slot_size() failed.\n"
+                 "overflowed norm_size(=%u) for "
+                 "adding text_size(=%u) and padding_size(=%u)\n",
+                  ssb->norm_size, text_size, ssb->padding_size);
         rs_logger(ERROR, "\n");
         return RSF_NORM_SIZE_ERROR;
     }
 
     ssb->slot_size = ssb->norm_size / division;
-    ssb->symbols_in_slot = ssb->slot_size / symbol_size;
-    ssb->symbols_in_buffer = breath_size / symbol_size;
 
     _rs_debug("in _calc_slot_size()\n");
+    _rs_debug("text_size = %u\n", text_size);
     _rs_debug("division = %u\n", division);
     _rs_debug("symbol_size = %u\n", symbol_size);
     _rs_debug("_column_size = %u\n", _column_size);
-    _rs_debug("text_size = %u\n", ssb->text_size);
-    _rs_debug("breath_size = %u\n", breath_size);
+
     _rs_debug("remainder_size = %u\n", ssb->remainder_size);
     _rs_debug("padding_size = %u\n", ssb->padding_size);
     _rs_debug("norm_size = %u\n\n", ssb->norm_size);
     _rs_debug("slot_size = %u\n", ssb->slot_size);
-    _rs_debug("symbols_in_slot = %u\n", ssb->symbols_in_slot);
-    _rs_debug("symbols_in_buffer = %u\n", ssb->symbols_in_buffer);
+    _rs_debug("\n");
+
+    return RSF_SCUCCESS;
+}
+
+int _calc_symbols(rs_file_t *rsf,
+                  size_t breath_size,
+                  size_t slot_size,
+                  size_t symbol_size)
+{
+    rsf->symbols_in_slot = slot_size / symbol_size;
+    rsf->symbols_in_buffer = breath_size / symbol_size;
+
+    _rs_debug("in _calc_symbols()\n");
+    _rs_debug("slot_size = %u\n", ssb->slot_size);
+    _rs_debug("breath_size = %u\n", breath_size);
+    _rs_debug("symbol_size = %u\n", symbol_size);
+    _rs_debug("symbols_in_slot = %u\n", rsf->symbols_in_slot);
+    _rs_debug("symbols_in_buffer = %u\n", rsf->symbols_in_buffer);
+    _rs_debug("\n");
 
     return RSF_SCUCCESS;
 }
@@ -1367,7 +1441,7 @@ static int _rename_to_hashed_name(char *hashed_name,
     fp = _fopen_rse(rsf, "rb", no);
     if (fp == NULL) {
         rs_logger(ERROR,
-                   "_fopen_rse(%p,"rb\", %d) = %p "
+                   "_fopen_rse(%p, \"rb\", %d) = %p "
                    "in _rename_to_hashed_name()\n",
                     rsf, no, fp);
         return -1;
@@ -1377,13 +1451,13 @@ static int _rename_to_hashed_name(char *hashed_name,
     _to_hashed_name(hashed_name, sha1sum);
     ret = rename(rsf->temp_path, hashed_name);
     if (ret < 0) {
-        rs_logger(ERROR, "rename(\"%s\","%s\") failed.\n\n",
+        rs_logger(ERROR, "rename(\"%s\", \"%s\") failed.\n\n",
                             rsf->temp_path, hashed_name);
         perror(NULL);
     }
     else {
         _rs_debug("in _rename_to_hashed_name()\n");
-        _rs_debug("rename(\"%s\","%s\")\n\n", rsf->temp_path, hashed_name);
+        _rs_debug("rename(\"%s\", \"%s\")\n\n", rsf->temp_path, hashed_name);
     }
     return RSF_SCUCCESS;
 }
@@ -1403,6 +1477,7 @@ int _calc_log10(int n)
     return digits;
 }
 
+#if 0
 static int _tohex(int ch)
 {
     if (ch >= '0' && ch <= '9')
@@ -1422,6 +1497,7 @@ static void _str2hash(uchar *hash, char *ss, uint len_hash)
         hash[i] = (_tohex(ss[2*i]) << 4) + _tohex(ss[2*i+1]);
     }
 }
+#endif
 
 static int _ishashstring(char *hashed_string, uint hash_len)
 {

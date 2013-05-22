@@ -522,23 +522,23 @@ static big_bang_t *_rs_bright(void)
 static void _rs_view_rs(reed_solomon_t *rs)
 {
     rs_logger(INFO, "rs = %p\n", rs);
-    rs_logger(INFO, "             bits = %u\n", rs->bits);
-    rs_logger(INFO, "             poly = %u\n", rs->poly);
-    rs_logger(INFO, "           symbol_size = %u\n", rs->symbol_size);
-    rs_logger(INFO, "        register_size = %zu\n", rs->register_size);
-    rs_logger(INFO, "                w = %u\n", rs->w);
-    rs_logger(INFO, "           gf_max = %u\n", rs->gf_max);
-    rs_logger(INFO, "          gf_size = %zu\n", rs->gf_size);
-    rs_logger(INFO, "               gf = %p\n", rs->gf.ptr);
-    rs_logger(INFO, "              gfi = %p\n", rs->gfi.ptr);
+    rs_logger(INFO, "              bits = %u\n", rs->bits);
+    rs_logger(INFO, "              poly = %u\n", rs->poly);
+    rs_logger(INFO, "       symbol_size = %u\n", rs->symbol_size);
+    rs_logger(INFO, "     register_size = %zu\n", rs->register_size);
+    rs_logger(INFO, "                 w = %u\n", rs->w);
+    rs_logger(INFO, "            gf_max = %u\n", rs->gf_max);
+    rs_logger(INFO, "           gf_size = %zu\n", rs->gf_size);
+    rs_logger(INFO, "                gf = %p\n", rs->gf.ptr);
+    rs_logger(INFO, "               gfi = %p\n", rs->gfi.ptr);
     rs_logger(INFO, "\n");
 }
 
 static void _rs_view_encode(rs_encode_t *rse)
 {
     rs_logger(INFO, "rse = %p\n", rse);
-    rs_logger(INFO, "               rs = %p\n", rse->rs);
-    rs_logger(INFO, "        division = %u\n", rse->division);
+    rs_logger(INFO, "                rs = %p\n", rse->rs);
+    rs_logger(INFO, "          division = %u\n", rse->division);
     rs_logger(INFO, "       vandermonde = %p\n", rse->vandermonde.ptr);
     rs_logger(INFO, "              _row = %p\n", rse->_row.ptr);
     rs_logger(INFO, "             _row2 = %p\n", rse->_row2.ptr);
@@ -551,8 +551,8 @@ static void _rs_view_encode(rs_encode_t *rse)
 static void _rs_view_decode(rs_decode_t *rsd)
 {
     rs_logger(INFO, "rsd = %p\n", rsd);
-    rs_logger(INFO, "               rs = %p\n", rsd->rs);
-    rs_logger(INFO, "        division = %u\n", rsd->division);
+    rs_logger(INFO, "                rs = %p\n", rsd->rs);
+    rs_logger(INFO, "          division = %u\n", rsd->division);
     rs_logger(INFO, "     allocate_size = %zu\n", rsd->allocate_size);
     rs_logger(INFO, "       matrix_size = %zu\n", rsd->matrix_size);
     rs_logger(INFO, "         _row_size = %zu\n", rsd->_row_size);
@@ -565,15 +565,36 @@ static void _rs_view_decode(rs_decode_t *rsd)
     rs_logger(INFO, "\n");
 }
 
+static void _view_slot_size_brother(_slot_size_brother_t *ssb)
+{
+    rs_logger(INFO, "ssb = %p\n", ssb);
+    rs_logger(INFO, "    remainder_size = %zu\n", ssb->remainder_size);
+    rs_logger(INFO, "      padding_size = %zu\n", ssb->padding_size);
+    rs_logger(INFO, "         norm_size = %zu\n", ssb->norm_size);
+    rs_logger(INFO, "         slot_size = %zu\n", ssb->slot_size);
+    rs_logger(INFO, "\n");
+}
+
+static void _rs_view_slot(rs_slot_t *rss)
+{
+    rs_logger(INFO, "rss = %p\n", rss);
+    rs_logger(INFO, "              slot = %p\n", rss->slot);
+    rs_logger(INFO, "                fp = %p\n", rss->fp);
+    rs_logger(INFO, "           sha1sum = %p\n", rss->sha1sum);
+    rs_logger(INFO, "               ssb = %p\n", rss->ssb);
+    _view_slot_size_brother(rss->ssb);
+}
+
 static void _rs_view_big_bang(void)
 {
-    big_bang_t *big_bang = _rs_bright();
+    big_bang_t *bb = _rs_bright();
     int i;
-    rs_logger(INFO, "     allocate_size = %zu\n", big_bang->allocate_size);
-    rs_logger(INFO, "               mem = %p\n", big_bang->mem);
+    rs_logger(INFO, "big_bang = %p\n", bb);
+    rs_logger(INFO, "     allocate_size = %zu\n", bb->allocate_size);
+    rs_logger(INFO, "               mem = %p\n", bb->mem);
     rs_logger(INFO, "\n");
     for (i=0;i<RS_GF_NUM;i++) {
-        _rs_view_rs(big_bang->rs + i);
+        _rs_view_rs(bb->rs + i);
     }
 }
 

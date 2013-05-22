@@ -18,10 +18,10 @@ AM_CFLAGS=-pg -Wall -O3 -DDEBUG
 lib_LTLIBRARIES = libfugou.la
 libfugou_la_SOURCES = \
     camellia/camellia.h camellia/camellia.c \
-    reed_solomon/rs.h reed_solomon/rs.c \
     sha/sha.h sha/sha.c \
+    reed_solomon/rs.h reed_solomon/rs.c \
+    reed_solomon/rsf.h reed_solomon/rsf.c \
     libfugou.c
-#   reed_solomon/rsf.h reed_solomon/rsf.c \
 # libfugou_la_LIBADD = \
 #   sha/libsha.la \
 #   camellia/libcamellia.la
