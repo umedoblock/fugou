@@ -6,36 +6,6 @@
 #define _rs_ADD(a, b) (a ^ b)
 
 /*****************************************************************************/
-/* prototype *****************************************************************/
-/*****************************************************************************/
-static big_bang_t *_rs_bright(void);
-static void _rs_encode16_slots(rs_slot_t *parity,
-                               rs_slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num);
-static void _rs_encode32_slots(rs_slot_t *parity,
-                               rs_slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num);
-static void _rs_decode16_slots(rs_slot_t *recover,
-                               rs_slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num);
-static void _rs_decode32_slots(rs_slot_t *recover,
-                               rs_slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num);
-static reed_solomon_t *_rs_get_rs(uint bits);
-static int _rs_init_the_universe(big_bang_t *universe);
-static int _rs_init_gf_gfi(big_bang_t *universe);
-
-static void _rs_view_rs(reed_solomon_t *rs);
-static void _rs_view_encode(rs_encode_t *rse);
-static void _rs_view_decode(rs_decode_t *rsd);
-static void _rs_view_big_bang(void);
-static void _rs_view_matrix16(ushort *matrix, uint division);
-
-/*****************************************************************************/
 /* for logger and debug ******************************************************/
 /*****************************************************************************/
 static void _rs_debug(const char *fmt, ...)
@@ -86,10 +56,41 @@ int rs_ultimate_fate_of_the_universe(void)
     return RS_SCUCCESS;
 }
 
+void _rs_view_rse(rs_encode_t *rse)
+{
+    rs_logger(INFO, "rse = %p\n", rse);
+    rs_logger(INFO, "                rs = %p\n", rse->rs);
+    rs_logger(INFO, "          division = %u\n", rse->division);
+    rs_logger(INFO, "       vandermonde = %p\n", rse->vandermonde.ptr);
+    rs_logger(INFO, "              _row = %p\n", rse->_row.ptr);
+    rs_logger(INFO, "             _row2 = %p\n", rse->_row2.ptr);
+    rs_logger(INFO, "     allocate_size = %zu\n", rse->allocate_size);
+    rs_logger(INFO, "         _row_size = %zu\n", rse->_row_size);
+    rs_logger(INFO, "       matrix_size = %zu\n", rse->matrix_size);
+    rs_logger(INFO, "\n");
+}
+
+void _rs_view_rsd(rs_decode_t *rsd)
+{
+    rs_logger(INFO, "rsd = %p\n", rsd);
+    rs_logger(INFO, "                rs = %p\n", rsd->rs);
+    rs_logger(INFO, "          division = %u\n", rsd->division);
+    rs_logger(INFO, "     allocate_size = %zu\n", rsd->allocate_size);
+    rs_logger(INFO, "       matrix_size = %zu\n", rsd->matrix_size);
+    rs_logger(INFO, "         _row_size = %zu\n", rsd->_row_size);
+    rs_logger(INFO, "      _column_size = %zu\n", rsd->_column_size);
+    rs_logger(INFO, "            merged = %p\n", rsd->merged.ptr);
+    rs_logger(INFO, "           inverse = %p\n", rsd->inverse.ptr);
+    rs_logger(INFO, "              _row = %p\n", rsd->_row.ptr);
+    rs_logger(INFO, "             _row2 = %p\n", rsd->_row2.ptr);
+    rs_logger(INFO, "           _column = %p\n", rsd->_column.ptr);
+    rs_logger(INFO, "\n");
+}
+
 /* for slots *****************************************************************/
 
-void rs_encode_slots(rs_slot_t *parity,
-                     rs_slot_t *norm,
+void rs_encode_slots(slot_t *parity,
+                     slot_t *norm,
                      rs_encode_t *rse,
                      uint symbol_num)
 {
@@ -99,8 +100,8 @@ void rs_encode_slots(rs_slot_t *parity,
         _rs_encode32_slots(parity, norm, rse, symbol_num);
 }
 
-void rs_decode_slots(rs_slot_t *recover,
-                     rs_slot_t *merged,
+void rs_decode_slots(slot_t *recover,
+                     slot_t *merged,
                      rs_decode_t *rsd,
                      uint symbol_num)
 {
@@ -471,7 +472,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
     return RS_SCUCCESS;
 }
 
-int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
+static int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
 {
     reed_solomon_t *rs_;
 
@@ -491,9 +492,7 @@ int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
     return RS_SCUCCESS;
 }
 
-/* private functions */
-
-static size_t _aligned_size(size_t size)
+size_t aligned_size(size_t size)
 {
     size_t padding_size, mod;
     mod = size % ALIGHNMENT_SIZE;
@@ -532,57 +531,6 @@ static void _rs_view_rs(reed_solomon_t *rs)
     rs_logger(INFO, "                gf = %p\n", rs->gf.ptr);
     rs_logger(INFO, "               gfi = %p\n", rs->gfi.ptr);
     rs_logger(INFO, "\n");
-}
-
-static void _rs_view_encode(rs_encode_t *rse)
-{
-    rs_logger(INFO, "rse = %p\n", rse);
-    rs_logger(INFO, "                rs = %p\n", rse->rs);
-    rs_logger(INFO, "          division = %u\n", rse->division);
-    rs_logger(INFO, "       vandermonde = %p\n", rse->vandermonde.ptr);
-    rs_logger(INFO, "              _row = %p\n", rse->_row.ptr);
-    rs_logger(INFO, "             _row2 = %p\n", rse->_row2.ptr);
-    rs_logger(INFO, "     allocate_size = %zu\n", rse->allocate_size);
-    rs_logger(INFO, "         _row_size = %zu\n", rse->_row_size);
-    rs_logger(INFO, "       matrix_size = %zu\n", rse->matrix_size);
-    rs_logger(INFO, "\n");
-}
-
-static void _rs_view_decode(rs_decode_t *rsd)
-{
-    rs_logger(INFO, "rsd = %p\n", rsd);
-    rs_logger(INFO, "                rs = %p\n", rsd->rs);
-    rs_logger(INFO, "          division = %u\n", rsd->division);
-    rs_logger(INFO, "     allocate_size = %zu\n", rsd->allocate_size);
-    rs_logger(INFO, "       matrix_size = %zu\n", rsd->matrix_size);
-    rs_logger(INFO, "         _row_size = %zu\n", rsd->_row_size);
-    rs_logger(INFO, "      _column_size = %zu\n", rsd->_column_size);
-    rs_logger(INFO, "            merged = %p\n", rsd->merged.ptr);
-    rs_logger(INFO, "           inverse = %p\n", rsd->inverse.ptr);
-    rs_logger(INFO, "              _row = %p\n", rsd->_row.ptr);
-    rs_logger(INFO, "             _row2 = %p\n", rsd->_row2.ptr);
-    rs_logger(INFO, "           _column = %p\n", rsd->_column.ptr);
-    rs_logger(INFO, "\n");
-}
-
-static void _view_slot_size_brother(_slot_size_brother_t *ssb)
-{
-    rs_logger(INFO, "ssb = %p\n", ssb);
-    rs_logger(INFO, "    remainder_size = %zu\n", ssb->remainder_size);
-    rs_logger(INFO, "      padding_size = %zu\n", ssb->padding_size);
-    rs_logger(INFO, "         norm_size = %zu\n", ssb->norm_size);
-    rs_logger(INFO, "         slot_size = %zu\n", ssb->slot_size);
-    rs_logger(INFO, "\n");
-}
-
-static void _rs_view_slot(rs_slot_t *rss)
-{
-    rs_logger(INFO, "rss = %p\n", rss);
-    rs_logger(INFO, "              slot = %p\n", rss->slot);
-    rs_logger(INFO, "                fp = %p\n", rss->fp);
-    rs_logger(INFO, "           sha1sum = %p\n", rss->sha1sum);
-    rs_logger(INFO, "               ssb = %p\n", rss->ssb);
-    _view_slot_size_brother(rss->ssb);
 }
 
 static void _rs_view_big_bang(void)
@@ -698,12 +646,13 @@ static size_t _rs_calc_rse_memory_size(rs_encode_t *rse,
      */
     rse->division = division;
     rse->matrix_size = rse->division * rse->division * rs->register_size;
-    rse->matrix_size = _aligned_size(rse->matrix_size);
+    rse->matrix_size = aligned_size(rse->matrix_size);
     /* 8KO * division * 2*/
     rse->_row_size = division * rs->register_size;
-    rse->_row_size = _aligned_size(rse->_row_size);
+    rse->_row_size = aligned_size(rse->_row_size);
 
-    rse->allocate_size = rse->matrix_size +
+    rse->allocate_size = sizeof(rs_encode_t) +
+                         rse->matrix_size +
                          rse->_row_size * 2;
     return rse->allocate_size;
 }
@@ -731,14 +680,16 @@ static size_t _rs_calc_rsd_memory_size(rs_decode_t *rsd,
      */
     rsd->division = division;
     rsd->matrix_size = rsd->division * rsd->division * rs->register_size;
-    rsd->matrix_size = _aligned_size(rsd->matrix_size);
     /* 8 KO * division * 2 */
     rsd->_row_size = rsd->division * rs->register_size;
-    rsd->_row_size = _aligned_size(rsd->_row_size);
     rsd->_column_size = rsd->division * rs->symbol_size;
-    rsd->_column_size = _aligned_size(rsd->_column_size);
 
-    rsd->allocate_size = rsd->matrix_size * 2 +
+    rsd->matrix_size = aligned_size(rsd->matrix_size);
+    rsd->_row_size = aligned_size(rsd->_row_size);
+    rsd->_column_size = aligned_size(rsd->_column_size);
+
+    rsd->allocate_size = sizeof(rs_decode_t) +
+                         rsd->matrix_size * 2 +
                          rsd->_row_size * 2 +
                          rsd->_column_size;
     return rsd->allocate_size;
@@ -804,8 +755,8 @@ static void _rs_view_matrix16(ushort *matrix, uint division)
     }
 }
 
-static void _rs_encode16_slots(rs_slot_t *parity,
-                               rs_slot_t *norm,
+static void _rs_encode16_slots(slot_t *parity,
+                               slot_t *norm,
                                rs_encode_t *rse,
                                uint symbol_num)
 {
@@ -842,8 +793,8 @@ static void _rs_encode16_slots(rs_slot_t *parity,
     }
 }
 
-static void _rs_encode32_slots(rs_slot_t *parity,
-                               rs_slot_t *norm,
+static void _rs_encode32_slots(slot_t *parity,
+                               slot_t *norm,
                                rs_encode_t *rse,
                                uint symbol_num)
 {
@@ -880,8 +831,8 @@ static void _rs_encode32_slots(rs_slot_t *parity,
     }
 }
 
-static void _rs_decode16_slots(rs_slot_t *recover,
-                               rs_slot_t *merged,
+static void _rs_decode16_slots(slot_t *recover,
+                               slot_t *merged,
                                rs_decode_t *rsd,
                                uint symbol_num)
 {
@@ -917,8 +868,8 @@ static void _rs_decode16_slots(rs_slot_t *recover,
     }
 }
 
-static void _rs_decode32_slots(rs_slot_t *recover,
-                               rs_slot_t *merged,
+static void _rs_decode32_slots(slot_t *recover,
+                               slot_t *merged,
                                rs_decode_t *rsd,
                                uint symbol_num)
 {

@@ -1,10 +1,11 @@
-#ifndef RSF_H
-#define RSF_H
+#ifndef __RSF_H__
+#define __RSF_H__
+
+#include "rs.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "rs.h"
 
 #define RSF_BREATH_SIZE 1024
 #define RSF_PATH_MAX_SIZE 256
@@ -27,10 +28,9 @@ extern "C" {
 #define RSF_INVALID_MODE_ERROR (-2)
 #define RSF_LACK_OF_SLOTS_ERROR (-3)
 #define RSF_CONSTRUCT_ERROR (-4)
-#define RSF_NORM_SIZE_ERROR (-5)
-#define RSF_FREAD_ERROR (-6)
-#define RSF_FWRITE_ERROR (-7)
-#define RSF_DIVISION_ERROR (-8)
+#define RSF_FREAD_ERROR (-5)
+#define RSF_FWRITE_ERROR (-6)
+#define RSF_DIVISION_ERROR (-7)
 
 /* #288: recover, restore, redo, back, ... を決めよう。*/
 /* file */
@@ -42,19 +42,18 @@ typedef struct {
     sha1sum_t sha1sum[1];
 
     size_t text_size;
-    size_t symbols_in_slot;
-    size_t symbols_in_buffer;
 
     int mode; /* MODE_ENCODE or MODE_DECODE */
     char *temp_path; /* file path or "__memory__" */
     char *temp_tail; /*  */
-    char *base_name;
     char *dir_name;
+    char *base_name;
     FILE *header;
 
     rs_encode_t *rse;
     rs_decode_t *rsd;
-    rs_slot_t *norm, *parity, *merged, *recover;
+    _slot_size_brother_t ssb[1];
+    slot_t *norm, *parity, *merged, *recover;
 
     size_t allocate_size;
     size_t hash_size;
@@ -71,7 +70,55 @@ int rsf_encode_text(char *hashed_header,
                     uint division);
 int rsf_decode_restored(char *restored_file_name, char *header);
 
+/* proto type ****************************************************************/
+static int _rsf_files_open(uint *len_available_slots,
+                           rs_file_t *rsf,
+                           const char *text_path,
+                           const char *mode);
+static int _rsf_make_decoder(rs_file_t **_rsf, uint bits, uint division);
+static int _rsf_good_night_rsf_for_recover(rs_file_t *rsf,
+                                           char *recovery_file_name);
+static int _calc_slot_size(_slot_size_brother_t *ssb,
+                            rs_file_t *rsf,
+                            size_t text_size,
+                            size_t breath_size,
+                            uint division,
+                            size_t symbol_size);
+static int _ishashstring(char *hashed_string, uint hash_len);
+static void _str2hash(uchar *hash, char *ss, uint len_hash);
+static int _rename_to_hashed_name(char *hashed_name, rs_file_t *rsf, int no);
+static int _rsf_recover_restored(rs_file_t *rsf,
+                                 uint symbols_in_slot,
+                                 uint symbols_in_buffer);
+static int _rsf_merge_slots(rs_decode_t *rsd,
+                            rs_file_t *rsf,
+                            rs_encode_t *rse);
+static uint _update_remained_symbols(uint remained_symbols,
+                                     uint *available_symbols);
+static void _rsf_files_close(rs_file_t *rsf, uint division);
+static char *_rsf_allocate(
+                   rs_file_t *rsf,
+                   rs_decode_t *rsd,
+                   rs_encode_t *rse,
+                   reed_solomon_t *rs,
+                   uint division);
+static size_t _rsf_init(rs_file_t *rsf,
+                        char *mem,
+                        rs_decode_t *rsd,
+                        rs_encode_t *rse,
+                        int mode);
+static void _rsf_view_rsf(rs_file_t *rsf);
+static uint _rsf_get_division(rs_file_t *rsf);
+static char *_fgets_(char *s, int size, FILE *stream);
+static void _to_hashed_name(char *ss, sha1sum_t *sha1sum);
+static int _rsf_free(rs_file_t *rsf);
+static size_t _rsf_calc_rsf_memory_size(rs_file_t *rsf, uint division);
+int _rsf_calc_symbols(rs_file_t *rsf,
+                      size_t symbol_size,
+                      size_t slot_size,
+                      size_t breath_size);
+
 #ifdef __cplusplus
 }
 #endif
-#endif /* RSF_H */
+#endif /* __RSF_H__ */

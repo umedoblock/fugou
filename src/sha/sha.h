@@ -12,8 +12,12 @@
  */
 
 #include "../libfugou_base.h"
-
 #include "sha_private.h"
+
+#ifndef SHA_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SHA1SUM_HASH_SIZE (SHA1SUM_HASH_BITS / OCTET)
 #define SHA1SUM_BLOCK_SIZE (SHA1SUM_BLOCK_BITS / OCTET)
@@ -44,3 +48,8 @@ long_size_t _sha1_hatch(sha1sum_t *sha1sum, uchar *text,
                                             long_size_t remained_text_size);
 long_size_t _sha1_append(sha1sum_t *sha1sum,
                          uchar *append, long_size_t append_size);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* SHA_H */

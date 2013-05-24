@@ -151,14 +151,15 @@
 
  */
 
-#ifndef RS_H
-#define RS_H
+#ifndef __RS_H__
+#define __RS_H__
+
+#include "slot.h"
+#include "../libfugou_base.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "../libfugou_base.h"
-#include "../sha/sha.h"
 
 #define RS_BUFFER_SIZE 80
 #define ALIGHNMENT_SIZE (sizeof(void *))
@@ -186,20 +187,6 @@ typedef struct {
 
     size_t allocate_size;
 } reed_solomon_t;
-
-typedef struct {
-    size_t norm_size;
-    size_t slot_size;
-    size_t remainder_size;
-    size_t padding_size;
-} _slot_size_brother_t;
-
-typedef struct {
-    uchar *slot;
-    FILE *fp;
-    sha1sum_t sha1sum[1];
-    _slot_size_brother_t ssb[1];
-} rs_slot_t;
 
 typedef struct {
     reed_solomon_t *rs;
@@ -246,22 +233,56 @@ typedef struct {
 #define RS_MALLOC_ERROR (-1)
 #define RS_INVALID_DIVISION_ERROR (-2)
 #define RS_INVALID_BITS_ERROR (-3)
-#define RS_RANK_ERROR (-6)
-#define RS_RSD_AND_RSE_SET_ERROR (-11)
+#define RS_RANK_ERROR (-4)
+#define RS_RSD_AND_RSE_SET_ERROR (-5)
+#define RS_NORM_SIZE_ERROR (-6)
 
 int rs_big_bang(void);
 int rs_ultimate_fate_of_the_universe(void);
 
-void rs_encode_slots(rs_slot_t *parity,
-                     rs_slot_t *norm,
+void rs_encode_slots(slot_t *parity,
+                     slot_t *norm,
                      rs_encode_t *rse,
                      uint symbol_num);
-void rs_decode_slots(rs_slot_t *recover,
-                     rs_slot_t *merged,
+void rs_decode_slots(slot_t *recover,
+                     slot_t *merged,
                      rs_decode_t *rsd,
                      uint symbol_num);
+size_t aligned_size(size_t size);
+static int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
+
+/*****************************************************************************/
+/* prototype *****************************************************************/
+/*****************************************************************************/
+static size_t _rs_calc_rsd_memory_size(rs_decode_t *rsd,
+                                         reed_solomon_t *rs,
+                                         uint division);
+static big_bang_t *_rs_bright(void);
+static void _rs_encode16_slots(slot_t *parity,
+                               slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num);
+static void _rs_encode32_slots(slot_t *parity,
+                               slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num);
+static void _rs_decode16_slots(slot_t *recover,
+                               slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num);
+static void _rs_decode32_slots(slot_t *recover,
+                               slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num);
+static reed_solomon_t *_rs_get_rs(uint bits);
+static int _rs_init_the_universe(big_bang_t *universe);
+static int _rs_init_gf_gfi(big_bang_t *universe);
+
+static void _rs_view_rs(reed_solomon_t *rs);
+static void _rs_view_big_bang(void);
+static void _rs_view_matrix16(ushort *matrix, uint division);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* RS_H */
+#endif /* __RS_H__ */

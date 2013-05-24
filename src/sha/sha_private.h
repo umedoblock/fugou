@@ -1,4 +1,11 @@
+#ifndef __SHA__PRIVATE_H__
+#define __SHA__PRIVATE_H__
+
 #include "../libfugou_base.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SHA1SUM_HASH_BITS (160ULL)
 #define SHA1SUM_BLOCK_BITS (512ULL)
@@ -51,3 +58,8 @@
 #define SHA1SUM_H2 0x98badcfe
 #define SHA1SUM_H3 0x10325476
 #define SHA1SUM_H4 0xc3d2e1f0
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* __SHA__PRIVATE_H__ */
