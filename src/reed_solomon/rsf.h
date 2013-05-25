@@ -43,10 +43,8 @@ typedef struct {
 
     slot_file_t *file;
     sha1sum_t sha1sum[1];
-    _slot_size_sister_t sss_last[1];
+    _slot_symbol_sister_t sss_last[1];
     _slot_size_brother_t ssb_last[1];
-
-    size_t text_size;
 
     int mode; /* MODE_ENCODE or MODE_DECODE */
     char *temp_path; /* file path or "__memory__" */
@@ -55,13 +53,13 @@ typedef struct {
     char *base_name;
     FILE *header;
 
-    rs_encode_t *rse;
-    rs_decode_t *rsd;
+    rs_encode_t *rse; /* *norm, *parity */
+    rs_decode_t *rsd; /* *norm, *parity, *merged, *recover */
     slot_t *norm, *parity, *merged, *recover;
 
     size_t allocate_size;
     size_t hash_size;
-    size_t slots_size;
+    size_t slot4_size;
     size_t temp_path_max_size;
     size_t dir_name_max_size;
     size_t base_name_size;

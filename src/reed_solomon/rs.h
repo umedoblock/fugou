@@ -188,9 +188,23 @@ typedef struct {
     size_t allocate_size;
 } reed_solomon_t;
 
+#define UINT_BITS (sizeof(uint)*8)
+#define RS_SET_REDUNDANCY_BIT(map, nbit) \
+       (map[nbit/UINT_BITS]|=(1<<(nbit%UINT_BITS)))
+#define RS_GET_REDUNDANCY_BIT(map, nbit) \
+       (map[nbit/UINT_BITS]&(1<<(nbit%UINT_BITS)))
+#define RS_CLEAR_REDUNDANCY_BIT(map, nbit) \
+       (map[nbit/UINT_BITS]&=(~(1<<(nbit%UINT_BITS))))
+
 typedef struct {
     reed_solomon_t *rs;
+    /* ssb->target_size -= ssb->padding_size when last slot, slots[division-1].
+     * division must be 2 or more.
+     */
     uint division;
+    uint redundancy;
+
+    uint *redundancy_map;
 
     _ptr_t vandermonde;
     _ptr_t _row; /* horizontal vector */
