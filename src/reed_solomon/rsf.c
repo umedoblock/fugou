@@ -52,23 +52,23 @@ static int _rsf_read_header_of_kernel(
                  size_t *text_size)
 {
     int ret = 0;
-    char ss[RSF_BUFFER_SIZE], *msg = NULL;
+    char ss[RSF_SS_SIZE], *msg = NULL;
 
     /* fprintf(rsf->header, "0x%x\n", bits); */
-    _fgets_(ss, RSF_BUFFER_SIZE, header);
+    _fgets_(ss, RSF_SS_SIZE, header);
     sscanf(ss, "0x%x", bits);
     /* fprintf(rsf->header, "0x%x\n", poly); */
-    _fgets_(ss, RSF_BUFFER_SIZE, header);
+    _fgets_(ss, RSF_SS_SIZE, header);
     sscanf(ss, "0x%x", poly);
     /* fprintf(rsf->header, "0x%x\n", division); */
-    _fgets_(ss, RSF_BUFFER_SIZE, header);
+    _fgets_(ss, RSF_SS_SIZE, header);
     sscanf(ss, "0x%x", division);
     /* fprintf(rsf->header, "0x%x\n", ssb->text_size); */
-    _fgets_(ss, RSF_BUFFER_SIZE, header);
+    _fgets_(ss, RSF_SS_SIZE, header);
     sscanf(ss, "0x%x", text_size);
 
     /* fprintf(rsf->header, "\n"); */
-    msg = fgets(ss, RSF_BUFFER_SIZE, header);
+    msg = fgets(ss, RSF_SS_SIZE, header);
     if (msg != NULL && strcmp(ss, "\n") == 0) {
         /* OK */
     }
@@ -86,11 +86,11 @@ static int _rsf_read_header_of_hash(
                  char *header_hashed_name,
                  rs_file_t *rsf)
 {
-    char ss[RSF_BUFFER_SIZE];
+    char ss[RSF_SS_SIZE];
     int ret = 0;
 
     /* fprintf(rsf->header, "sha1\n"); */
-    _fgets_(ss, RSF_BUFFER_SIZE, rsf->header);
+    _fgets_(ss, RSF_SS_SIZE, rsf->header);
     if (strcmp("sha1", ss) == 0) {
         /* OK */
     }
@@ -102,7 +102,7 @@ static int _rsf_read_header_of_hash(
         ret--;
     }
     /* fprintf(rsf->header, "%s\n", ss); */
-    _fgets_(ss, RSF_BUFFER_SIZE, rsf->header);
+    _fgets_(ss, RSF_SS_SIZE, rsf->header);
     if (_ishashstring(ss, RSF_HASH_BIT_LENGTH)) {
         strcpy(header_hashed_name, ss);
     }
@@ -292,8 +292,8 @@ err_fread:
 
 int _rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header_path)
 {
-    char text_path[RSF_BUFFER_SIZE];
-    char header_hashed_name[RSF_BUFFER_SIZE];
+    char text_path[RSF_SS_SIZE];
+    char header_hashed_name[RSF_SS_SIZE];
     int ret = 0;
     uint bits = 0, poly = 0, division = 0;
     uint len_available_slots = 0;
@@ -381,7 +381,7 @@ int _rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header_path)
                                     rs->symbol_size,
                                     text_size,
                                     division);
-    ret = _rsf_calc_symbols(rsf, rs->symbol_size, rsf->target_size, breath_size);
+    ret = _rsf_calc_symbols(rsf, rs->symbol_size, rsf->target_size, buf_size);
     if (ret < 0)
         goto err_after_rsf_file_open;
 
@@ -435,7 +435,7 @@ static uint _rsf_get_division(rs_file_t *rsf)
 static void _rsf_view_rsf(rs_file_t *rsf)
 {
     uint i, division = 0;
-    char ss[RSF_BUFFER_SIZE];
+    char ss[RSF_SS_SIZE];
     sha1sum_t sha1sum[1];
 
     division = _rsf_get_division(rsf);
@@ -492,20 +492,20 @@ static void _rsf_view_rsf(rs_file_t *rsf)
     rsf_logger(INFO, "\n");
 }
 
-/* must set rsf->breath_size before below function call. */
+/* must set rsf->buf_size before below function call. */
 static size_t _rsf_calc_rsf_memory_size(rs_file_t *rsf, uint division)
 {
     size_t hex_name_size = 0;
 
     rsf->hash_size = RSF_HASH_SIZE;
-    rsf_logger(FATAL, "rsf->breath_size = %u\n", rsf->breath_size);
-    rsf->breath_size = RSF_BREATH_SIZE;
+    rsf_logger(FATAL, "rsf->buf_size = %u\n", rsf->buf_size);
+    rsf->buf_size = RSF_BUF_SIZE;
     /* buffer and slots need three type. there are norm, parity, merged */
     rsf->slots_size = division * sizeof(slot_t);
     rsf->temp_path_max_size = RSF_PATH_MAX_SIZE;
 
     rsf->hash_size = aligned_size(rsf->hash_size);
-    rsf->breath_size = aligned_size(rsf->breath_size);
+    rsf->buf_size = aligned_size(rsf->buf_size);
     rsf->slots_size = aligned_size(rsf->slots_size);
     rsf->temp_path_max_size = aligned_size(rsf->temp_path_max_size);
 
@@ -525,7 +525,7 @@ static size_t _rsf_calc_rsf_memory_size(rs_file_t *rsf, uint division)
 
     rsf->allocate_size = sizeof(rs_file_t) +
                          rsf->slots_size * 4 +
-                         rsf->breath_size * division * 4 +
+                         rsf->buf_size * division * 4 +
                          rsf->temp_path_max_size +
                          rsf->base_name_size +
                          rsf->dir_name_max_size +
@@ -560,19 +560,19 @@ static size_t _rsf_init(rs_file_t *rsf,
 
     for (i=0;i<division;i++) {
         rsf->norm[i].buf = (uchar *)mem;
-        mem += rsf->breath_size;
+        mem += rsf->buf_size;
     }
     for (i=0;i<division;i++) {
         rsf->parity[i].buf = (uchar *)mem;
-        mem += rsf->breath_size;
+        mem += rsf->buf_size;
     }
     for (i=0;i<division;i++) {
         rsf->merged[i].buf = (uchar *)mem;
-        mem += rsf->breath_size;
+        mem += rsf->buf_size;
     }
     for (i=0;i<division;i++) {
         rsf->recover[i].buf = (uchar *)mem;
-        mem += rsf->breath_size;
+        mem += rsf->buf_size;
     }
 
     return (size_t )(mem - mem_);
@@ -749,13 +749,13 @@ static uint _rsf_norm_files_open(
                  uint division)
 {
     uint i, available = 0;
-    char hashed_name[RSF_BUFFER_SIZE];
+    char hashed_name[RSF_SS_SIZE];
     for (i=0;i<division;i++) {
         if (rsf->mode == MODE_ENCODE)
             rsf->norm[i].target = _fopen_rse(rsf, "wb+", i);
         else {
             /* rsf->mode == MODE_RECOVERY */
-            _fgets_(hashed_name, RSF_BUFFER_SIZE, rsf->header);
+            _fgets_(hashed_name, RSF_SS_SIZE, rsf->header);
             rsf->norm[i].target = fopen(hashed_name, "rb");
             if (rsf->norm[i].target == NULL) {
                 rsf->recover[i].target = fopen(hashed_name, "wb+");
@@ -774,13 +774,13 @@ static uint _rsf_parity_files_open(rs_file_t *rsf,
                                    uint division)
 {
     uint i, available = 0;
-    char hashed_name[RSF_BUFFER_SIZE];
+    char hashed_name[RSF_SS_SIZE];
     for (i=0;i<division;i++) {
         if (rsf->mode == MODE_ENCODE)
             rsf->parity[i].target = _fopen_rse(rsf, "wb+", division + i);
         else {
             /* rsf->mode == MODE_RECOVERY */
-            _fgets_(hashed_name, RSF_BUFFER_SIZE, rsf->header);
+            _fgets_(hashed_name, RSF_SS_SIZE, rsf->header);
             rsf->parity[i].target = fopen(hashed_name, "rb");
         }
         if (rsf->parity[i].target != NULL)
@@ -915,7 +915,7 @@ uint _update_remained_symbols(uint remained_symbols,
 static int _rsf_write_header_of_hash(rs_file_t *rsf,
                                      uint division)
 {
-    char hashed_name[RSF_BUFFER_SIZE];
+    char hashed_name[RSF_SS_SIZE];
     uint i;
 
     /* hash part */
@@ -979,7 +979,7 @@ int rsf_encode_text(char *hashed_header,
     ret = _rsf_calc_symbols(rsf,
                             rs->symbol_size,
                             ssb->target_size,
-                            rsf->breath_size);
+                            rsf->buf_size);
 
     rsf->header = _fopen_rse(rsf, "wb", 2 * division);
     _rsf_write_header_of_kernel(rsf,
@@ -1040,13 +1040,13 @@ int rsf_encode_text(char *hashed_header,
 int _rsf_calc_symbols(rs_file_t *rsf,
                       size_t symbol_size,
                       size_t target_size,
-                      size_t breath_size)
+                      size_t buf_size)
 {
     rsf->symbols_in_target = target_size / symbol_size;
-    rsf->symbols_in_buf = breath_size / symbol_size;
+    rsf->symbols_in_buf = buf_size / symbol_size;
 
     _rsf_debug("in _rsf_calc_symbols()\n");
-    _rsf_debug("breath_size = %u\n", breath_size);
+    _rsf_debug("buf_size = %u\n", buf_size);
     _rsf_debug("target_size = %u\n", target_size);
     _rsf_debug("symbol_size = %u\n", symbol_size);
     _rsf_debug("symbols_in_target = %u\n", rsf->symbols_in_target);

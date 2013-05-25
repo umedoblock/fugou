@@ -7,21 +7,25 @@
 extern "C" {
 #endif
 
-#define RSF_BREATH_SIZE 1024
-#define RSF_PATH_MAX_SIZE 256
+#ifndef BUF_SIZE
+#define RSF_BUF_SIZE (1024)
+#else
+#define RSF_BUF_SIZE BUF_SIZE
+#endif
+#define RSF_PATH_MAX_SIZE (256)
 #define RSF_HASH_BIT_LENGTH SHA1SUM_HASH_BITS
 #define RSF_HASH_SIZE SHA1SUM_HASH_SIZE
-#define RSF_BUFFER_SIZE 80
+#define RSF_SS_SIZE (80)
 
 /* please check your environment PATH_MAX_SIZE.
  * you may got disaster if it is smaller than RSF_PATH_MAX_SIZE.
  * however it's none of my business.
  */
-#define MODE_ENCODE 0
-#define MODE_RECOVERY 1
+#define MODE_ENCODE (0)
+#define MODE_RECOVERY (1)
 
-#define RSF_FP 1
-#define RSF_SS 2
+#define RSF_FP (1)
+#define RSF_SS (2)
 
 #define RSF_SCUCCESS (0)
 #define RSF_INVALID_PATH_ERROR (-1)
@@ -37,9 +41,10 @@ extern "C" {
 typedef struct {
     char *mem;
 
-    FILE *text;
-    FILE *restored;
+    slot_file_t *file;
     sha1sum_t sha1sum[1];
+    _slot_size_sister_t sss_last[1];
+    _slot_size_brother_t ssb_last[1];
 
     size_t text_size;
 
@@ -52,12 +57,10 @@ typedef struct {
 
     rs_encode_t *rse;
     rs_decode_t *rsd;
-    _slot_size_brother_t ssb[1];
     slot_t *norm, *parity, *merged, *recover;
 
     size_t allocate_size;
     size_t hash_size;
-    size_t breath_size;
     size_t slots_size;
     size_t temp_path_max_size;
     size_t dir_name_max_size;
@@ -81,7 +84,7 @@ static int _rsf_good_night_rsf_for_recover(rs_file_t *rsf,
 static int _calc_slot_size(_slot_size_brother_t *ssb,
                             rs_file_t *rsf,
                             size_t text_size,
-                            size_t breath_size,
+                            size_t buf_size,
                             uint division,
                             size_t symbol_size);
 static int _ishashstring(char *hashed_string, uint hash_len);
@@ -116,7 +119,7 @@ static size_t _rsf_calc_rsf_memory_size(rs_file_t *rsf, uint division);
 int _rsf_calc_symbols(rs_file_t *rsf,
                       size_t symbol_size,
                       size_t slot_size,
-                      size_t breath_size);
+                      size_t buf_size);
 
 #ifdef __cplusplus
 }
