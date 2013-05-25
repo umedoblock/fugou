@@ -1,0 +1,5 @@
+:%s:symbols_in_buffer:symbols_in_buf:g
+:%s:symbols_in_slot:symbols_in_target:g
+:%s:slot_size:target_size:g
+:%s:\.slot:.buf:g
+:'<,'>s:fp:target:g
