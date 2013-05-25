@@ -206,8 +206,8 @@ int rsf_decode_restored(char *restored_file_name, char *header)
     rs_decode_t *rsd = NULL;
     rs_encode_t *rse = NULL;
     reed_solomon_t *rs = NULL;
-    _slot_size_brother_t *ssb = NULL;
-    uint symbols_in_slot, symbols_in_buffer;
+    _target_size_brother_t *ssb = NULL;
+    uint symbols_in_target, symbols_in_buf;
     uint remained_symbols, available_symbols;
     size_t r, w;
 
@@ -228,18 +228,18 @@ int rsf_decode_restored(char *restored_file_name, char *header)
     _rsf_merge_slots(rsd, rsf, rse);
     _rs_solve_inverse(rsd->inverse, rsd->merged, rsd);
 
-    symbols_in_slot = rsf->symbols_in_slot;
-    symbols_in_buffer = rsf->symbols_in_buffer;
+    symbols_in_target = rsf->symbols_in_target;
+    symbols_in_buf = rsf->symbols_in_buf;
 
     rsf_logger(ERROR, "in rsf_decode_restored().\n");
 
-    if (symbols_in_slot < symbols_in_buffer) {
-        available_symbols = symbols_in_slot;
+    if (symbols_in_target < symbols_in_buf) {
+        available_symbols = symbols_in_target;
     }
     else {
-        available_symbols = symbols_in_buffer;
+        available_symbols = symbols_in_buf;
     }
-    remained_symbols = symbols_in_slot;
+    remained_symbols = symbols_in_target;
     while (remained_symbols) {
         r = _fread_from_slots(rsf->merged,
                               rs->symbol_size,
@@ -265,11 +265,11 @@ int rsf_decode_restored(char *restored_file_name, char *header)
                                 remained_symbols, &available_symbols);
     }
 
-    ret = _rsf_recover_restored(rsf, symbols_in_slot, symbols_in_buffer);
+    ret = _rsf_recover_restored(rsf, symbols_in_target, symbols_in_buf);
     if (ret < 0) {
-        rsf_logger(ERROR, "_rsf_recover_restored(symbols_in_slot=%u, "
-                           "symbols_in_buffer=%u) failed.\n",
-                            symbols_in_slot, symbols_in_buffer);
+        rsf_logger(ERROR, "_rsf_recover_restored(symbols_in_target=%u, "
+                           "symbols_in_buf=%u) failed.\n",
+                            symbols_in_target, symbols_in_buf);
         goto err_recover;
     }
 
@@ -377,11 +377,11 @@ int _rsf_get_up_rsf_for_restored(rs_file_t **_rsf, char *header_path)
     }
 
     /* BUG: 多分ここで死ぬ。だって、mergedって実態がないもの */
-    ret = slot_calc_and_set_slot_size(rsf->merged,
+    ret = slot_calc_and_set_target_size(rsf->merged,
                                     rs->symbol_size,
                                     text_size,
                                     division);
-    ret = _rsf_calc_symbols(rsf, rs->symbol_size, rsf->slot_size, breath_size);
+    ret = _rsf_calc_symbols(rsf, rs->symbol_size, rsf->target_size, breath_size);
     if (ret < 0)
         goto err_after_rsf_file_open;
 
@@ -449,8 +449,8 @@ static void _rsf_view_rsf(rs_file_t *rsf)
     rsf_logger(INFO, "\n");
 
     rsf_logger(INFO, "        text_size = %u\n", rsf->text_size);
-    rsf_logger(INFO, "      symbols_in_slot = %zu\n", rsf->symbols_in_slot);
-    rsf_logger(INFO, "    symbols_in_buffer = %zu\n", rsf->symbols_in_buffer);
+    rsf_logger(INFO, "      symbols_in_target = %zu\n", rsf->symbols_in_target);
+    rsf_logger(INFO, "    symbols_in_buf = %zu\n", rsf->symbols_in_buf);
     rsf_logger(INFO, "\n");
 
     rsf_logger(INFO, "              mode = %d is ", rsf->mode);
@@ -472,13 +472,17 @@ static void _rsf_view_rsf(rs_file_t *rsf)
     rs_view_rse(rsf->rse);
     rs_view_rsd(rsf->rsd);
     for (i=0;i<division;i++)
-        rsf_logger(INFO, "    norm[%5d].fp = %p\n", i, rsf->norm[i].fp);
+        rsf_logger(INFO, "    norm[%5d].target = %p\n",
+                                     i, rsf->norm[i].target);
     for (i=0;i<division;i++)
-        rsf_logger(INFO, "  parity[%5d].fp = %p\n", i, rsf->parity[i].fp);
+        rsf_logger(INFO, "  parity[%5d].target = %p\n",
+                                     i, rsf->parity[i].target);
     for (i=0;i<division;i++)
-        rsf_logger(INFO, "  merged[%5d].fp = %p\n", i, rsf->merged[i].fp);
+        rsf_logger(INFO, "  merged[%5d].target = %p\n",
+                                     i, rsf->merged[i].target);
     for (i=0;i<division;i++)
-        rsf_logger(INFO, " recover[%5d].fp = %p\n", i, rsf->recover[i].fp);
+        rsf_logger(INFO, " recover[%5d].target = %p\n",
+                                     i, rsf->recover[i].target);
 
     rsf_logger(INFO, "     allocate_size = %u\n", rsf->allocate_size);
     rsf_logger(INFO, "        slots_size = %u\n", rsf->slots_size);
@@ -555,19 +559,19 @@ static size_t _rsf_init(rs_file_t *rsf,
     rsf->base_name = mem;         mem += rsf->base_name_size;
 
     for (i=0;i<division;i++) {
-        rsf->norm[i].slot = (uchar *)mem;
+        rsf->norm[i].buf = (uchar *)mem;
         mem += rsf->breath_size;
     }
     for (i=0;i<division;i++) {
-        rsf->parity[i].slot = (uchar *)mem;
+        rsf->parity[i].buf = (uchar *)mem;
         mem += rsf->breath_size;
     }
     for (i=0;i<division;i++) {
-        rsf->merged[i].slot = (uchar *)mem;
+        rsf->merged[i].buf = (uchar *)mem;
         mem += rsf->breath_size;
     }
     for (i=0;i<division;i++) {
-        rsf->recover[i].slot = (uchar *)mem;
+        rsf->recover[i].buf = (uchar *)mem;
         mem += rsf->breath_size;
     }
 
@@ -670,55 +674,6 @@ static int _rsf_free(rs_file_t *rsf)
     return RSF_SCUCCESS;
 }
 
-static int _rsf_get_index_of_slots(slot_t *hunter,
-                                   slot_t target,
-                                   uint division)
-{
-    uint i;
-    int index = -1;
-
-    for (i=0;i<division;i++) {
-        if (target.slot == hunter[i].slot) {
-            index = i;
-            break;
-        }
-    }
-
-    return index;
-}
-
-#if 0
-static int _rsf_merge_slots(rs_decode_t *rsd,
-                            rs_file_t *rsf,
-                            rs_encode_t *rse)
-{
-    uint i, j = 0, i_index, j_index;
-    reed_solomon_t *rs = rsd->rs;
-
-    _rs_make_e_matrix(rsd->merged, rs, rsd->division);
-    for (i=0;i<rse->division;i++) {
-        if (rsf->norm[i].fp != NULL) {
-            rsf->merged[i] = rsf->norm[i];
-        }
-        else {
-            while (rsf->parity[j].fp == NULL)
-                j++;
-
-            i_index = i * rse->_row_size;
-            j_index = j * rse->_row_size;
-            memcpy(rsd->merged.ptr + i_index,
-                   rse->vandermonde.ptr + j_index,
-                   rse->_row_size);
-
-            rsf->merged[i] = rsf->parity[j];
-            j++;
-        }
-    }
-
-   return RSF_SCUCCESS;
-}
-#endif
-
 static void _to_hashed_name(char *ss, sha1sum_t *sha1sum)
 {
     sprintf(ss, "h");
@@ -797,19 +752,19 @@ static uint _rsf_norm_files_open(
     char hashed_name[RSF_BUFFER_SIZE];
     for (i=0;i<division;i++) {
         if (rsf->mode == MODE_ENCODE)
-            rsf->norm[i].fp = _fopen_rse(rsf, "wb+", i);
+            rsf->norm[i].target = _fopen_rse(rsf, "wb+", i);
         else {
             /* rsf->mode == MODE_RECOVERY */
             _fgets_(hashed_name, RSF_BUFFER_SIZE, rsf->header);
-            rsf->norm[i].fp = fopen(hashed_name, "rb");
-            if (rsf->norm[i].fp == NULL) {
-                rsf->recover[i].fp = fopen(hashed_name, "wb+");
+            rsf->norm[i].target = fopen(hashed_name, "rb");
+            if (rsf->norm[i].target == NULL) {
+                rsf->recover[i].target = fopen(hashed_name, "wb+");
             }
             else {
-                rsf->recover[i].fp = NULL;
+                rsf->recover[i].target = NULL;
             }
         }
-        if (rsf->norm[i].fp != NULL)
+        if (rsf->norm[i].target != NULL)
             available++;
     }
     return available;
@@ -822,13 +777,13 @@ static uint _rsf_parity_files_open(rs_file_t *rsf,
     char hashed_name[RSF_BUFFER_SIZE];
     for (i=0;i<division;i++) {
         if (rsf->mode == MODE_ENCODE)
-            rsf->parity[i].fp = _fopen_rse(rsf, "wb+", division + i);
+            rsf->parity[i].target = _fopen_rse(rsf, "wb+", division + i);
         else {
             /* rsf->mode == MODE_RECOVERY */
             _fgets_(hashed_name, RSF_BUFFER_SIZE, rsf->header);
-            rsf->parity[i].fp = fopen(hashed_name, "rb");
+            rsf->parity[i].target = fopen(hashed_name, "rb");
         }
-        if (rsf->parity[i].fp != NULL)
+        if (rsf->parity[i].target != NULL)
             available++;
     }
     return available;
@@ -902,14 +857,14 @@ static void _rsf_files_close(rs_file_t *rsf, uint division)
 
     _rsf_debug("in _rsf_files_close()\n");
     for (i=0;i<division;i++) {
-        if (rsf->norm[i].fp != NULL)
-            fclose(rsf->norm[i].fp);
+        if (rsf->norm[i].target != NULL)
+            fclose(rsf->norm[i].target);
     }
     for (i=0;i<division;i++) {
-        if (rsf->parity[i].fp != NULL)
-            fclose(rsf->parity[i].fp);
+        if (rsf->parity[i].target != NULL)
+            fclose(rsf->parity[i].target);
     }
-    /* no need to call fclose() for rsf->merged[i].fp.
+    /* no need to call fclose() for rsf->merged[i].target.
      * rsf->mode == MODE_ENCODE then
      * no use rsf->merged[i].
      *
@@ -921,8 +876,8 @@ static void _rsf_files_close(rs_file_t *rsf, uint division)
      * in _rsf_merge_slots().
      */
     for (i=0;i<division;i++) {
-        if (rsf->recover[i].fp != NULL)
-            fclose(rsf->recover[i].fp);
+        if (rsf->recover[i].target != NULL)
+            fclose(rsf->recover[i].target);
     }
 
     if (rsf->text != NULL)
@@ -933,7 +888,7 @@ static void _rsf_files_close(rs_file_t *rsf, uint division)
     _rsf_debug("\n\n");
 }
 
-static uint _update_remained_symbols(uint remained_symbols,
+uint _update_remained_symbols(uint remained_symbols,
                                      uint *available_symbols)
 {
     rsf_logger(ERROR, "in _update_remained_symbols()\n");
@@ -997,9 +952,9 @@ int rsf_encode_text(char *hashed_header,
     rs_file_t *rsf = NULL;
     rs_encode_t *rse = NULL;
     reed_solomon_t *rs = NULL;
-    _slot_size_brother_t *ssb = NULL;
+    _target_size_brother_t *ssb = NULL;
     uint len_available_slots = 0, available_symbols, remained_symbols;
-    uint symbols_in_slot = 0, symbols_in_buffer = 0;
+    uint symbols_in_target = 0, symbols_in_buf = 0;
     size_t r = 0, w = 0;
 
     hashed_header[0] = '\0';
@@ -1017,13 +972,13 @@ int rsf_encode_text(char *hashed_header,
         return ret;
     }
 
-    ret = slot_calc_and_set_slot_size(rsf->norm,
+    ret = slot_calc_and_set_target_size(rsf->norm,
                                     rs->symbol_size,
                                     rsf->text_size,
                                     division);
     ret = _rsf_calc_symbols(rsf,
                             rs->symbol_size,
-                            ssb->slot_size,
+                            ssb->target_size,
                             rsf->breath_size);
 
     rsf->header = _fopen_rse(rsf, "wb", 2 * division);
@@ -1031,28 +986,28 @@ int rsf_encode_text(char *hashed_header,
                                 rs->bits, rs->poly, division);
 
     /* PETA(too large) size file and slots make too large size slot.
-     * symbols_in_slot = TERA = PETA / number of slots
+     * symbols_in_target = TERA = PETA / number of slots
      * symbols_in_beffer = also from 1024 to 4096 octets.
-     * then, symbols_in_slot >>>>>>> symbols_in_buffer
+     * then, symbols_in_target >>>>>>> symbols_in_buf
      */
-    symbols_in_slot = rsf->symbols_in_slot;
-    symbols_in_buffer = rsf->symbols_in_buffer;
+    symbols_in_target = rsf->symbols_in_target;
+    symbols_in_buf = rsf->symbols_in_buf;
 
     ret = _rsf_split_text(rsf, rs->symbol_size, division,
-                          symbols_in_slot, symbols_in_buffer);
+                          symbols_in_target, symbols_in_buf);
     if (ret < 0) {
         _rsf_free(rsf);
         return ret;
     }
 
     rsf_logger(WARN, "in _rs_encode_slots_file()\n");
-    if (symbols_in_slot < symbols_in_buffer) {
-        available_symbols = symbols_in_slot;
+    if (symbols_in_target < symbols_in_buf) {
+        available_symbols = symbols_in_target;
     }
     else {
-        available_symbols = symbols_in_buffer;
+        available_symbols = symbols_in_buf;
     }
-    remained_symbols = symbols_in_slot;
+    remained_symbols = symbols_in_target;
     /* slot.c に移植するつもり。*/
     while (remained_symbols) {
         r = _fread_from_slots(rsf->norm,
@@ -1084,18 +1039,18 @@ int rsf_encode_text(char *hashed_header,
 
 int _rsf_calc_symbols(rs_file_t *rsf,
                       size_t symbol_size,
-                      size_t slot_size,
+                      size_t target_size,
                       size_t breath_size)
 {
-    rsf->symbols_in_slot = slot_size / symbol_size;
-    rsf->symbols_in_buffer = breath_size / symbol_size;
+    rsf->symbols_in_target = target_size / symbol_size;
+    rsf->symbols_in_buf = breath_size / symbol_size;
 
     _rsf_debug("in _rsf_calc_symbols()\n");
     _rsf_debug("breath_size = %u\n", breath_size);
-    _rsf_debug("slot_size = %u\n", slot_size);
+    _rsf_debug("target_size = %u\n", target_size);
     _rsf_debug("symbol_size = %u\n", symbol_size);
-    _rsf_debug("symbols_in_slot = %u\n", rsf->symbols_in_slot);
-    _rsf_debug("symbols_in_buffer = %u\n", rsf->symbols_in_buffer);
+    _rsf_debug("symbols_in_target = %u\n", rsf->symbols_in_target);
+    _rsf_debug("symbols_in_buf = %u\n", rsf->symbols_in_buf);
     _rsf_debug("\n");
 
     return RSF_SCUCCESS;

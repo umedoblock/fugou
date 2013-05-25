@@ -1,0 +1,7 @@
+LIBFOGOU_0.0 {
+    global:
+        rs_; rs_big_bang; rs_ultimate_fate_of_the_universe;
+        rs_encode_slots; rs_decode_slots; aligned_size; _rs_take_rs;
+    local:
+        *;
+};

@@ -27,6 +27,21 @@ libfugou_la_SOURCES = \
 #   sha/libsha.la \
 #   camellia/libcamellia.la
 
+# http://www.gnu.org/software/gnulib/manual/html_node/LD-Version-Scripts.html
+# -Wl,--version-script,libfugou.map
+# Currently, only GNU LD and the Solaris linker supports this.
+# if HAVE_LD_VERSION_SCRIPT
+    libfugou_la_LDFLAGS = LDFLAGS
+    libfugou_la_LDFLAGS += -Wl,--version-script=libfugou.map
+# else
+##      libfugou_la_LDFLAGS = LDFLAGS
+##      libfugou_la_LDFLAGS += -export-symbols-regex '^libfugou_.*'
+##      libfugou_la_LDFLAGS += -export-symbols-regex '^rs_.*'
+##      libfugou_la_LDFLAGS += -export-symbols-regex '^rsf_.*'
+##      libfugou_la_LDFLAGS += -export-symbols-regex '^slot_.*'
+##  #   libfugou_la_LDFLAGS += -export-symbols libfugou.sym
+##  endif
+
 bin_PROGRAMS = libfugou_sample
 libfugou_sample_SOURCES = libfugou_sample.c libfugou.h
 libfugou_sample_LDADD = libfugou.la
