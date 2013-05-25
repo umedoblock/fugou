@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-#ifndef BUF_SIZE
+#ifndef LIBFUGOU_BUF_SIZE
 #define RSF_BUF_SIZE (1024)
 #else
-#define RSF_BUF_SIZE BUF_SIZE
+#define RSF_BUF_SIZE LIBFUGOU_BUF_SIZE
 #endif
 #define RSF_PATH_MAX_SIZE (256)
 #define RSF_HASH_BIT_LENGTH SHA1SUM_HASH_BITS
