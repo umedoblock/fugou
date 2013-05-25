@@ -10,7 +10,7 @@ void _validate(int success, char *test_name)
     }
 }
 
-void test_camellia_normed_size(void)
+static void test_camellia_normed_size(void)
 {
     int success;
     size_t i, text_size, encode_size;
@@ -37,7 +37,7 @@ void test_camellia_normed_size(void)
     }
 }
 
-void test(void)
+static void test(void)
 {
     test_camellia_normed_size();
 }

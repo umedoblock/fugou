@@ -1148,28 +1148,6 @@ int _calc_log10(int n)
     return digits;
 }
 
-#if 0
-static int _tohex(int ch)
-{
-    if (ch >= '0' && ch <= '9')
-        return ch - '0';
-    else if (ch >= 'a' && ch <= 'f')
-        return ch - 'a' + 10;
-    else if (ch >= 'A' && ch <= 'F')
-        return ch - 'A' + 10;
-    else
-        return -1;
-}
-
-static void _str2hash(uchar *hash, char *ss, uint len_hash)
-{
-    uint i;
-    for (i=0;i<len_hash / 8;i++) {
-        hash[i] = (_tohex(ss[2*i]) << 4) + _tohex(ss[2*i+1]);
-    }
-}
-#endif
-
 static int _ishashstring(char *hashed_string, uint hash_len)
 {
     int ch, ret = -1;
