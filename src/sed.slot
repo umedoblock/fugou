@@ -3,3 +3,5 @@
 :%s:slot_size:target_size:g
 :%s:\.slot:.buf:g
 :'<,'>s:fp:target:g
+symbols_in_target:
+s:available_symbols:available_size:
