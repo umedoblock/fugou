@@ -1,3 +1,6 @@
+#ifndef __LIBFUGOU_H__
+#define __LIBFUGOU_H__
+
 #include "libfugou_base.h"
 
 #ifdef __cplusplus
@@ -49,3 +52,5 @@ void datatostr(char *ss, uchar *data, unt n);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* __LIBFUGOU_H__ */

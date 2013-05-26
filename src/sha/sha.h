@@ -1,3 +1,5 @@
+#ifndef __SHA_H__
+#define __SHA_H__
 /* libsha.h
  * Copyright (C) 平成25(2013)年 梅どぶろく(umedoblock)
  * FIP180 SECURE HASH STANDARD
@@ -14,7 +16,6 @@
 #include "../libfugou_base.h"
 #include "sha_private.h"
 
-#ifndef SHA_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,4 +53,4 @@ long_size_t _sha1_append(sha1sum_t *sha1sum,
 #ifdef __cplusplus
 }
 #endif
-#endif /* SHA_H */
+#endif /* __SHA_H__ */
