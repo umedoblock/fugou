@@ -43,7 +43,6 @@ typedef struct {
 
     slot_file_t *file;
     sha1sum_t sha1sum[1];
-    _slot_symbol_sister_t sss_last[1];
     _slot_size_brother_t ssb_last[1];
 
     int mode; /* MODE_ENCODE or MODE_DECODE */

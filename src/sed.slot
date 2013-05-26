@@ -5,3 +5,5 @@
 :'<,'>s:fp:target:g
 symbols_in_target:
 s:available_symbols:available_size:
+%s:symbols_in_target:target_size:g
+%s:symbols_in_buf:buf_size:g
