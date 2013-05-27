@@ -6,19 +6,40 @@ primes = [
 ]
 # len(primes) = 54
 
-for prime in primes:
-    if 1048576 % prime == 1 or \
-       1048576 % prime == (prime - 1):
-       print('1048576 % prime={} = {}'.format(prime, 1048576 % prime))
+# symbol_size = 3
+# for prime in primes:
+#     column_size = prime * symbol_size
+#     if 1048576 % (column_size) == 1 or \
+#        1048576 % (column_size) == (column_size - 1):
+#        print('1048576 % column_size(={}, 3 * prime={}) = {}'.
+#             format(column_size, prime, 1048576 % column_size))
 
-print('(1048576 + 1) / 17 =', (1048576 + 1) / 17)
-print('(1048576 + 40) / 41 =', (1048576 + 40) / 41)
+divisions = (17, 32, 41)
+symbol_size = 3
+target_size = 1048576
 
-# 1048576 % prime=3 = 1
-# 1048576 % prime=5 = 1
-# 1048576 % prime=11 = 1
+for d in divisions:
+    column_size = symbol_size * d
+    remainder = target_size % column_size
+    if remainder == 0:
+        padding_size = 0
+    else:
+        padding_size = column_size - remainder
+    rate = (1048576 + padding_size) / d
+    print('(1048576 + {:3d}) / {} = {}, column_size = {:3d}, division = {}'.
+           format(padding_size, d, rate, column_size, d))
+# (1048576 +  35) / 17 = 61683.0, column_size =  51, division = 17
+# (1048576 +  32) / 32 = 32769.0, column_size =  96, division = 32
+# (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
+
 # 1048576 % prime=17 = 16
-# 1048576 % prime=31 = 1
+# 1048576 % prime=32 = 0
 # 1048576 % prime=41 = 1
 # (1048576 + 1) / 17 = 61681.0
+# (1048576 + 0) / 16 = 65536.0
 # (1048576 + 40) / 41 = 25576.0
+
+# 1048576 % column_size(= 15, 3 * prime= 5) = 1
+# 1048576 % column_size(= 33, 3 * prime=11) = 1
+# 1048576 % column_size(= 93, 3 * prime=31) = 1
+# 1048576 % column_size(=123, 3 * prime=41) = 1

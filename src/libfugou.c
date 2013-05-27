@@ -12,7 +12,6 @@ int _log_level = DEBUG_;
 void set_logger_level(int log_level)
 {
     _log_level = log_level;
-    fprintf(_log, "called set_logger_level(log_level=%d)\n", log_level);
 }
 
 const char *_log_level_names[] = {
