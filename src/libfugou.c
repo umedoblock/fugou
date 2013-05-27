@@ -217,7 +217,7 @@ void dump(void *ptr, int length, int width)
 {
     int i;
     unsigned char *data = (unsigned char *)ptr;
-    char fmt[BUFFER_SIZE];
+    char fmt[SS_SIZE];
 
     if (! (_log_level == DEBUG_ || _log_level == DUMP)) {
         return;

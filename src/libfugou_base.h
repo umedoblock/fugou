@@ -25,7 +25,7 @@ void vlogger(char *log_name, int level, const char *fmt, va_list ap);
 #define EIGHT (8ULL)
 #define OCTET EIGHT
 
-#define BUFFER_SIZE 80
+#define SS_SIZE 80
 
 typedef void (*code_function)(uchar *, uchar *, void *);
 /*
