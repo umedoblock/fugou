@@ -33,10 +33,12 @@ int main(void)
     fprintf(stdout, "do2(writ, er) = %d\n", do2(writ, er));
     fprintf(stdout, "\n");
     fprintf(stdout, "rw(er): reader = %d, writer = %d\n", rw(er));
+    fprintf(stdout, "rw(er): reader = %d, writer = %d\n", (reader), (writer));
     fprintf(stdout, "\n");
     fprintf(stdout, "rw2(er): reader = %d, writer = %d\n", rw2(er));
     fprintf(stdout, "rw2(er): reader = %d, writer = %d\n", (reader, writer));
     fprintf(stdout, "\n");
     fprintf(stdout, "rw3(er): reader = %d, writer = %d\n", rw3(er));
+    fprintf(stdout, "rw3(er): reader = %d, writer = %d\n", reader, writer);
     return 0;
 }
