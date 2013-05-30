@@ -5,11 +5,18 @@
 #define rw(name) (read ## name), (writ ## name)
 #define rw2(name) (read ## name, writ ## name)
 #define rw3(name) read ## name, writ ## name
+#define SLOT_READWRIT(name, init) read ## name = init, writ ## name = init
+#define SLOT_READWRITA(name, init) *read ## name = init, *writ ## name = init
 
 int main(void)
 {
     int i = 0;
-    int reader = 100, writer = 200;
+    int SLOT_READWRIT(er, 1000);
+    void *buf = NULL, SLOT_READWRITA(_buf, NULL);
+/*
+    int reader = 1000, writer = 1000;
+    void *buf = ((void *)0), *read_buf = ((void *)0), *writ_buf = ((void *)0);
+*/
 
     while (i < 10) {
         i++;
