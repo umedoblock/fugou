@@ -17,5 +17,11 @@ int main(void)
         continue; /* 無限 loop ならず */
     }
 
+    for (i=0;i<10;i++) {
+        fprintf(stdout, "i = %d\n", i);
+        i--;
+        /* 小細工すると、当然ながら無限 loop */
+    }
+
     return 0;
 }
