@@ -700,7 +700,6 @@ static char *_make_tmpnam(rs_file_t *rsf)
 
     p = tmpnam(rsf->temp_path);
     /*
-    tempnam();
     mkstemp();
     tmpfile();
     */
