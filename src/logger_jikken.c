@@ -37,12 +37,12 @@ void logger(char *log_name, int level, char *fmt, ...)
     }
 }
 
-void vlogger(char *log_name, int level, const char *fmt, va_list ap)
+void vlogger(char *log_name, int lineno, int level, const char *fmt, va_list ap)
 {
     /* like a vfprintf(), vsnprintf() */
 
     if (_log != NULL && level >= _log_level) {
-        fprintf(_log, "[%s] [%s] ", log_name, _log_level_names[level]);
+        fprintf(_log, "[%s:%d] [%s] ", log_name, lineno, _log_level_names[level]);
         vfprintf(_log, fmt, ap);
     }
 }
@@ -52,9 +52,20 @@ static void slot_logger(const int level, const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
+    vlogger(__FILE__, __LINE__, level, fmt, ap);
+    va_end(ap);
+}
+
+#if 0
+static void info(const char *filename, const int lineno, const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
     vlogger("slot", level, fmt, ap);
     va_end(ap);
 }
+#endif
 
 int main(void)
 {
