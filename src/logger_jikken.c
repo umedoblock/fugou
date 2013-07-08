@@ -1,9 +1,19 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
 /*
 #include <varargs.h>
 */
+
+#define SS_SIZE (80)
+#define FORMAT_TIMESTAMP "%04d-%02d-%02dT%02d:%02d:%02d.%06ld"
+
+/* 参考: http://homepage1.nifty.com/herumi/prog/gcc-and-vc.html */
+
+int current_isoformat_time(char *ts, size_t ts_size);
 
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
@@ -41,15 +51,15 @@ void logger(char *log_name, int level, char *fmt, ...)
     }
 }
 
-#define LOG_FORMAT ("[%s:%d:in %s()] [%s] ")
+#define LOG_FORMAT ("[%s] [%s:%d:in %s()] [%s] ")
 
-void vlogger(char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap)
+void vlogger(char *iso_format_time, char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap)
 {
     /* like a vfprintf(), vsnprintf() */
 
     if (_log != NULL && level >= _log_level) {
-        fprintf(_log, LOG_FORMAT, __file__, __line__, _func_,
-                                        _log_level_names[level]);
+        fprintf(_log, LOG_FORMAT, iso_format_time, __file__, __line__, _func_,
+                                 _log_level_names[level]);
         vfprintf(_log, fmt, ap);
     }
 }
@@ -75,25 +85,30 @@ void vlogger(char *__file__, int __line__, const char *_func_, int level, char *
 
        これにより紀元 (the Epoch: time(2) を参照) からの秒とマイクロ秒が取得で
        きる。 tz 引き数は struct timezone である:
-
 #endif
 
-#define FORMAT_TIMESTAMP "%04d-%02d-%02dT%02d:%02d:%02d.000000"
-
 /* ~/repos/hg/p2p/umatobi/trunk/sim/basic/log.c p2p_CmnLog() */
-size_t current_isoformat_time(char *ts, size_t ts_size)
+int current_isoformat_time(char *ts, size_t ts_size)
 {
+    int len = 0;
     time_t timer;
     struct tm *t_st;
-    int len = 0;
+    long tv_usec;
 
-    //現在の時刻を取得
+    /* 現在の時刻を取得 */
+#ifdef _WIN32
+    /* windows には gettimeofday() がなさそうなので。。。*/
     time(&timer);
-    /* windows に gettimeofday() がなさそうなので。。。
-    struct timeval tv_, *tv = tv_;
+    tv_usec = 0;
+#else /* Linux */
+    struct timeval tv_, *tv = &tv_;
     gettimeofday(tv, NULL);
-    */
-    //現在の時刻を構造体用に変換
+
+    timer = tv->tv_sec;
+    tv_usec = tv->tv_usec;
+#endif
+
+    /* 現在の時刻を構造体用に変換 */
     t_st = localtime(&timer);
 
     /* '2012-11-02T23:22:27.002481' */
@@ -103,7 +118,8 @@ size_t current_isoformat_time(char *ts, size_t ts_size)
         t_st->tm_mday,
         t_st->tm_hour,
         t_st->tm_min,
-        t_st->tm_sec
+        t_st->tm_sec,
+        tv_usec
     );
 
     return len;
@@ -112,13 +128,16 @@ size_t current_isoformat_time(char *ts, size_t ts_size)
 void slot_logger(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...)
 {
     va_list ap;
+    char iso_format_time[SS_SIZE];
+
+    current_isoformat_time(iso_format_time, SS_SIZE);
 
     va_start(ap, fmt);
-    vlogger(__file__, __line__, _func_, level, fmt, ap);
+    vlogger(iso_format_time, __file__, __line__, _func_, level, fmt, ap);
     va_end(ap);
 }
 
-#define SLOT_LOGGER(level, ...) (slot_logger(__FILE__, __LINE__, __func__, level, __VA_ARGS__))
+#define SLOT_LOGGER(level, ...) (slot_logger(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
 
 #if 0
 static void info(const char *filename, const int lineno, const char *fmt, ...)
@@ -131,8 +150,6 @@ static void info(const char *filename, const int lineno, const char *fmt, ...)
 }
 #endif
 
-#define SS_SIZE (80)
-
 int main(void)
 {
     int i = 1000;
@@ -141,7 +158,7 @@ int main(void)
     set_logger(stderr);
     set_logger_level(INFO);
 
-    SLOT_LOGGER(INFO, "hello world!\n");
+    SLOT_LOGGER(INFO, "hello world! hi!\n");
     SLOT_LOGGER(INFO, "I am logger.\n");
     SLOT_LOGGER(INFO, "i=%d.\n", i);
 
