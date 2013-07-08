@@ -40,12 +40,14 @@ void logger(char *log_name, int level, char *fmt, ...)
     }
 }
 
+#define LOG_FORMAT ("[%s:%d:in %s()] [%s] ")
+
 void vlogger(char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap)
 {
     /* like a vfprintf(), vsnprintf() */
 
     if (_log != NULL && level >= _log_level) {
-        fprintf(_log, "[%s:%d:%s] [%s] ", __file__, __line__, _func_,
+        fprintf(_log, LOG_FORMAT, __file__, __line__, _func_,
                                         _log_level_names[level]);
         vfprintf(_log, fmt, ap);
     }
