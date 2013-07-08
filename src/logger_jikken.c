@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdarg.h>
+/*
+#include <varargs.h>
+*/
 
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
@@ -37,24 +40,27 @@ void logger(char *log_name, int level, char *fmt, ...)
     }
 }
 
-void vlogger(char *log_name, int lineno, int level, const char *fmt, va_list ap)
+void vlogger(char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap)
 {
     /* like a vfprintf(), vsnprintf() */
 
     if (_log != NULL && level >= _log_level) {
-        fprintf(_log, "[%s:%d] [%s] ", log_name, lineno, _log_level_names[level]);
+        fprintf(_log, "[%s:%d:%s] [%s] ", __file__, __line__, _func_,
+                                        _log_level_names[level]);
         vfprintf(_log, fmt, ap);
     }
 }
 
-static void slot_logger(const int level, const char *fmt, ...)
+void slot_logger(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...)
 {
     va_list ap;
 
     va_start(ap, fmt);
-    vlogger(__FILE__, __LINE__, level, fmt, ap);
+    vlogger(__file__, __line__, _func_, level, fmt, ap);
     va_end(ap);
 }
+
+#define SLOT_LOGGER(level, ...) (slot_logger(__FILE__, __LINE__, __func__, level, __VA_ARGS__))
 
 #if 0
 static void info(const char *filename, const int lineno, const char *fmt, ...)
@@ -69,10 +75,14 @@ static void info(const char *filename, const int lineno, const char *fmt, ...)
 
 int main(void)
 {
+    int i = 1000;
+
     set_logger(stderr);
     set_logger_level(INFO);
 
-    slot_logger(INFO, "hello world!\n");
-    slot_logger(INFO, "I am logger.\n");
+    SLOT_LOGGER(INFO, "hello world!\n");
+    SLOT_LOGGER(INFO, "I am logger.\n");
+    SLOT_LOGGER(INFO, "i=%d.\n", i);
+
     return 0;
 }
