@@ -24,15 +24,15 @@ typedef unsigned long long int long_size_t;
 
 #define LOG_FORMAT ("[%s] [%s:%d:%s()] [%s] ")
 #define FORMAT_TIMESTAMP "%04d-%02d-%02dT%02d:%02d:%02d.%06ld"
-#define LOGGER2(level, ...) (logger2(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
-#define DEBUG2(...) (_debug2(__FILE__, __LINE__, __FUNCTION__, DEBUG_, __VA_ARGS__))
+#define LOGGER(level, ...) (logger(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
+#define _DEBUG(...) (_debug(__FILE__, __LINE__, __FUNCTION__, DEBUG_, __VA_ARGS__))
 
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
 };
 
 void set_logger(FILE *log);
-void vlogger(char *log_name, int level, const char *fmt, va_list ap);
+void vlogger(char *iso_format_time, char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap);
 
 #define EIGHT (8ULL)
 #define OCTET EIGHT
