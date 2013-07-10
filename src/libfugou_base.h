@@ -8,6 +8,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include <time.h>
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
+
 typedef unsigned int unt;
 typedef unsigned int uint;
 typedef unsigned char uchar;
@@ -16,6 +21,10 @@ typedef unsigned long long int long_size_t;
 /* signed: LL, unsigned: ULL
  * format: "%lld", "%ulld"
  */
+
+#define LOG_FORMAT ("[%s] [%s:%d:%s()] [%s] ")
+#define FORMAT_TIMESTAMP "%04d-%02d-%02dT%02d:%02d:%02d.%06ld"
+#define SLOT_LOGGER2(level, ...) (slot_logger2(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
 
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG

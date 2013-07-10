@@ -57,6 +57,69 @@ void _fugou_debug(const char *fmt, ...)
     #endif
 }
 
+void vlogger2(char *iso_format_time, char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap)
+{
+    /* like a vfprintf(), vsnprintf() */
+    FILE *_log = stderr;
+    int _log_level = INFO;
+
+    if (_log != NULL && level >= _log_level) {
+        fprintf(_log, LOG_FORMAT, iso_format_time, __file__, __line__, _func_,
+                                 _log_level_names[level]);
+        vfprintf(_log, fmt, ap);
+    }
+}
+
+/* ~/repos/hg/p2p/umatobi/trunk/sim/basic/log.c p2p_CmnLog() */
+int current_isoformat_time(char *ts, size_t ts_size)
+{
+    int len = 0;
+    time_t timer;
+    struct tm *t_st;
+    long tv_usec;
+
+    /* 現在の時刻を取得 */
+#ifdef _WIN32
+    /* windows には gettimeofday() がなさそうなので。。。*/
+    time(&timer);
+    tv_usec = 0;
+#else /* Linux */
+    struct timeval tv_, *tv = &tv_;
+    gettimeofday(tv, NULL);
+
+    timer = tv->tv_sec;
+    tv_usec = tv->tv_usec;
+#endif
+
+    /* 現在の時刻を構造体用に変換 */
+    t_st = localtime(&timer);
+
+    /* '2012-11-02T23:22:27.002481' */
+    len += snprintf(ts, ts_size, FORMAT_TIMESTAMP,
+        t_st->tm_year + 1900,
+        t_st->tm_mon + 1,
+        t_st->tm_mday,
+        t_st->tm_hour,
+        t_st->tm_min,
+        t_st->tm_sec,
+        tv_usec
+    );
+
+    return len;
+}
+
+void slot_logger2(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...)
+{
+    va_list ap;
+    char iso_format_time[SS_SIZE];
+
+    current_isoformat_time(iso_format_time, SS_SIZE);
+
+    va_start(ap, fmt);
+    vlogger2(iso_format_time, __file__, __line__, _func_, level, fmt, ap);
+    va_end(ap);
+}
+
 void
 _calc_cipher_size(_cipher_size_brother_t *csb,
                    size_t text_size,
