@@ -33,16 +33,6 @@ void logger(char *log_name, int level, char *fmt, ...)
     }
 }
 
-void vlogger(char *log_name, int level, const char *fmt, va_list ap)
-{
-    /* like a vfprintf(), vsnprintf() */
-
-    if (_log != NULL && level >= _log_level) {
-        fprintf(_log, "[%s] [%s] ", log_name, _log_level_names[level]);
-        vfprintf(_log, fmt, ap);
-    }
-}
-
 void _fugou_debug(const char *fmt, ...)
 {
     #ifdef DEBUG
@@ -108,7 +98,7 @@ int current_isoformat_time(char *ts, size_t ts_size)
     return len;
 }
 
-void slot_logger2(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...)
+void logger2(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...)
 {
     va_list ap;
     char iso_format_time[SS_SIZE];
@@ -118,6 +108,17 @@ void slot_logger2(char *__file__, int __line__, const char *_func_, int level, c
     va_start(ap, fmt);
     vlogger2(iso_format_time, __file__, __line__, _func_, level, fmt, ap);
     va_end(ap);
+}
+
+void _debug2(const char *fmt, ...)
+{
+    #ifdef DEBUG
+    va_list ap;
+
+    va_start(ap, fmt);
+    vlogger2(__FILE__, DEBUG_, fmt, ap);
+    va_end(ap);
+    #endif
 }
 
 void

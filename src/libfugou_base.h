@@ -24,7 +24,7 @@ typedef unsigned long long int long_size_t;
 
 #define LOG_FORMAT ("[%s] [%s:%d:%s()] [%s] ")
 #define FORMAT_TIMESTAMP "%04d-%02d-%02dT%02d:%02d:%02d.%06ld"
-#define SLOT_LOGGER2(level, ...) (slot_logger2(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
+#define LOGGER2(level, ...) (logger2(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
 
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
@@ -61,8 +61,6 @@ size_t _decrypt_cbc(
     size_t block_size,
     code_function decrypt
 );
-
-void logger(char *log_name, int level, char *fmt, ...);
 
 /* copied camellia/pycamellia.c */
 typedef struct {
