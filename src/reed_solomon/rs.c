@@ -6,34 +6,6 @@
 #define _rs_ADD(a, b) (a ^ b)
 
 /*****************************************************************************/
-/* for logger and debug ******************************************************/
-/*****************************************************************************/
-static void _rs_debug(const char *fmt, ...)
-{
-    #ifdef DEBUG
-    va_list ap;
-
-    va_start(ap, fmt);
-    vlogger("rs", DEBUG_, fmt, ap);
-    va_end(ap);
-    #endif
-}
-
-static void rs_logger(const int level, const char *fmt, ...)
-{
-    va_list ap;
-
-    /*
-    fprintf(stderr, "[rs] [%s] _log=%p\n", _log_level_names[level], _log);
-    fprintf(stderr, "(_log=%p != NULL && level=%d >= _log_level=%d)\n",
-                      _log, level, _log_level);
-                      */
-    va_start(ap, fmt);
-    vlogger("rs", level, fmt, ap);
-    va_end(ap);
-}
-
-/*****************************************************************************/
 /* API ***********************************************************************/
 /*****************************************************************************/
 
@@ -58,33 +30,33 @@ int rs_ultimate_fate_of_the_universe(void)
 
 void _rs_view_rse(rs_encode_t *rse)
 {
-    rs_logger(INFO, "rse = %p\n", rse);
-    rs_logger(INFO, "                rs = %p\n", rse->rs);
-    rs_logger(INFO, "          division = %u\n", rse->division);
-    rs_logger(INFO, "       vandermonde = %p\n", rse->vandermonde.ptr);
-    rs_logger(INFO, "              _row = %p\n", rse->_row.ptr);
-    rs_logger(INFO, "             _row2 = %p\n", rse->_row2.ptr);
-    rs_logger(INFO, "     allocate_size = %zu\n", rse->allocate_size);
-    rs_logger(INFO, "         _row_size = %zu\n", rse->_row_size);
-    rs_logger(INFO, "       matrix_size = %zu\n", rse->matrix_size);
-    rs_logger(INFO, "\n");
+    LOGGER(INFO, "rse = %p\n", rse);
+    LOGGER(INFO, "                rs = %p\n", rse->rs);
+    LOGGER(INFO, "          division = %u\n", rse->division);
+    LOGGER(INFO, "       vandermonde = %p\n", rse->vandermonde.ptr);
+    LOGGER(INFO, "              _row = %p\n", rse->_row.ptr);
+    LOGGER(INFO, "             _row2 = %p\n", rse->_row2.ptr);
+    LOGGER(INFO, "     allocate_size = %zu\n", rse->allocate_size);
+    LOGGER(INFO, "         _row_size = %zu\n", rse->_row_size);
+    LOGGER(INFO, "       matrix_size = %zu\n", rse->matrix_size);
+    LOGGER(INFO, "\n");
 }
 
 void _rs_view_rsd(rs_decode_t *rsd)
 {
-    rs_logger(INFO, "rsd = %p\n", rsd);
-    rs_logger(INFO, "                rs = %p\n", rsd->rs);
-    rs_logger(INFO, "          division = %u\n", rsd->division);
-    rs_logger(INFO, "     allocate_size = %zu\n", rsd->allocate_size);
-    rs_logger(INFO, "       matrix_size = %zu\n", rsd->matrix_size);
-    rs_logger(INFO, "         _row_size = %zu\n", rsd->_row_size);
-    rs_logger(INFO, "      _column_size = %zu\n", rsd->_column_size);
-    rs_logger(INFO, "            merged = %p\n", rsd->merged.ptr);
-    rs_logger(INFO, "           inverse = %p\n", rsd->inverse.ptr);
-    rs_logger(INFO, "              _row = %p\n", rsd->_row.ptr);
-    rs_logger(INFO, "             _row2 = %p\n", rsd->_row2.ptr);
-    rs_logger(INFO, "           _column = %p\n", rsd->_column.ptr);
-    rs_logger(INFO, "\n");
+    LOGGER(INFO, "rsd = %p\n", rsd);
+    LOGGER(INFO, "                rs = %p\n", rsd->rs);
+    LOGGER(INFO, "          division = %u\n", rsd->division);
+    LOGGER(INFO, "     allocate_size = %zu\n", rsd->allocate_size);
+    LOGGER(INFO, "       matrix_size = %zu\n", rsd->matrix_size);
+    LOGGER(INFO, "         _row_size = %zu\n", rsd->_row_size);
+    LOGGER(INFO, "      _column_size = %zu\n", rsd->_column_size);
+    LOGGER(INFO, "            merged = %p\n", rsd->merged.ptr);
+    LOGGER(INFO, "           inverse = %p\n", rsd->inverse.ptr);
+    LOGGER(INFO, "              _row = %p\n", rsd->_row.ptr);
+    LOGGER(INFO, "             _row2 = %p\n", rsd->_row2.ptr);
+    LOGGER(INFO, "           _column = %p\n", rsd->_column.ptr);
+    LOGGER(INFO, "\n");
 }
 
 /* for slots *****************************************************************/
@@ -212,7 +184,7 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
     uint i, bit_pattern = 1;
     _ptr_t gf = rs->gf, gfi = rs->gfi;
 
-    _rs_debug("in _rs_make_gf_and_gfi()\n");
+    _DEBUG("in _rs_make_gf_and_gfi()\n");
 
     for (i=0;i<rs->gf_max;i++) {
         if (bit_pattern & rs->w)
@@ -229,14 +201,14 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
     }
 
     if (rs->bits <= 4) {
-        _rs_debug("gf =\n");
+        _DEBUG("gf =\n");
         for (i=0;i<rs->w;i++)
-            _rs_debug("i = %u, 0x%04x\n", i, gf.u16[i]);
-        _rs_debug("\n");
-        _rs_debug("gfi =\n");
+            _DEBUG("i = %u, 0x%04x\n", i, gf.u16[i]);
+        _DEBUG("\n");
+        _DEBUG("gfi =\n");
         for (i=0;i<rs->w;i++)
-            _rs_debug("i = %u, 0x%04x\n", i, gfi.u16[i]);
-        _rs_debug("\n\n");
+            _DEBUG("i = %u, 0x%04x\n", i, gfi.u16[i]);
+        _DEBUG("\n\n");
     }
 }
 
@@ -334,7 +306,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
 
                 if (work) {
                     swap = 1;
-                    _rs_debug(
+                    _DEBUG(
                            "matrix[%d], matrix[%d] = matrix[%d], matrix[%d]\n",
                             k, j, j, k);
                     /*
@@ -428,7 +400,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
         }
     }
 
-    _rs_debug("in _rs_solve_inverse() 前進完了 moving front done.\n\n");
+    _DEBUG("in _rs_solve_inverse() 前進完了 moving front done.\n\n");
 
     for (k=0;k<division-1;k++) {
         for (j=0;j<division-1-k;j++) {
@@ -478,12 +450,12 @@ static int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
 
     rs_ = _rs_get_rs(bits);
     if (rs_ == NULL) {
-        rs_logger(ERROR, "bits(=%u) must chose 4, 8, 16 or 24 for bits.\n",
+        LOGGER(ERROR, "bits(=%u) must chose 4, 8, 16 or 24 for bits.\n",
                             bits);
         return RS_INVALID_BITS_ERROR;
     }
     if (division < 2 || division > rs_->gf_max) {
-        rs_logger(ERROR, "division(=%u) must be 2 <= division <= %u.\n",
+        LOGGER(ERROR, "division(=%u) must be 2 <= division <= %u.\n",
                             division, rs_->gf_max);
         return RS_INVALID_DIVISION_ERROR;
     }
@@ -520,27 +492,27 @@ static big_bang_t *_rs_bright(void)
 
 static void _rs_view_rs(reed_solomon_t *rs)
 {
-    rs_logger(INFO, "rs = %p\n", rs);
-    rs_logger(INFO, "              bits = %u\n", rs->bits);
-    rs_logger(INFO, "              poly = %u\n", rs->poly);
-    rs_logger(INFO, "       symbol_size = %u\n", rs->symbol_size);
-    rs_logger(INFO, "     register_size = %zu\n", rs->register_size);
-    rs_logger(INFO, "                 w = %u\n", rs->w);
-    rs_logger(INFO, "            gf_max = %u\n", rs->gf_max);
-    rs_logger(INFO, "           gf_size = %zu\n", rs->gf_size);
-    rs_logger(INFO, "                gf = %p\n", rs->gf.ptr);
-    rs_logger(INFO, "               gfi = %p\n", rs->gfi.ptr);
-    rs_logger(INFO, "\n");
+    LOGGER(INFO, "rs = %p\n", rs);
+    LOGGER(INFO, "              bits = %u\n", rs->bits);
+    LOGGER(INFO, "              poly = %u\n", rs->poly);
+    LOGGER(INFO, "       symbol_size = %u\n", rs->symbol_size);
+    LOGGER(INFO, "     register_size = %zu\n", rs->register_size);
+    LOGGER(INFO, "                 w = %u\n", rs->w);
+    LOGGER(INFO, "            gf_max = %u\n", rs->gf_max);
+    LOGGER(INFO, "           gf_size = %zu\n", rs->gf_size);
+    LOGGER(INFO, "                gf = %p\n", rs->gf.ptr);
+    LOGGER(INFO, "               gfi = %p\n", rs->gfi.ptr);
+    LOGGER(INFO, "\n");
 }
 
 static void _rs_view_big_bang(void)
 {
     big_bang_t *bb = _rs_bright();
     int i;
-    rs_logger(INFO, "big_bang = %p\n", bb);
-    rs_logger(INFO, "     allocate_size = %zu\n", bb->allocate_size);
-    rs_logger(INFO, "               mem = %p\n", bb->mem);
-    rs_logger(INFO, "\n");
+    LOGGER(INFO, "big_bang = %p\n", bb);
+    LOGGER(INFO, "     allocate_size = %zu\n", bb->allocate_size);
+    LOGGER(INFO, "               mem = %p\n", bb->mem);
+    LOGGER(INFO, "\n");
     for (i=0;i<RS_GF_NUM;i++) {
         _rs_view_rs(bb->rs + i);
     }
@@ -603,11 +575,11 @@ static int _rs_init_the_universe(big_bang_t *universe)
     universe->allocate_size = allocate_size;
 
     mem = (char *)malloc(allocate_size);
-    _rs_debug("in _rs_init_the_universe()\n");
-    _rs_debug("malloc(allocate_size=%u) = %p\n\n", allocate_size, mem);
+    _DEBUG("in _rs_init_the_universe()\n");
+    _DEBUG("malloc(allocate_size=%u) = %p\n\n", allocate_size, mem);
     if (mem == NULL) {
-        rs_logger(ERROR, "failed _rs_init_the_universe()\n");
-        rs_logger(ERROR, "cause of that malloc(allocate_size=%u).\n\n",
+        LOGGER(ERROR, "failed _rs_init_the_universe()\n");
+        LOGGER(ERROR, "cause of that malloc(allocate_size=%u).\n\n",
                     allocate_size);
         return RS_MALLOC_ERROR;
     }
@@ -740,18 +712,18 @@ static void _rs_view_matrix16(ushort *matrix, uint division)
 {
     uint i, j;
 
-    rs_logger(INFO, "_rs_view_matrix16(matrix=%p, division=%u)\n",
+    LOGGER(INFO, "_rs_view_matrix16(matrix=%p, division=%u)\n",
                                      matrix, division);
-    rs_logger(INFO, "     ");
+    LOGGER(INFO, "     ");
     for (i=0;i<division;i++)
-        rs_logger(INFO, "%4x ", i);
-    rs_logger(INFO, "\n");
+        LOGGER(INFO, "%4x ", i);
+    LOGGER(INFO, "\n");
     for (j=0;j<division;j++) {
-        rs_logger(INFO, "%4x ", j);
+        LOGGER(INFO, "%4x ", j);
         for (i=0;i<division;i++) {
-            rs_logger(INFO, "%4x ", matrix[j * division + i]);
+            LOGGER(INFO, "%4x ", matrix[j * division + i]);
         }
-        rs_logger(INFO, "\n");
+        LOGGER(INFO, "\n");
     }
 }
 

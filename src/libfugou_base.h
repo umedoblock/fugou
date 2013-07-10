@@ -33,6 +33,8 @@ enum _log_levels {
 
 void set_logger(FILE *log);
 void vlogger(char *iso_format_time, char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap);
+void logger(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...);
+void _debug(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...);
 
 #define EIGHT (8ULL)
 #define OCTET EIGHT
