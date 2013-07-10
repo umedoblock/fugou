@@ -18,35 +18,6 @@ const char *_log_level_names[] = {
     "DUMP", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "BUG"
 };
 
-void logger(char *log_name, int level, char *fmt, ...)
-{
-    va_list ap;
-
-    if (_log != NULL && level >= _log_level) {
-        fprintf(_log, "[%s] [%s] ", log_name, _log_level_names[level]);
-        /*
-        n = vsnprintf(p, size, fmt, ap);
-        */
-        va_start(ap, fmt);
-        vfprintf(_log, fmt, ap);
-        va_end(ap);
-    }
-}
-
-void _fugou_debug(const char *fmt, ...)
-{
-    #ifdef DEBUG
-    va_list ap;
-
-    if (_log != NULL && DEBUG_ >= _log_level) {
-        fprintf(_log, "[%s] [%s] ", "libfugou", _log_level_names[DEBUG_]);
-        va_start(ap, fmt);
-        vfprintf(_log, fmt, ap);
-        va_end(ap);
-    }
-    #endif
-}
-
 void vlogger2(char *iso_format_time, char *__file__, int __line__, const char *_func_, int level, char *fmt, va_list ap)
 {
     /* like a vfprintf(), vsnprintf() */
@@ -110,13 +81,17 @@ void logger2(char *__file__, int __line__, const char *_func_, int level, char *
     va_end(ap);
 }
 
-void _debug2(const char *fmt, ...)
+void _debug2(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...)
 {
+    #define DEBUG
     #ifdef DEBUG
     va_list ap;
+    char iso_format_time[SS_SIZE];
+
+    current_isoformat_time(iso_format_time, SS_SIZE);
 
     va_start(ap, fmt);
-    vlogger2(__FILE__, DEBUG_, fmt, ap);
+    vlogger2(iso_format_time, __file__, __line__, _func_, level, fmt, ap);
     va_end(ap);
     #endif
 }
@@ -139,11 +114,11 @@ _calc_cipher_size(_cipher_size_brother_t *csb,
 void
 _view_cipher_size(_cipher_size_brother_t *csb)
 {
-    _fugou_debug("   csb->text_size = %u\n", csb->text_size);
-    _fugou_debug(" csb->cipher_size = %u\n", csb->cipher_size);
-    _fugou_debug("   csb->snip_size = %u\n", csb->snip_size);
-    _fugou_debug("csb->padding_size = %u\n", csb->padding_size);
-    _fugou_debug("  csb->block_size = %u\n", csb->block_size);
+    DEBUG2("   csb->text_size = %u\n", csb->text_size);
+    DEBUG2(" csb->cipher_size = %u\n", csb->cipher_size);
+    DEBUG2("   csb->snip_size = %u\n", csb->snip_size);
+    DEBUG2("csb->padding_size = %u\n", csb->padding_size);
+    DEBUG2("  csb->block_size = %u\n", csb->block_size);
 }
 
 size_t _encrypt_cbc(
@@ -167,7 +142,7 @@ size_t _encrypt_cbc(
     if (c != iv)
         memcpy(c, iv, block_size);
     encrypted_size = block_size;
-    _fugou_debug("encrypt=%p in _encrypt_cbc() 想像できんっつーのっ！\n",
+    DEBUG2("encrypt=%p in _encrypt_cbc() 想像できんっつーのっ！\n",
                   encrypt);
     /*
     [libfugou] [DEBUG] encrypt=(nil) in _encrypt_cbc()
@@ -175,7 +150,7 @@ size_t _encrypt_cbc(
     */
 
     while(encrypted_size < csb->cipher_size - block_size){
-        _fugou_debug("encrypted_size=%u < csb->cipher_size=%u\n",
+        DEBUG2("encrypted_size=%u < csb->cipher_size=%u\n",
                       encrypted_size, csb->cipher_size);
         c += block_size;
         for(i=0;i<block_size;i++)
@@ -192,9 +167,9 @@ size_t _encrypt_cbc(
     memset(c + csb->snip_size, 0x00, csb->padding_size);
     last_octet = c[block_size - 1];
     last_octet |= csb->snip_size;
-    _fugou_debug("   csb->snip_size = %u, 0x%02x in _encrypt_cbc().\n", csb->snip_size, csb->snip_size);
-    _fugou_debug("csb->padding_size = %u, 0x%02x in _encrypt_cbc().\n", csb->padding_size, csb->padding_size);
-    _fugou_debug("last_octet = 0x%02x in _encrypt_cbc().\n", last_octet);
+    DEBUG2("   csb->snip_size = %u, 0x%02x in _encrypt_cbc().\n", csb->snip_size, csb->snip_size);
+    DEBUG2("csb->padding_size = %u, 0x%02x in _encrypt_cbc().\n", csb->padding_size, csb->padding_size);
+    DEBUG2("last_octet = 0x%02x in _encrypt_cbc().\n", last_octet);
 
     c[block_size - 1] = last_octet;
 
@@ -203,8 +178,8 @@ size_t _encrypt_cbc(
     encrypt(c, c, key);
 
     encrypted_size += block_size;
-    _fugou_debug("c - c_ = %u in _encrypt_cbc()\n", (unt )(c + block_size - c_));
-    _fugou_debug("encrypted_size = %u in _encrypt_cbc()\n", encrypted_size);
+    DEBUG2("c - c_ = %u in _encrypt_cbc()\n", (unt )(c + block_size - c_));
+    DEBUG2("encrypted_size = %u in _encrypt_cbc()\n", encrypted_size);
 
     return encrypted_size;
 }
@@ -224,8 +199,8 @@ size_t _decrypt_cbc(
     size_t snip_size;
     _cipher_size_brother_t csb_, *csb = &csb_;
 
-    _fugou_debug("decrypt=%p in _decrypt_cbc() くっそー。\n", decrypt);
-    _fugou_debug("_calc_cipher_size() cipher_size = %u in _decrypt_cbc() \n", cipher_size);
+    DEBUG2("decrypt=%p in _decrypt_cbc() くっそー。\n", decrypt);
+    DEBUG2("_calc_cipher_size() cipher_size = %u in _decrypt_cbc() \n", cipher_size);
     iv = c;
     c += block_size;
     /*
@@ -244,21 +219,21 @@ size_t _decrypt_cbc(
         decrypted_size += block_size;
     }
 
-    _fugou_debug("d[-1] = 0x%02x in _decrypt_cbc() \n", d[-1]);
+    DEBUG2("d[-1] = 0x%02x in _decrypt_cbc() \n", d[-1]);
     snip_size = d[-1] % block_size;
-    _fugou_debug("   snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, snip_size);
-    _fugou_debug("_calc_cipher_size() snip_size = %u in _decrypt_cbc() \n", snip_size);
+    DEBUG2("   snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, snip_size);
+    DEBUG2("_calc_cipher_size() snip_size = %u in _decrypt_cbc() \n", snip_size);
     text_size = cipher_size - block_size * 2 + snip_size;
-    _fugou_debug("_calc_cipher_size() before text_size = %u in _decrypt_cbc() \n", text_size);
+    DEBUG2("_calc_cipher_size() before text_size = %u in _decrypt_cbc() \n", text_size);
     _calc_cipher_size(csb, text_size, block_size);
-    _fugou_debug("_calc_cipher_size()  after text_size = %u in _decrypt_cbc() \n", text_size);
-    _fugou_debug("_decrypt_cbc()\n");
+    DEBUG2("_calc_cipher_size()  after text_size = %u in _decrypt_cbc() \n", text_size);
+    DEBUG2("_decrypt_cbc()\n");
     _view_cipher_size(csb);
-    _fugou_debug("\n");
+    DEBUG2("\n");
 
-    _fugou_debug("   csb->snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, csb->snip_size);
-    _fugou_debug("csb->padding_size = %u, 0x%02x in _decrypt_cbc().\n", csb->padding_size, csb->padding_size);
-    _fugou_debug("d - d_ = %u in _encrypt_cbc()\n", (unt )(d - d_));
+    DEBUG2("   csb->snip_size = %u, 0x%02x in _decrypt_cbc().\n", snip_size, csb->snip_size);
+    DEBUG2("csb->padding_size = %u, 0x%02x in _decrypt_cbc().\n", csb->padding_size, csb->padding_size);
+    DEBUG2("d - d_ = %u in _encrypt_cbc()\n", (unt )(d - d_));
 
     return text_size;
 }

@@ -25,6 +25,7 @@ typedef unsigned long long int long_size_t;
 #define LOG_FORMAT ("[%s] [%s:%d:%s()] [%s] ")
 #define FORMAT_TIMESTAMP "%04d-%02d-%02dT%02d:%02d:%02d.%06ld"
 #define LOGGER2(level, ...) (logger2(__FILE__, __LINE__, __FUNCTION__, level, __VA_ARGS__))
+#define DEBUG2(...) (_debug2(__FILE__, __LINE__, __FUNCTION__, DEBUG_, __VA_ARGS__))
 
 enum _log_levels {
     DUMP, DEBUG_, INFO, WARN, ERROR, FATAL, BUG
