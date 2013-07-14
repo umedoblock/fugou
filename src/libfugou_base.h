@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
 
 #include <time.h>
 #ifndef _WIN32
