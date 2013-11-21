@@ -747,7 +747,7 @@ static void _rs_encode16_slots(slot_t *parity,
             num = 0;
             for (k=0;k<symbol_size;k++) {
                 num <<= 8;
-                num += norm[j].slot[i * symbol_size + k];
+                num += SLOT_buf(norm + j)[i * symbol_size + k];
             }
             _vector.u16[j] = num;
         }
@@ -759,7 +759,7 @@ static void _rs_encode16_slots(slot_t *parity,
             num = _parity.u16[j];
             for (k=0;k<symbol_size;k++) {
                 unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                parity[j].slot[i * symbol_size + k] = unum;
+                SLOT_buf(parity + j)[i * symbol_size + k] = unum;
             }
         }
     }
@@ -785,7 +785,7 @@ static void _rs_encode32_slots(slot_t *parity,
             num = 0;
             for (k=0;k<symbol_size;k++) {
                 num <<= 8;
-                num += norm[j].slot[i * symbol_size + k];
+                num += SLOT_buf(norm + j)[i * symbol_size + k];
             }
             _vector.u32[j] = num;
         }
@@ -797,7 +797,7 @@ static void _rs_encode32_slots(slot_t *parity,
             num = _parity.u32[j];
             for (k=0;k<symbol_size;k++) {
                 unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                parity[j].slot[i * symbol_size + k] = unum;
+                SLOT_buf(parity + j)[i * symbol_size + k] = unum;
             }
         }
     }
@@ -822,7 +822,7 @@ static void _rs_decode16_slots(slot_t *recover,
             num = 0;
             for (k=0;k<symbol_size;k++) {
                 num <<= 8;
-                num += merged[j].slot[i * symbol_size + k];
+                num += SLOT_buf(merged + j)[i * symbol_size + k];
             }
             _vector.u16[j] = num;
         }
@@ -834,7 +834,7 @@ static void _rs_decode16_slots(slot_t *recover,
             num = _recover.u16[j];
             for (k=0;k<symbol_size;k++) {
                 unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                recover[j].slot[i * symbol_size + k] = unum;
+                SLOT_buf(recover + j)[i * symbol_size + k] = unum;
             }
         }
     }
@@ -871,7 +871,7 @@ static void _rs_decode32_slots(slot_t *recover,
             num = _recover.u32[j];
             for (k=0;k<symbol_size;k++) {
                 unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                recover[j].slot[i * symbol_size + k] = unum;
+                SLOT_buf(recover + j)[i * symbol_size + k] = unum;
             }
         }
     }
