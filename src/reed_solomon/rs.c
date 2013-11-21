@@ -859,7 +859,7 @@ static void _rs_decode32_slots(slot_t *recover,
             num = 0;
             for (k=0;k<symbol_size;k++) {
                 num <<= 8;
-                num += merged[j].slot[i * symbol_size + k];
+                num += SLOT_buf(merged + j)[i * symbol_size + k];
             }
             _vector.u32[j] = num;
         }
