@@ -19,7 +19,7 @@ lib_LTLIBRARIES = libfugou.la
 libfugou_la_SOURCES = \
     camellia/camellia.h camellia/camellia.c \
     sha/sha.h sha/sha.c \
-    reed_solomon/slot.h reed_solomon/slot.c \
+    slot/slot.h slot/slot.c \
     reed_solomon/rs.h reed_solomon/rs.c \
     reed_solomon/rsf.h reed_solomon/rsf.c \
     libfugou.c
