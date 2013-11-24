@@ -8,3 +8,10 @@
 
 # 即席GNU (autoconf & automake)
 # http://www.jaist.ac.jp/~kiyoshiy/memo/autoconf.html
+
+= hippos-lab::net
+== library の作成
+# http://homepage2.nifty.com/hippos/autoconf/library.html
+
+= compile 方法
+$ gcc -Wall -c reed_solomon/rs.c -o reed_solomon/rs.o
