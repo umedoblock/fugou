@@ -123,7 +123,7 @@ typedef union {
 typedef struct _slot_t _slot_t;
 typedef struct slot_t slot_t;
 
-typedef size_t (*convert_function)(slot_t *, slot_t *, uint, size_t);
+typedef size_t (*filter_function)(slot_t *, slot_t *, uint, size_t);
 typedef size_t (*io_function)(slot_t *, void *, size_t );
 typedef size_t (*pos_function)(slot_t *, void * );
 
@@ -133,7 +133,7 @@ struct _slot_t {
     _slot_size_brother_t sb[1];
     io_function reading;
     io_function writing;
-    convert_function converting;
+    filter_function filtering;
     _pos_t pos;
     pos_function getpos;
     pos_function setpos;
