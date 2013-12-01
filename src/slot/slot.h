@@ -79,7 +79,7 @@ File size:                3808 bytes
 #define SLOT_buf(s) (SLOT_slt(s).buf)
 #define SLOT_reading(s) (SLOT_slt(s).reading)
 #define SLOT_writing(s) (SLOT_slt(s).writing)
-#define SLOT_converting(s) (SLOT_slt(s).converting)
+#define SLOT_computing(s) (SLOT_slt(s).computing)
 #define SLOT_parent(s) (SLOT_slt(s).parent)
 #define SLOT_type(s) (SLOT_slt(s).type)
 #define SLOT_buf_size(s) (SLOT_sb(s)->buf_size)
@@ -123,7 +123,7 @@ typedef union {
 typedef struct _slot_t _slot_t;
 typedef struct slot_t slot_t;
 
-typedef size_t (*filter_function)(slot_t *, slot_t *, uint, size_t);
+typedef size_t (*compute_function)(slot_t *, slot_t *, uint, size_t);
 typedef size_t (*io_function)(slot_t *, void *, size_t );
 typedef size_t (*pos_function)(slot_t *, void * );
 
@@ -133,7 +133,7 @@ struct _slot_t {
     _slot_size_brother_t sb[1];
     io_function reading;
     io_function writing;
-    filter_function filtering;
+    compute_function computing;
     _pos_t pos;
     pos_function getpos;
     pos_function setpos;

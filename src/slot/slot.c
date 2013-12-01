@@ -638,34 +638,34 @@ _DEBUG(" done _slot_divide_now_reading().\n");
     return r;
 }
 
-size_t _slot_divide_now_converting(slot_t *children,
+size_t _slot_divide_now_computing(slot_t *children,
                                    slot_t *parent,
                                    uint division,
                                    size_t available_size)
 {
-    size_t convert_size = 0;
+    size_t comput_size = 0;
 
-_DEBUG("start _slot_divide_now_converting(children=%p, parent=%p, "
-            "division=%u, available_size=%u), SLOT_converting(parent)=%p.\n",
+_DEBUG("start _slot_divide_now_computing(children=%p, parent=%p, "
+            "division=%u, available_size=%u), SLOT_computing(parent)=%p.\n",
              children, parent,
-             division, available_size, SLOT_converting(parent));
-    if (SLOT_converting(parent)) {
-        convert_size = SLOT_converting(parent)(children, parent,
+             division, available_size, SLOT_computing(parent));
+    if (SLOT_computing(parent)) {
+        comput_size = SLOT_computing(parent)(children, parent,
                                                division, available_size);
     }
     else {
 #if 0
-        LOGGER(ERROR, "SLOT_converting(parent) is NULL pointer "
-                           "in _slot_divide_now_converting(children=%p, "
+        LOGGER(ERROR, "SLOT_computing(parent) is NULL pointer "
+                           "in _slot_divide_now_computing(children=%p, "
                            "parent=%p, division=%u, available_size=%u).\n",
                            children, parent, division, available_size);
 #endif
-        convert_size = 0;
+        comput_size = 0;
     }
 
-_DEBUG(" done _slot_divide_now_converting(), convert_size=%u\n",
-              convert_size);
-    return convert_size;
+_DEBUG(" done _slot_divide_now_computing(), comput_size=%u\n",
+              comput_size);
+    return comput_size;
 }
 
 size_t _slot_divide_now_writing(slot_t *children,
@@ -747,7 +747,7 @@ size_t _cat_mem(void *arg, uchar *buf, size_t available_size)
 }
 #endif
 
-size_t _slot_integrate_now_converting(slot_t *parent,
+size_t _slot_integrate_now_computing(slot_t *parent,
                                      slot_t *children,
                                      uint division,
                                      size_t available_size)
@@ -760,10 +760,10 @@ size_t _slot_integrate_now_converting(slot_t *parent,
     slot_t *child;
     int case_;
 
-_DEBUG("start _slot_integrate_now_converting(available_size=%u, "
+_DEBUG("start _slot_integrate_now_computing(available_size=%u, "
             "division=%u).\n", available_size, division);
     for (i=0;i<division;i++) {
-        SLOT_converting(child)(SLOT_buf(child), SLOT_arg(child));
+        SLOT_computing(child)(SLOT_buf(child), SLOT_arg(child));
     }
 #endif
 
@@ -875,7 +875,7 @@ _DEBUG("start _slot_divide().\n");
 
        /*********************************************************/
        _slot_divide_now_reading(children, parent, division, doing_size);
-       _slot_divide_now_converting(children, parent, division, doing_size);
+       _slot_divide_now_computing(children, parent, division, doing_size);
        _slot_divide_now_writing(children, parent, division, doing_size);
 
        consumed_size += doing_size * division;
@@ -916,7 +916,7 @@ _DEBUG("start _slot_integrate().\n");
 
        /*********************************************************/
        _slot_integrate_now_reading(parent, children, division, doing_size);
-       _slot_integrate_now_converting(parent, children, division, doing_size);
+       _slot_integrate_now_computing(parent, children, division, doing_size);
        _slot_integrate_now_writing(parent, children, division, doing_size);
 
        consumed_size += doing_size * division;
