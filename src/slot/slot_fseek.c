@@ -19,7 +19,7 @@ void dump(void *ptr, int length, int width)
     unsigned char *data = (unsigned char *)ptr;
     char fmt[SS_SIZE];
 
-    sprintf(fmt, "0x%%0%dx ", sizeof(void *) * 2);
+    sprintf(fmt, "%%p ");
     /*
     fprintf(_f, "dump(ptr=%p, length=%d, width=%d) start\n",
                           ptr, length, width);
