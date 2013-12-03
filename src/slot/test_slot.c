@@ -176,12 +176,12 @@ void test_slot_ask_target_size(slot_t *slt)
     _assert_by_size(0, SLOT_target_size(slt),
                    "before slot_ask_target_size()");
     /* get a target_size */
-    slot_ask_target_size(slt);
+    slot_ask_target_size(slt, FROM_HEAD);
     _assert_by_size(1048576, SLOT_target_size(slt),
                    " after slot_ask_target_size()");
 
     /* 複数回連続で slot_ask_target_size() を実行しても大丈夫な事を確認。*/
-    slot_ask_target_size(slt);
+    slot_ask_target_size(slt, FROM_HEAD);
     _assert_by_size(1048576, SLOT_target_size(slt),
                    " after twice slot_ask_target_size()");
 
@@ -189,11 +189,11 @@ void test_slot_ask_target_size(slot_t *slt)
     slot_file_fclose(SLF(slt));
 
     SLOT_type(slt) = SLOT_SOCKET;
-    _assert_by_size(0, slot_ask_target_size(slt),
+    _assert_by_size(0, slot_ask_target_size(slt, FROM_CURRENT),
                    "test_slot_ask_target_size() with SLOT_SOCKET");
 
     SLOT_type(slt) = SLOT_MEMORY;
-    _assert_by_size(0, slot_ask_target_size(slt),
+    _assert_by_size(0, slot_ask_target_size(slt, FROM_CURRENT),
                    "test_slot_ask_target_size() with SLOT_MEMORY");
 
 }
@@ -250,7 +250,7 @@ void test_slot_calc_sb_by_division(slot_t *parent, slot_t *children)
         /* for file */
         slot_file_named(SLF(parent), tmp_dir, random_1048576_bin);
         slot_file_fopen(SLF(parent), "rb");
-        slot_ask_target_size(parent);
+        slot_ask_target_size(parent, FROM_HEAD);
 
         symbol_size = 3;
         parent_target_size = SLOT_target_size(parent);
@@ -398,7 +398,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
 
     slot_file_named(SLF(parent), tmp_dir, random_1048576_bin);
     slot_file_fopen(SLF(parent), "rb");
-    parent_target_size = slot_ask_target_size(parent);
+    parent_target_size = slot_ask_target_size(parent, FROM_HEAD);
 
     slot_calc_sb_by_division(parent, children,
                              parent_target_size,
@@ -519,7 +519,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
                   parent, children, division);
    _assert_success(ret, msg);
 
-    integrate_target_size = slot_ask_target_size(parent);
+    integrate_target_size = slot_ask_target_size(parent, FROM_HEAD);
     sprintf(msg, "_slot_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite) "
                  "integrate_target_size=%zu",
@@ -745,7 +745,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
                   parent, children, division);
    _assert_success(ret, msg);
 
-    integrate_target_size = slot_ask_target_size(parent);
+    integrate_target_size = slot_ask_target_size(parent, FROM_HEAD);
     sprintf(msg, "_slot_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite) "
                  "integrate_target_size=%zu",

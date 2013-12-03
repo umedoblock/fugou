@@ -298,36 +298,51 @@ slot_t *slot_set_memory(uchar *mem, int num)
     return slt;
 }
 
-size_t slot_ask_target_size(slot_t *slt)
+size_t slot_ask_target_size(slot_t *slt, int whence)
 {
     FILE *fp;
-    fpos_t fcurrent;
-    long head, tail;
-    size_t ret;
+    fpos_t fixed_pos;
+    long marker, tail;
+    size_t ret = 0;
 
 _DEBUG("start slot_ask_target_size().\n");
-    if (SLOT_type(slt) == SLOT_FILE) {
+    if ((SLOT_type(slt) == SLOT_FILE) &&
+        (whence == FROM_HEAD || whence == FROM_CURRENT)) {
         fp = SLOT_target(slt);
 
-        /* とりあえず現在地を調べて記録しておいて。*/
-        fgetpos(fp, &fcurrent);
+        /* 現在地を調べて記録する。*/
+        fgetpos(fp, &fixed_pos);
 
+        if (whence == FROM_HEAD) {
         /* 頭から〜 */
         fseek(fp, 0L, SEEK_SET);
-        head = ftell(fp);
+        marker = ftell(fp);
+        }
+        else if (whence == FROM_CURRENT) {
+        /* 現在地から〜 */
+        marker = ftell(fp);
+        }
 
         /* お尻まで */
         fseek(fp, 0L, SEEK_END);
         tail = ftell(fp);
 
         /* 移動して移動距離を調べた後、*/
-        ret = (size_t )(tail - head);
+        ret = (size_t )(tail - marker);
 
         /* 元いた場所に戻る。*/
-        fsetpos(fp, &fcurrent);
+        fsetpos(fp, &fixed_pos);
+    }
+    else if (SLOT_type(slt) == SLOT_SOCKET) {
+        /* pass */
+    }
+    else if (SLOT_type(slt) == SLOT_MEMORY) {
+        /* pass */
     }
     else {
-        ret = 0;
+        LOGGER(ERROR, "SLOT_type(slt=%p) is %d, "
+                      "whence is %d\n",
+                       slt, SLOT_type(slt), whence);
     }
 
     SLOT_target_size(slt) = ret;

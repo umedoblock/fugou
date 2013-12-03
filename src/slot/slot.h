@@ -49,6 +49,9 @@ File size:                3808 bytes
 #define SLOT_FSEEK_ERROR       (-15)
 #define SLOT_SLOT_SIZE_ERROR   (-16)
 
+#define FROM_HEAD                (1)
+#define FROM_CURRENT             (2)
+
 #define SLOT_FILE   (1)
 #define SLOT_SOCKET (2)
 #define SLOT_MEMORY (3)
@@ -185,7 +188,7 @@ int slot_calc_sb_by_child_slot_size(slot_t *parent,
 
 size_t slot_get_memory_size(void);
 slot_t *slot_set_memory(uchar *mem, int num);
-size_t slot_ask_target_size(slot_t *slt);
+size_t slot_ask_target_size(slot_t *slt, int whence);
 size_t slot_dev_null_r(slot_t *read_, void *buf, size_t read_size);
 size_t slot_dev_null_w(slot_t *writ, void *buf, size_t writ_size);
 size_t slot_fread(slot_t *read_, void *buf, size_t read_size);
