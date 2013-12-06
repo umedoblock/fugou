@@ -658,14 +658,14 @@ size_t _slot_divide_now_computing(slot_t *children,
                                    uint division,
                                    size_t available_size)
 {
-    size_t comput_size = 0;
+    size_t compute_size = 0;
 
 _DEBUG("start _slot_divide_now_computing(children=%p, parent=%p, "
             "division=%u, available_size=%u), SLOT_computing(parent)=%p.\n",
              children, parent,
              division, available_size, SLOT_computing(parent));
     if (SLOT_computing(parent)) {
-        comput_size = SLOT_computing(parent)(children, parent,
+        compute_size = SLOT_computing(parent)(children, parent,
                                                division, available_size);
     }
     else {
@@ -675,12 +675,12 @@ _DEBUG("start _slot_divide_now_computing(children=%p, parent=%p, "
                            "parent=%p, division=%u, available_size=%u).\n",
                            children, parent, division, available_size);
 #endif
-        comput_size = 0;
+        compute_size = 0;
     }
 
-_DEBUG(" done _slot_divide_now_computing(), comput_size=%u\n",
-              comput_size);
-    return comput_size;
+_DEBUG(" done _slot_divide_now_computing(), compute_size=%u\n",
+              compute_size);
+    return compute_size;
 }
 
 size_t _slot_divide_now_writing(slot_t *children,
