@@ -12,7 +12,7 @@ const char *tmp_dir = "./reed_solomon";
 const char *random_1048576_bin = "random_1048576.bin";
 char random_path[SS_SIZE]; /* tmp_dir/random_1048576.bin */
 
-int _failed(int success)
+int failed(int success)
 {
     int fail;
     if (success) {
@@ -25,7 +25,7 @@ int _failed(int success)
     return fail;
 }
 
-void _assert_by_00(uchar *result,
+void assert_by_00(uchar *result,
                    size_t zero_size,
                    char *test_name)
 {
@@ -39,7 +39,7 @@ void _assert_by_00(uchar *result,
         }
     }
 
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
         dump(result, zero_size, 16);
         fprintf(_f, "expected 0x00 * %zu, but result[%zu] is 0x%02x.\n",
@@ -48,14 +48,14 @@ void _assert_by_00(uchar *result,
     }
 }
 
-void _assert_by_mem(uchar *expected,
+void assert_by_mem(uchar *expected,
                     uchar *result,
                     size_t mem_size,
                     char *test_name)
 {
     int cmp = memcmp(expected, result, mem_size);
     int success = (cmp == 0);
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
         fprintf(_f, "expected=\n");
         dump(expected, mem_size, 16);
@@ -66,72 +66,72 @@ void _assert_by_mem(uchar *expected,
     }
 }
 
-void _assert_by_str(char *expected,
+void assert_by_str(char *expected,
                       char *result,
                       char *test_name)
 {
     int cmp = strcmp(expected, result);
     int success = (cmp == 0);
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
         fprintf(_f, "expected=\"%s\"\n  result=\"%s\"\n", expected, result);
     }
 }
 
-void _assert_by_not_null(void *result,
+void assert_by_not_null(void *result,
                            char *test_name)
 {
     int success = result != NULL;
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
         fprintf(_f, "result=%p\n", result);
     }
 }
 
-void _assert_by_address(void *expected,
+void assert_by_address(void *expected,
                           void *result,
                           char *test_name)
 {
     int success = expected == result;
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
         fprintf(_f, "expected=%p, result=%p\n", expected, result);
     }
 }
 
-void _assert_by_size(size_t expected,
+void assert_by_size(size_t expected,
                        size_t result,
                        char *test_name)
 {
     int success = expected == result;
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
         fprintf(_f, "expected=%zu, result=%zu\n", expected, result);
     }
 }
 
-void _assert_by_uint(uint expected,
+void assert_by_uint(uint expected,
                      uint result,
                      char *test_name)
 {
-    _assert_by_size((size_t )expected, (size_t )result, test_name);
+    assert_by_size((size_t )expected, (size_t )result, test_name);
 }
 
-void _assert_success(int ret, char *test_name)
+void assert_success(int ret, char *test_name)
 {
-    if (_failed(ret == SLOT_SUCCESS)) {
+    if (failed(ret == SLOT_SUCCESS)) {
         fprintf(_f, "failed %s\n", test_name);
     }
 }
 
-void _assert_true(int success, char *test_name)
+void assert_true(int success, char *test_name)
 {
-    if (_failed(success)) {
+    if (failed(success)) {
         fprintf(_f, "failed %s\n", test_name);
     }
 }
 
-void _assert_slot_size_brother(size_t target_size, size_t symbol_size,
+void assert_slot_size_brother(size_t target_size, size_t symbol_size,
                                uint division, size_t slot_size,
                                size_t column_size, size_t padding_size,
                                size_t buf_size, size_t index,
@@ -139,21 +139,21 @@ void _assert_slot_size_brother(size_t target_size, size_t symbol_size,
                                char *name)
 {
     sprintf(msg, "%s (slf + %u)->%s", name, i, "target_size");
-    _assert_by_size(target_size, SLOT_target_size(slt + i), msg);
+    assert_by_size(target_size, SLOT_target_size(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "symbol_size");
-    _assert_by_size(symbol_size, SLOT_symbol_size(slt + i), msg);
+    assert_by_size(symbol_size, SLOT_symbol_size(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "division");
-    _assert_by_size(division, SLOT_division(slt + i), msg);
+    assert_by_size(division, SLOT_division(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "slot_size");
-    _assert_by_size(slot_size, SLOT_slot_size(slt + i), msg);
+    assert_by_size(slot_size, SLOT_slot_size(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "column_size");
-    _assert_by_size(column_size, SLOT_column_size(slt + i), msg);
+    assert_by_size(column_size, SLOT_column_size(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "padding_size");
-    _assert_by_size(padding_size, SLOT_padding_size(slt + i), msg);
+    assert_by_size(padding_size, SLOT_padding_size(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "buf_size");
-    _assert_by_size(buf_size, SLOT_buf_size(slt + i), msg);
+    assert_by_size(buf_size, SLOT_buf_size(slt + i), msg);
     sprintf(msg, "%s (slf + %u)->%s", name, i, "index");
-    _assert_by_size(index, SLOT_index(slt + i), msg);
+    assert_by_size(index, SLOT_index(slt + i), msg);
 }
 
 void _test_clean_slot(slot_t *slt)
@@ -173,27 +173,27 @@ void test_slot_ask_target_size(slot_t *slt)
 
     slot_file_named(SLF(slt), tmp_dir, random_1048576_bin);
     slot_file_fopen(SLF(slt), "rb");
-    _assert_by_size(0, SLOT_target_size(slt),
+    assert_by_size(0, SLOT_target_size(slt),
                    "before slot_ask_target_size()");
     /* get a target_size */
     slot_ask_target_size(slt, FROM_HEAD);
-    _assert_by_size(1048576, SLOT_target_size(slt),
+    assert_by_size(1048576, SLOT_target_size(slt),
                    " after slot_ask_target_size()");
 
     /* 複数回連続で slot_ask_target_size() を実行しても大丈夫な事を確認。*/
     slot_ask_target_size(slt, FROM_HEAD);
-    _assert_by_size(1048576, SLOT_target_size(slt),
+    assert_by_size(1048576, SLOT_target_size(slt),
                    " after twice slot_ask_target_size()");
 
     /* 以下では必要なくなるので閉じておく。*/
     slot_file_fclose(SLF(slt));
 
     SLOT_type(slt) = SLOT_SOCKET;
-    _assert_by_size(0, slot_ask_target_size(slt, FROM_CURRENT),
+    assert_by_size(0, slot_ask_target_size(slt, FROM_CURRENT),
                    "test_slot_ask_target_size() with SLOT_SOCKET");
 
     SLOT_type(slt) = SLOT_MEMORY;
-    _assert_by_size(0, slot_ask_target_size(slt, FROM_CURRENT),
+    assert_by_size(0, slot_ask_target_size(slt, FROM_CURRENT),
                    "test_slot_ask_target_size() with SLOT_MEMORY");
 
 }
@@ -207,7 +207,7 @@ void test_slot_set_memory(uchar *mem)
     slt = slot_set_memory(mem, 1);
     sprintf(msg, "test_slot_set_memory() SLOT_buf_size(slt=%p) = %zu\n",
                   slt, SLOT_buf_size(slt));
-    _assert_by_size(SLOT_BUF_SIZE, SLOT_buf_size(slt), msg);
+    assert_by_size(SLOT_BUF_SIZE, SLOT_buf_size(slt), msg);
 }
 
 /* 21d5139883ce722acefe05cb5ab3b0a870bf9b6b  reed_solomon/random_1048576.bin */
@@ -289,7 +289,7 @@ fprintf(_f, "\n");
                                  symbol_size,
                                  0);
 
-        _assert_slot_size_brother(1048576, symbol_size,
+        assert_slot_size_brother(1048576, symbol_size,
                                   division, expected_parent_slot_size,
                                   expected_column_size,
                                   expected_padding_size_[i],
@@ -313,7 +313,7 @@ fprintf(_f, "\n");
             /* slot_size は全ての子供で一緒。*/
             /* column_size は全ての子供で一緒。*/
             /* buf_size は全ての子供で一緒。*/
-            _assert_slot_size_brother(
+            assert_slot_size_brother(
                 expected_child_target_size, symbol_size,
                 division, expected_child_slot_size,
                 expected_column_size, expected_padding_size,
@@ -335,35 +335,35 @@ void test__slot_calc_division_by_child_slot_size()
 
     _slot_calc_division_by_child_slot_size(&division, &append_size,
                                             1048576, 1024);
-    _assert_by_uint(1024, division, "test_slot_calc_division_"
+    assert_by_uint(1024, division, "test_slot_calc_division_"
                                     "by_slot_size() with division");
-    _assert_by_size(0, append_size, "test_slot_calc_append_size_"
+    assert_by_size(0, append_size, "test_slot_calc_append_size_"
                                      "by_slot_size() with append_size");
 
     _slot_calc_division_by_child_slot_size(&division, &append_size,
                                             1048576, 10000);
-    _assert_by_uint(105, division, "test_slot_calc_division_"
+    assert_by_uint(105, division, "test_slot_calc_division_"
                                    "by_slot_size() with division");
-    _assert_by_size(1424, append_size, "test_slot_calc_append_size_"
+    assert_by_size(1424, append_size, "test_slot_calc_append_size_"
                                        "by_slot_size() with append_size");
 
     _slot_calc_division_by_child_slot_size(&division, &append_size,
                                             4148, 1000);
-    _assert_by_uint(5, division, "test_slot_calc_division_"
+    assert_by_uint(5, division, "test_slot_calc_division_"
                                  "by_slot_size() with division");
-    _assert_by_size(852, append_size, "test_slot_calc_append_size_"
+    assert_by_size(852, append_size, "test_slot_calc_append_size_"
                                       "by_slot_size() with append_size");
 
     _slot_calc_division_by_child_slot_size(&division, &append_size, 533, 100);
-    _assert_by_size(6, division, "test_slot_calc_division_"
+    assert_by_size(6, division, "test_slot_calc_division_"
                                  "by_slot_size() with division");
-    _assert_by_size(67, append_size, "test_slot_calc_append_size_"
+    assert_by_size(67, append_size, "test_slot_calc_append_size_"
                                      "by_slot_size() with append_size");
 
     _slot_calc_division_by_child_slot_size(&division, &append_size, 533, 99);
-    _assert_by_uint(6, division, "test_slot_calc_division_"
+    assert_by_uint(6, division, "test_slot_calc_division_"
                                  "by_slot_size() with division");
-    _assert_by_size(61, append_size, "test_slot_calc_append_size_"
+    assert_by_size(61, append_size, "test_slot_calc_append_size_"
                                      "by_slot_size() with append_size");
 }
 
@@ -422,16 +422,16 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
          * ssに表示した値と名前が一致する。
          * 名前付けすると、SLOT_type() も自動的に設定される。
          */
-       _assert_by_str(ss, SLOT_name(children_i), msg);
+       assert_by_str(ss, SLOT_name(children_i), msg);
         sprintf(msg, "slot_children_named(), SLOT_type(children + %u)", i);
-       _assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
+       assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
     }
 
     slot_children_fopen(SLF(children), "wb+", division);
     for (i=0;i<division;i++) {
         sprintf(msg, "test__slot_divide_and_integrate() with "
                      "SLOT_target(children+%u)", i);
-       _assert_by_not_null(SLOT_target(children_i), msg);
+       assert_by_not_null(SLOT_target(children_i), msg);
     }
 
     slot_children_set_first_pos(parent, children, division);
@@ -439,7 +439,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
         sprintf(msg, "slot_children_set_first_pos(parent=%p, children=%p, "
                      "division=%u) i=%u",
                       parent, children, division, i);
-        _assert_by_size(0, SLOT_index(children_i), msg);
+        assert_by_size(0, SLOT_index(children_i), msg);
     }
 
     /* parent => children の分割を行う。*/
@@ -447,7 +447,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
-   _assert_success(ret, msg);
+   assert_success(ret, msg);
 
     child_slot_size = SLOT_slot_size(children);
     for (i=0;i<division;i++) {
@@ -461,7 +461,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
                      "dump_1048576 + i(=%u) * child_slot_size(=%zu)",
                       i, i, child_slot_size);
         if (i != division - 1) {
-           _assert_by_mem(expected_mem, result_mem,
+           assert_by_mem(expected_mem, result_mem,
                           child_slot_size, msg);
         }
         else {
@@ -470,23 +470,23 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
             zero_size = child_slot_size - child_target_size;
             sprintf(msg, "test__slot_divide_and_integrate() with "
                          "SLOT_padding_size(children_i), zero_size");
-           _assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
+           assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
             sprintf(msg, "test__slot_divide_and_integrate() with "
-                         "_assert_by_mem(expected_mem, result_mem)");
-           _assert_by_mem(expected_mem, result_mem,
+                         "assert_by_mem(expected_mem, result_mem)");
+           assert_by_mem(expected_mem, result_mem,
                           child_target_size, msg);
            /* 簡易版 debug 関数
            sprintf(msg, "child_target_size=%u, zero_size=%u, "
                         "child_slot_size=%u, padding_size=%u\n",
                          child_target_size, zero_size,
                          child_slot_size, SLOT_padding_size(children_i));
-           _assert_true(0, msg);
+           assert_true(0, msg);
            */
             sprintf(msg, "test__slot_divide_and_integrate() with "
-                         "_assert_by_00(result_mem=%p + child_target_size=%zu, "
+                         "assert_by_00(result_mem=%p + child_target_size=%zu, "
                          "zero_size=%zu)",
                           result_mem, child_target_size, zero_size);
-           _assert_by_00(result_mem + child_target_size, zero_size, msg);
+           assert_by_00(result_mem + child_target_size, zero_size, msg);
         }
     }
 
@@ -509,7 +509,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
         sprintf(msg, "slot_children_set_first_pos(parent=%p, children=%p, "
                      "division=%u) i=%u",
                       parent, children, division, i);
-        _assert_by_size(0, SLOT_index(children_i), msg);
+        assert_by_size(0, SLOT_index(children_i), msg);
     }
 
     /* children => parent の統合 */
@@ -517,20 +517,20 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
-   _assert_success(ret, msg);
+   assert_success(ret, msg);
 
     integrate_target_size = slot_ask_target_size(parent, FROM_HEAD);
     sprintf(msg, "_slot_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite) "
                  "integrate_target_size=%zu",
                   parent, children, division, integrate_target_size);
-   _assert_by_size(1048576, integrate_target_size, msg);
+   assert_by_size(1048576, integrate_target_size, msg);
 
     rewind(SLOT_target_f(parent));
     fread(tmp, 1, 1048576, SLOT_target_f(parent));
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "SLOT_INTEGRATE, ...", parent, children);
-   _assert_by_mem(dump_1048576, tmp, 1048576, msg);
+   assert_by_mem(dump_1048576, tmp, 1048576, msg);
    /*
    */
 
@@ -582,7 +582,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     symbol_size = 3; /* must be zero that child_slot_size mod symbol_size */
 
     sprintf(msg, "before slot_calc_sb_by_child_slot_size()");
-    _assert_by_uint(0, SLOT_division(parent), msg);
+    assert_by_uint(0, SLOT_division(parent), msg);
     ret = slot_calc_sb_by_child_slot_size(parent, children,
                                           parent_target_size,
                                           child_slot_size,
@@ -590,14 +590,14 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     sprintf(msg, "slot_calc_sb_by_child_slot_size(parent, children, "
                  "parent_target_size=%zu, child_slot_size=%zu, symbol_size=%u)",
                   parent_target_size, child_slot_size, symbol_size);
-    _assert_true(ret == SLOT_SUCCESS, msg);
+    assert_true(ret == SLOT_SUCCESS, msg);
 
     slot_buf_size = 10;
     SLOT_buf_size(parent) = slot_buf_size;
     for (i=0;i<TEST_MAX_SLOTS;i++) {
         SLOT_buf_size(children + i) = slot_buf_size;
     }
-    _assert_slot_size_brother(
+    assert_slot_size_brother(
         parent_target_size, symbol_size,
         expected_division, expected_parent_slot_size,
         expected_column_size, expected_parent_padding_size,
@@ -637,16 +637,16 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
          * ssに表示した値と名前が一致する。
          * 名前付けすると、SLOT_type() も自動的に設定される。
          */
-       _assert_by_str(ss, SLOT_name(children_i), msg);
+       assert_by_str(ss, SLOT_name(children_i), msg);
         sprintf(msg, "slot_children_named(), SLOT_type(children + %u)", i);
-       _assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
+       assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
     }
 
     slot_children_fopen(SLF(children), "wb+", division);
     for (i=0;i<division;i++) {
         sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                      "with SLOT_target(children+%u)", i);
-       _assert_by_not_null(SLOT_target(children_i), msg);
+       assert_by_not_null(SLOT_target(children_i), msg);
     }
 
     slot_children_set_first_pos(parent, children, division);
@@ -654,7 +654,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
         sprintf(msg, "slot_children_set_first_pos(parent=%p, children=%p, "
                      "division=%u) i=%u",
                       parent, children, division, i);
-        _assert_by_size(0, SLOT_index(children_i), msg);
+        assert_by_size(0, SLOT_index(children_i), msg);
     }
 
     /* parent => children の分割を行う。*/
@@ -662,7 +662,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
-   _assert_success(ret, msg);
+   assert_success(ret, msg);
 
     for (i=0;i<division;i++) {
         rewind(SLOT_target(children_i));
@@ -675,12 +675,12 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
                          "with SLOT_target(children+%u) == "
                          "dump_1048576 + i(=%u) * child_slot_size(=%zu)",
                           i, i, child_slot_size);
-           _assert_by_mem(expected_mem, result_mem,
+           assert_by_mem(expected_mem, result_mem,
                           child_slot_size, msg);
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                          "with SLOT_target(children+%u), "
                          "SLOT_index(children+%u)", i, i);
-           _assert_by_size(SLOT_target_size(children_i),
+           assert_by_size(SLOT_target_size(children_i),
                            SLOT_index(children_i),
                            msg);
         }
@@ -690,23 +690,23 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
             zero_size = child_slot_size - child_target_size;
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                          "with SLOT_padding_size(children_i), zero_size");
-           _assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
+           assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
-                         "with _assert_by_mem(expected_mem, result_mem)");
-           _assert_by_mem(expected_mem, result_mem,
+                         "with assert_by_mem(expected_mem, result_mem)");
+           assert_by_mem(expected_mem, result_mem,
                           child_target_size, msg);
            /* 簡易版 debug 関数
            sprintf(msg, "child_target_size=%u, zero_size=%u, "
                         "child_slot_size=%u, padding_size=%u\n",
                          child_target_size, zero_size,
                          child_slot_size, SLOT_padding_size(children_i));
-           _assert_true(0, msg);
+           assert_true(0, msg);
            */
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
-                         "with _assert_by_00(result_mem=%p + "
+                         "with assert_by_00(result_mem=%p + "
                          "child_target_size=%zu, zero_size=%zu)",
                           result_mem, child_target_size, zero_size);
-           _assert_by_00(result_mem + child_target_size, zero_size, msg);
+           assert_by_00(result_mem + child_target_size, zero_size, msg);
         }
     }
 
@@ -729,7 +729,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
         sprintf(msg, "slot_children_set_first_pos(parent=%p, children=%p, "
                      "division=%u) i=%u",
                       parent, children, division, i);
-        _assert_by_size(0, SLOT_index(children_i), msg);
+        assert_by_size(0, SLOT_index(children_i), msg);
     }
 
     /*
@@ -743,20 +743,20 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
-   _assert_success(ret, msg);
+   assert_success(ret, msg);
 
     integrate_target_size = slot_ask_target_size(parent, FROM_HEAD);
     sprintf(msg, "_slot_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite) "
                  "integrate_target_size=%zu",
                   parent, children, division, integrate_target_size);
-   _assert_by_size(parent_target_size, integrate_target_size, msg);
+   assert_by_size(parent_target_size, integrate_target_size, msg);
 
     rewind(SLOT_target(parent));
     fread(tmp, 1, parent_target_size, SLOT_target_f(parent));
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "SLOT_INTEGRATE, ...", parent, children);
-   _assert_by_mem(dump_1048576, tmp, parent_target_size, msg);
+   assert_by_mem(dump_1048576, tmp, parent_target_size, msg);
 
     /* 後始末 */
     slot_children_fclose(SLF(children), division);
@@ -779,7 +779,7 @@ void test_slot_file_named(slot_file_t *slf)
     slot_file_named(SLF(slf), tmp_dir, random_1048576_bin);
 
     sprintf(msg, "test_slot_file_named(slf=%p)", slf);
-    _assert_by_uint(SLOT_FILE, SLOT_type(slf), msg);
+    assert_by_uint(SLOT_FILE, SLOT_type(slf), msg);
 
     memset(slf, '\0', slot_get_memory_size() * 1);
 }
@@ -820,9 +820,9 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
     sprintf(msg, "slot_calc_sb_by_child_slot_size(parent, children, "
                  "parent_target_size=%zu, child_slot_size=%zu, symbol_size=%zu)",
                   parent_target_size, child_slot_size, symbol_size);
-    _assert_true(ret == SLOT_SUCCESS, msg);
+    assert_true(ret == SLOT_SUCCESS, msg);
 
-    _assert_slot_size_brother(
+    assert_slot_size_brother(
         parent_target_size, symbol_size,
         expected_division, expected_parent_slot_size,
         expected_column_size, expected_parent_padding_size,
@@ -844,7 +844,7 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
             expected_padding_size = expected_parent_padding_size;
         }
 
-        _assert_slot_size_brother(
+        assert_slot_size_brother(
             expected_child_target_size, symbol_size,
             expected_division, child_slot_size,
             expected_column_size, expected_padding_size,
@@ -880,9 +880,9 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
     sprintf(msg, "slot_calc_sb_by_child_slot_size(parent, children, "
                  "parent_target_size=%zu, child_slot_size=%zu, symbol_size=%zu)",
                   parent_target_size, child_slot_size, symbol_size);
-    _assert_true(ret == SLOT_SUCCESS, msg);
+    assert_true(ret == SLOT_SUCCESS, msg);
 
-    _assert_slot_size_brother(
+    assert_slot_size_brother(
         parent_target_size, symbol_size,
         expected_division, expected_parent_slot_size,
         expected_column_size, expected_parent_padding_size,
@@ -903,7 +903,7 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
             expected_child_target_size = 38;
             expected_padding_size = expected_parent_padding_size;
         }
-        _assert_slot_size_brother(
+        assert_slot_size_brother(
             expected_child_target_size, symbol_size,
             expected_division, child_slot_size,
             expected_column_size, expected_padding_size,
@@ -929,7 +929,7 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
     sprintf(msg, "slot_calc_sb_by_child_slot_size(parent, children, "
                  "parent_target_size=%zu, child_slot_size=%zu, symbol_size=%zu)",
                   parent_target_size, child_slot_size, symbol_size);
-    _assert_true(ret == SLOT_SLOT_SIZE_ERROR, msg);
+    assert_true(ret == SLOT_SLOT_SIZE_ERROR, msg);
 
     /* fourth test ***********************************************************/
     _test_clean_parent_children(parent, children);
@@ -963,9 +963,9 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
     sprintf(msg, "slot_calc_sb_by_child_slot_size(parent, children, "
                  "parent_target_size=%zu, child_slot_size=%zu, symbol_size=%zu)",
                   parent_target_size, child_slot_size, symbol_size);
-    _assert_true(ret == SLOT_SUCCESS, msg);
+    assert_true(ret == SLOT_SUCCESS, msg);
 
-    _assert_slot_size_brother(
+    assert_slot_size_brother(
         parent_target_size, symbol_size,
         expected_division, expected_parent_slot_size,
         expected_column_size, expected_parent_padding_size,
@@ -986,7 +986,7 @@ void test_slot_calc_sb_by_child_slot_size(slot_t *parent, slot_t *children)
             expected_child_target_size = 38;
             expected_padding_size = expected_parent_padding_size;
         }
-        _assert_slot_size_brother(
+        assert_slot_size_brother(
             expected_child_target_size, symbol_size,
             expected_division, child_slot_size,
             expected_column_size, expected_padding_size,
