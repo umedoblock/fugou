@@ -30,6 +30,9 @@ File size:                3808 bytes
 #endif
 
 #define SLOT_SUCCESS             (0)
+#ifndef SUCCESS
+#define SUCCESS SLOT_SUCCESS
+#endif
 #define SLOT_FREAD_ERROR        (-1)
 #define SLOT_FWRITE_ERROR       (-2)
 #define SLOT_NULL_ERROR         (-3)

@@ -37,6 +37,8 @@ void vlogger(char *iso_format_time, char *__file__, int __line__, const char *_f
 void logger(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...);
 void _debug(char *__file__, int __line__, const char *_func_, int level, char *fmt, ...);
 
+#define SUCCESS (0)
+
 #define EIGHT (8ULL)
 #define OCTET EIGHT
 
