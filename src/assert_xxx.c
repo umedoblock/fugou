@@ -105,6 +105,13 @@ void assert_by_uint(uint expected,
     assert_by_size((size_t )expected, (size_t )result, test_name);
 }
 
+void assert_by_ushort(ushort expected,
+                      ushort result,
+                      char *test_name)
+{
+    assert_by_size((size_t )expected, (size_t )result, test_name);
+}
+
 void assert_success(int ret, char *test_name)
 {
     if (failed(ret == SUCCESS)) {
