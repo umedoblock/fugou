@@ -161,6 +161,7 @@
 extern "C" {
 #endif
 
+#define _rs_ADD(a, b) (a ^ b)
 #define RS_BUFFER_SIZE 80
 #define ALIGHNMENT_SIZE (sizeof(void *))
 
