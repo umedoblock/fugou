@@ -88,7 +88,7 @@ void rs_decode_slots(slot_t *recover,
 
 static inline ushort _rs_mul16(reed_solomon_t *rs, ushort a, ushort b)
 {
-    register uint c;
+    register ushort c;
 
     if (a == 0 || b == 0)
         return 0;
@@ -876,3 +876,15 @@ static void _rs_decode32_slots(slot_t *recover,
     }
 }
 
+#ifdef __TEST__
+
+/*****************************************************************************/
+/* for test functions ********************************************************/
+/*****************************************************************************/
+
+ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b)
+{
+    return _rs_mul16(rs, a, b);
+}
+
+#endif
