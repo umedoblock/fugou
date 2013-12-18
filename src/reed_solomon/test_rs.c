@@ -55,16 +55,11 @@ void test_rs_take_rs(void)
     /*
     assert_by_uint(RS_gf(rs), gf, "rs_take_rs() gfith gf");
     assert_by_uint(RS_gfi(rs), gfi, "rs_take_rs() gfiith gfi");
-    assert_by_size(RS_gf_size(rs), gf_size, "rs_take_rs() gf_sizeith gf_size");
-    assert_by_size(RS_allocate_size(rs), allocate_size, "rs_take_rs() allocate_sizeith allocate_size");
     */
+    assert_by_size(RS_gf_size(rs), RS_w(rs) * RS_register_size(rs), "rs_take_rs() gf_size");
+    assert_by_size(RS_allocate_size(rs), RS_gf_size(rs) * 2, "rs_take_rs() allocate_size");
     /*
-    assert_by_uint(RS_w(rs), w, "rs_take_rs() with w");
     assert_by_uint(RS_division(rs), division, "rs_take_rs() with division");
-
-    fprintf(_f, "rs = %p\n", rs);
-    assert_(ret);
-    ret < 0)
     */
 }
 
