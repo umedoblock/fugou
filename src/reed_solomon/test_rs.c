@@ -40,8 +40,7 @@ void test_rs_take_rs(void)
     char ss[SS_SIZE];
     int ret, i;
     reed_solomon_t *rs = NULL;
-    ushort bits4_gf[] = {0x00, 0x00, 0x01, 0x04, 0x02, 0x08, 0x05, 0x0a, 0x03, 0x0e, 0x09, 0x07, 0x06, 0x0d, 0x0b};
-    ushort bits4_gfi[] = {0x01, 0x02, 0x04, 0x08, 0x03, 0x06, 0x0c, 0x0b, 0x05, 0x0a, 0x07, 0x0e, 0x0f, 0x0d, 0x09};
+    ushort bits4_gfi16[] = {0x01, 0x02, 0x04, 0x08, 0x03, 0x06, 0x0c, 0x0b, 0x05, 0x0a, 0x07, 0x0e, 0x0f, 0x0d, 0x09};
     uint bits, division;
 
     /* 正常系、good case */
@@ -56,10 +55,10 @@ void test_rs_take_rs(void)
     assert_by_uint((1 << bits), RS_w(rs), "rs_take_rs() with w");
     assert_by_uint(RS_w(rs) - 1, RS_gf_max(rs), "rs_take_rs() gf_maxith gf_max");
     for (i=0;i<RS_gf_max(rs);i++) {
-        sprintf(ss, "rs_take_rs() gfi[%d]\n", i);
-        assert_by_ushort(RS_gfi(rs).u16[i], bits4_gfi[i], ss);
-        sprintf(ss, "rs_take_rs() RS_gf(rs).u16[RS_gfi(rs).u16[%d]]\n", i);
-        assert_by_ushort(RS_gf(rs).u16[RS_gfi(rs).u16[i]], i, ss);
+        sprintf(ss, "rs_take_rs() gfi16[%d]\n", i);
+        assert_by_ushort(RS_gfi16(rs)[i], bits4_gfi16[i], ss);
+        sprintf(ss, "rs_take_rs() RS_gf16(rs)[RS_gfi16(rs)[%d]]\n", i);
+        assert_by_ushort(RS_gf16(rs)[RS_gfi16(rs)[i]], i, ss);
 /*
         gf.u32[bit_pattern] = i;
         gfi.u32[i] = bit_pattern;
