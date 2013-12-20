@@ -56,9 +56,9 @@ void test_rs_take_rs(void)
     assert_by_uint(RS_w(rs) - 1, RS_gf_max(rs), "rs_take_rs() gf_maxith gf_max");
     for (i=0;i<RS_gf_max(rs);i++) {
         sprintf(ss, "rs_take_rs() gfi16[%d]\n", i);
-        assert_by_ushort(RS_gfi16(rs)[i], bits4_gfi16[i], ss);
+        assert_by_ushort(bits4_gfi16[i], RS_gfi16(rs)[i], ss);
         sprintf(ss, "rs_take_rs() RS_gf16(rs)[RS_gfi16(rs)[%d]]\n", i);
-        assert_by_ushort(RS_gf16(rs)[RS_gfi16(rs)[i]], i, ss);
+        assert_by_ushort(i, RS_gf16(rs)[RS_gfi16(rs)[i]], ss);
     }
 
     assert_by_size(RS_w(rs) * RS_register_size(rs), RS_gf_size(rs), "rs_take_rs() gf_size");
