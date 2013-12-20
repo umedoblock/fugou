@@ -49,17 +49,17 @@ void test_rs_take_rs(void)
     ret = rs_take_rs(&rs, bits, division);
     assert_success(ret, "rs_take_rs() with test_rs_take_rs()");
     assert_by_not_null(rs, "rs_take_rs() with test_rs_take_rs()");
-    assert_by_uint(RS_bits(rs), bits, "rs_take_rs() with bits");
-    assert_by_uint(RS_poly(rs), 19, "rs_take_rs() with poly");
-    assert_by_size(RS_symbol_size(rs), 1, "rs_take_rs() with symbol_size");
-    assert_by_size(RS_register_size(rs), 2, "rs_take_rs() with register_size");
-    assert_by_uint(RS_w(rs), (1 << bits), "rs_take_rs() with w");
-    assert_by_uint(RS_gf_max(rs), (1 << bits) - 1, "rs_take_rs() gf_maxith gf_max");
+    assert_by_uint(bits, RS_bits(rs), "rs_take_rs() with bits");
+    assert_by_uint(19, RS_poly(rs), "rs_take_rs() with poly");
+    assert_by_size(1, RS_symbol_size(rs), "rs_take_rs() with symbol_size");
+    assert_by_size(2, RS_register_size(rs), "rs_take_rs() with register_size");
+    assert_by_uint((1 << bits), RS_w(rs), "rs_take_rs() with w");
+    assert_by_uint(RS_w(rs) - 1, RS_gf_max(rs), "rs_take_rs() gf_maxith gf_max");
     for (i=0;i<RS_gf_max(rs);i++) {
         sprintf(ss, "rs_take_rs() gfi[%d]\n", i);
-        assert_by_ushort(bits4_gfi[i], RS_gfi(rs).u16[i], ss);
+        assert_by_ushort(RS_gfi(rs).u16[i], bits4_gfi[i], ss);
         sprintf(ss, "rs_take_rs() RS_gf(rs).u16[RS_gfi(rs).u16[%d]]\n", i);
-        assert_by_ushort(i, RS_gf(rs).u16[RS_gfi(rs).u16[i]], ss);
+        assert_by_ushort(RS_gf(rs).u16[RS_gfi(rs).u16[i]], i, ss);
 /*
         gf.u32[bit_pattern] = i;
         gfi.u32[i] = bit_pattern;
@@ -72,8 +72,8 @@ void test_rs_take_rs(void)
 */
     }
 
-    assert_by_size(RS_gf_size(rs), RS_w(rs) * RS_register_size(rs), "rs_take_rs() gf_size");
-    assert_by_size(RS_allocate_size(rs), RS_gf_size(rs) * 2, "rs_take_rs() allocate_size");
+    assert_by_size(RS_w(rs) * RS_register_size(rs), RS_gf_size(rs), "rs_take_rs() gf_size");
+    assert_by_size(RS_gf_size(rs) * 2, RS_allocate_size(rs), "rs_take_rs() allocate_size");
     /*
     assert_by_uint(RS_division(rs), division, "rs_take_rs() with division");
     */
