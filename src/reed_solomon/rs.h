@@ -198,8 +198,8 @@ typedef struct {
 #define RS_gf_max(r) (RS_ptr(r)->gf_max)
 #define RS_gf(r) (RS_ptr(r)->gf)
 #define RS_gfi(r) (RS_ptr(r)->gfi)
-#define RS_gf16(r) (RS_ptr(r)->gf.u16)
-#define RS_gfi16(r) (RS_ptr(r)->gfi.u16)
+#define RS_gf16(r) (RS_gf(r).u16)
+#define RS_gfi16(r) (RS_gfi(r).u16)
 #define RS_gf_size(r) (RS_ptr(r)->gf_size)
 #define RS_allocate_size(r) (RS_ptr(r)->allocate_size)
 
