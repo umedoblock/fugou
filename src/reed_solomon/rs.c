@@ -218,6 +218,8 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
     }
         bit_pattern <<= 1;
     }
+/*
+for debug.
         fprintf(stdout, "gf\n");
     for (i=0;i<rs->gf_max;i++) {
         fprintf(stdout, "0x%02x, ", gf.u16[i]);
@@ -228,6 +230,7 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
         fprintf(stdout, "0x%02x, ", gfi.u16[i]);
     }
         fprintf(stdout, "\n");
+*/
 
     if (rs->bits <= 4) {
         _DEBUG("gf =\n");
