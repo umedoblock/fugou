@@ -189,6 +189,20 @@ typedef struct {
     size_t allocate_size;
 } reed_solomon_t;
 
+#define RS_ptr(r) ((reed_solomon_t *)r)
+#define RS_bits(r) (RS_ptr(r)->bits)
+#define RS_poly(r) (RS_ptr(r)->poly)
+#define RS_symbol_size(r) (RS_ptr(r)->symbol_size)
+#define RS_register_size(r) (RS_ptr(r)->register_size)
+#define RS_w(r) (RS_ptr(r)->w)
+#define RS_gf_max(r) (RS_ptr(r)->gf_max)
+#define RS_gf(r) (RS_ptr(r)->gf)
+#define RS_gfi(r) (RS_ptr(r)->gfi)
+#define RS_gf_size(r) (RS_ptr(r)->gf_size)
+#define RS_allocate_size(r) (RS_ptr(r)->allocate_size)
+
+#define RS_division(r) (RS_ptr(r)->division)
+
 #define UINT_BITS (sizeof(uint)*8)
 #define RS_SET_REDUNDANCY_BIT(map, nbit) \
        (map[nbit/UINT_BITS]|=(1<<(nbit%UINT_BITS)))
@@ -254,6 +268,8 @@ typedef struct {
 
 int rs_big_bang(void);
 int rs_ultimate_fate_of_the_universe(void);
+
+int rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
 
 void rs_encode_slots(slot_t *parity,
                      slot_t *norm,

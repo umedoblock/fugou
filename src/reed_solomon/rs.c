@@ -27,6 +27,26 @@ int rs_ultimate_fate_of_the_universe(void)
     return RS_SCUCCESS;
 }
 
+int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
+{
+    reed_solomon_t *rs_;
+
+    rs_ = _rs_get_rs(bits);
+    if (rs_ == NULL) {
+        LOGGER(ERROR, "bits(=%u) must chose 4, 8, 16 or 24 for bits.\n",
+                            bits);
+        return RS_INVALID_BITS_ERROR;
+    }
+    if (division < 2 || division > rs_->gf_max) {
+        LOGGER(ERROR, "division(=%u) must be 2 <= division <= %u.\n",
+                            division, rs_->gf_max);
+        return RS_INVALID_DIVISION_ERROR;
+    }
+    *rs = rs_;
+
+    return RS_SCUCCESS;
+}
+
 void _rs_view_rse(rs_encode_t *rse)
 {
     LOGGER(INFO, "rse = %p\n", rse);
@@ -198,6 +218,16 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
     }
         bit_pattern <<= 1;
     }
+        fprintf(stdout, "gf\n");
+    for (i=0;i<rs->gf_max;i++) {
+        fprintf(stdout, "0x%02x, ", gf.u16[i]);
+    }
+        fprintf(stdout, "\n");
+        fprintf(stdout, "gfi\n");
+    for (i=0;i<rs->gf_max;i++) {
+        fprintf(stdout, "0x%02x, ", gfi.u16[i]);
+    }
+        fprintf(stdout, "\n");
 
     if (rs->bits <= 4) {
         _DEBUG("gf =\n");
@@ -443,26 +473,6 @@ static int _rs_solve_inverse(_ptr_t inverse,
     return RS_SCUCCESS;
 }
 
-static int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
-{
-    reed_solomon_t *rs_;
-
-    rs_ = _rs_get_rs(bits);
-    if (rs_ == NULL) {
-        LOGGER(ERROR, "bits(=%u) must chose 4, 8, 16 or 24 for bits.\n",
-                            bits);
-        return RS_INVALID_BITS_ERROR;
-    }
-    if (division < 2 || division > rs_->gf_max) {
-        LOGGER(ERROR, "division(=%u) must be 2 <= division <= %u.\n",
-                            division, rs_->gf_max);
-        return RS_INVALID_DIVISION_ERROR;
-    }
-    *rs = rs_;
-
-    return RS_SCUCCESS;
-}
-
 size_t aligned_size(size_t size)
 {
     size_t padding_size, mod;
@@ -479,8 +489,10 @@ static big_bang_t _dokkaan = {
 /* bits      poly  symbol_size   register_size */
     { 4,       19,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
     { 8,      285,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
+    /*
     {16,    65581,      2,          2, 0, 0, {NULL}, {NULL}, 0, 0},
     {24, 16777243,      3,          4, 0, 0, {NULL}, {NULL}, 0, 0},
+    */
     }
 };
 
