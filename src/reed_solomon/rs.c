@@ -12,8 +12,10 @@
 int rs_big_bang(void)
 {
     big_bang_t *universe = _rs_bright();
+    int ret;
 
-    if (_rs_init_the_universe(universe) < 0)
+    ret = _rs_init_the_universe(universe);
+    if (ret < 0)
         return RS_MALLOC_ERROR;
     _rs_init_gf_gfi(universe);
 
