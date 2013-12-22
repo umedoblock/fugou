@@ -47,14 +47,14 @@ void test_rs_take_rs(void)
     /* 正常系、good case */
     bits = 4, division = 15;
     ret = rs_take_rs(&rs4, bits, division);
-    assert_success(ret, "rs_take_rs(&rs4) with test_rs_take_rs(&rs4)");
-    assert_by_not_null(rs4, "rs_take_rs(&rs4) with test_rs_take_rs(&rs4)");
+    assert_success(ret, "rs_take_rs(&rs4) with ret");
+    assert_by_not_null(rs4, "rs_take_rs(&rs4) with value of rs4");
     assert_by_uint(bits, RS_bits(rs4), "rs_take_rs(&rs4) with bits");
     assert_by_uint(19, RS_poly(rs4), "rs_take_rs(&rs4) with poly");
     assert_by_size(1, RS_symbol_size(rs4), "rs_take_rs(&rs4) with symbol_size");
     assert_by_size(2, RS_register_size(rs4), "rs_take_rs(&rs4) with register_size");
     assert_by_uint((1 << bits), RS_w(rs4), "rs_take_rs(&rs4) with w");
-    assert_by_uint(RS_w(rs4) - 1, RS_gf_max(rs4), "rs_take_rs(&rs4) gf_maxith gf_max");
+    assert_by_uint(RS_w(rs4) - 1, RS_gf_max(rs4), "rs_take_rs(&rs4) with gf_max");
     for (i=0;i<RS_gf_max(rs4);i++) {
         sprintf(ss, "rs_take_rs(&rs4) gfi16[%d]\n", i);
         assert_by_ushort(bits4_gfi16[i], RS_gfi16(rs4)[i], ss);
@@ -62,8 +62,8 @@ void test_rs_take_rs(void)
         assert_by_ushort(i, RS_gf16(rs4)[RS_gfi16(rs4)[i]], ss);
     }
 
-    assert_by_size(RS_w(rs4) * RS_register_size(rs4), RS_gf_size(rs4), "rs_take_rs(&rs4) gf_size");
-    assert_by_size(RS_gf_size(rs4) * 2, RS_allocate_size(rs4), "rs_take_rs(&rs4) allocate_size");
+    assert_by_size(RS_w(rs4) * RS_register_size(rs4), RS_gf_size(rs4), "rs_take_rs(&rs4) with gf_size");
+    assert_by_size(RS_gf_size(rs4) * 2, RS_allocate_size(rs4), "rs_take_rs(&rs4) with allocate_size");
     /*
     assert_by_uint(RS_division(rs4), division, "rs_take_rs(&rs4) with division");
     */
