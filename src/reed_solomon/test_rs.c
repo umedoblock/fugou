@@ -69,9 +69,30 @@ void test_rs_take_rs(void)
     */
 }
 
+void test_rs_take_rs_failed(void)
+{
+    char ss[SS_SIZE];
+    int ret, i;
+    reed_solomon_t *rs = NULL;
+    uint bits, division;
+
+    /* 失敗系、bad case */
+    bits = 100, division = 15;
+    ret = rs_take_rs(&rs, bits, division);
+    assert_true(ret == RS_INVALID_BITS_ERROR, "rs_take_rs(&rs) with bits=100");
+
+    bits = 4, division = 1;
+    ret = rs_take_rs(&rs, bits, division);
+    assert_true(ret == RS_INVALID_DIVISION_ERROR, "rs_take_rs(&rs) with division=1");
+    bits = 4, division = 16;
+    ret = rs_take_rs(&rs, bits, division);
+    assert_true(ret == RS_INVALID_DIVISION_ERROR, "rs_take_rs(&rs) with division=16");
+}
+
 void test_rs(void)
 {
     test_rs_take_rs();
+    test_rs_take_rs_failed();
     /*
     test_take_rs();
     test_rs_add();
