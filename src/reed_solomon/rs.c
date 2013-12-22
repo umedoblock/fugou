@@ -25,8 +25,18 @@ int rs_big_bang(void)
 int rs_ultimate_fate_of_the_universe(void)
 {
     big_bang_t *universe = _rs_bright();
-    free(universe->mem);
-    return RS_SCUCCESS;
+    int ret;
+
+    if (universe->mem != NULL) {
+        ret = RS_SCUCCESS;
+        free(universe->mem);
+        universe->mem = NULL;
+    }
+    else {
+        ret = RS_FREE_ERROR;
+        LOGGER(ERROR, "try to free null pointer.\nmust call rs_big_bang() before call rs_ultimate_fate_of_the_universe().\n");
+    }
+    return ret;
 }
 
 int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
