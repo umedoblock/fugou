@@ -14,9 +14,16 @@ int rs_big_bang(void)
     big_bang_t *universe = _rs_bright();
     int ret;
 
+    if (universe->mem_status == BB_MEM_ALLOCATED) {
+        return RS_SCUCCESS;
+    }
+
     ret = _rs_init_the_universe(universe);
-    if (ret < 0)
-        return RS_MALLOC_ERROR;
+    if (ret < 0) {
+        LOGGER(ERROR, "error occured with ret=%d in rs_big_bang().", ret);
+        return ret;
+    }
+    universe->mem_status = BB_MEM_ALLOCATED;
     _rs_init_gf_gfi(universe);
 
     return RS_SCUCCESS;
@@ -27,14 +34,14 @@ int rs_ultimate_fate_of_the_universe(void)
     big_bang_t *universe = _rs_bright();
     int ret;
 
-    if (universe->mem != NULL) {
+    if (universe->mem_status == BB_MEM_ALLOCATED) {
         ret = RS_SCUCCESS;
         free(universe->mem);
-        universe->mem = NULL;
+        universe->mem_status = BB_MEM_FREED;
     }
     else {
         ret = RS_FREE_ERROR;
-        LOGGER(ERROR, "try to free null pointer.\nmust call rs_big_bang() before call rs_ultimate_fate_of_the_universe().\n");
+        LOGGER(ERROR, "try to free(universe->mem) when universe->mem_status(=%d) is not appropriate value(=BB_MEM_ALLOCATED, 2).\nmust call rs_big_bang() before call rs_ultimate_fate_of_the_universe().\n", universe->mem_status);
     }
     return ret;
 }
@@ -499,8 +506,8 @@ size_t aligned_size(size_t size)
 }
 
 static big_bang_t _dokkaan = {
-/* allocate_size       mem */
-               0,     NULL, {
+/* allocate_size       mem          mem_status */
+               0,     NULL, BB_MEM_NO_ALLOCATE, {
 /* bits      poly  symbol_size   register_size */
     { 4,       19,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
     { 8,      285,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
@@ -590,6 +597,10 @@ static int _rs_init_the_universe(big_bang_t *universe)
     #endif
 
     universe = _rs_bright();
+    if (universe->mem_status == BB_MEM_ALLOCATED) {
+        LOGGER(WARN, "already allocated memory for universe->mem.");
+        return RS_SCUCCESS;
+    }
 
     allocate_size = 0;
     for (i=0;i<RS_GF_NUM;i++) {

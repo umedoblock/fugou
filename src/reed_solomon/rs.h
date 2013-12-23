@@ -257,8 +257,13 @@ typedef struct {
 typedef struct {
     size_t allocate_size;
     char *mem;
+    int mem_status;
     reed_solomon_t rs[RS_GF_NUM];
 } big_bang_t;
+
+#define BB_MEM_NO_ALLOCATE (1)
+#define BB_MEM_ALLOCATED (2)
+#define BB_MEM_FREED (3)
 
 #define RS_SCUCCESS (0)
 #define RS_MALLOC_ERROR (-1)
