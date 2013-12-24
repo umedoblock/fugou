@@ -15,7 +15,7 @@ int rs_big_bang(void)
     int ret;
 
     if (universe->mem_status == BB_MEM_ALLOCATED) {
-        return RS_SCUCCESS;
+        return RS_SUCCESS;
     }
 
     ret = _rs_init_the_universe(universe);
@@ -26,7 +26,7 @@ int rs_big_bang(void)
     universe->mem_status = BB_MEM_ALLOCATED;
     _rs_init_gf_gfi(universe);
 
-    return RS_SCUCCESS;
+    return RS_SUCCESS;
 }
 
 int rs_ultimate_fate_of_the_universe(void)
@@ -35,7 +35,7 @@ int rs_ultimate_fate_of_the_universe(void)
     int ret;
 
     if (universe->mem_status == BB_MEM_ALLOCATED) {
-        ret = RS_SCUCCESS;
+        ret = RS_SUCCESS;
         free(universe->mem);
         universe->mem_status = BB_MEM_FREED;
     }
@@ -63,7 +63,7 @@ int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
     }
     *rs = rs_;
 
-    return RS_SCUCCESS;
+    return RS_SUCCESS;
 }
 
 void _rs_view_rse(rs_encode_t *rse)
@@ -492,7 +492,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
     _rs_view_matrix16(im.u16, division);
     #endif
 
-    return RS_SCUCCESS;
+    return RS_SUCCESS;
 }
 
 size_t aligned_size(size_t size)
@@ -599,7 +599,7 @@ static int _rs_init_the_universe(big_bang_t *universe)
     universe = _rs_bright();
     if (universe->mem_status == BB_MEM_ALLOCATED) {
         LOGGER(WARN, "already allocated memory for universe->mem.");
-        return RS_SCUCCESS;
+        return RS_SUCCESS;
     }
 
     allocate_size = 0;
@@ -631,7 +631,7 @@ static int _rs_init_the_universe(big_bang_t *universe)
         mem += rs->gf_size;
     }
 
-    return RS_SCUCCESS;
+    return RS_SUCCESS;
 }
 
 static int _rs_init_gf_gfi(big_bang_t *universe)
@@ -642,7 +642,7 @@ static int _rs_init_gf_gfi(big_bang_t *universe)
         _rs_make_gf_and_gfi(universe->rs + i);
     }
 
-    return RS_SCUCCESS;
+    return RS_SUCCESS;
 }
 
 static size_t _rs_calc_rse_memory_size(rs_encode_t *rse,

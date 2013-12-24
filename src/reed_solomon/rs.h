@@ -265,7 +265,7 @@ typedef struct {
 #define BB_MEM_ALLOCATED (2)
 #define BB_MEM_FREED (3)
 
-#define RS_SCUCCESS (0)
+#define RS_SUCCESS (0)
 #define RS_MALLOC_ERROR (-1)
 #define RS_INVALID_DIVISION_ERROR (-2)
 #define RS_INVALID_BITS_ERROR (-3)
