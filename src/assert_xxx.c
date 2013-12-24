@@ -66,6 +66,16 @@ void assert_by_str(char *expected,
     }
 }
 
+void assert_by_null(void *result,
+                        char *test_name)
+{
+    int success = result == NULL;
+    if (failed(success)) {
+        fprintf(_f, "failed %s\n", test_name);
+        fprintf(_f, "result=%p is not NULL\n", result);
+    }
+}
+
 void assert_by_not_null(void *result,
                         char *test_name)
 {

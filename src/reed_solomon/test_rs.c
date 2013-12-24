@@ -6,6 +6,7 @@
 */
 
 ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b);
+big_bang_t *_rs_get_universe_for_test(void);
 
 void test_rs_add(void)
 {
@@ -89,15 +90,67 @@ void test_rs_take_rs_failed(void)
     assert_true(ret == RS_INVALID_DIVISION_ERROR, "rs_take_rs(&rs) with division=16");
 }
 
+void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
+{
+    int ret;
+    big_bang_t *_universe;
+    char *mem;
+
+    _universe = _rs_get_universe_for_test();
+
+    assert_by_null(_universe->mem, "rs_big_bang()");
+    assert_true(_universe->mem_status == BB_MEM_NO_ALLOCATE, "rs_big_bang()");
+
+    ret = rs_big_bang();
+    assert_true(ret == RS_SUCCESS, "rs_big_bang()");
+    assert_by_not_null(_universe->mem, "rs_big_bang()");
+    assert_true(_universe->mem_status == BB_MEM_ALLOCATED, "rs_big_bang()");
+    mem = _universe->mem;
+
+    ret = rs_ultimate_fate_of_the_universe();
+    assert_true(ret == RS_SUCCESS, "rs_ultimate_fate_of_the_universe()");
+    /* no change and not NULL */
+    assert_by_address(mem, _universe->mem, "rs_ultimate_fate_of_the_universe()");
+    assert_true(_universe->mem_status == BB_MEM_FREED, "rs_ultimate_fate_of_the_universe()");
+
+    ret = rs_big_bang();
+    mem = _universe->mem;
+    assert_true(ret == RS_SUCCESS, "rs_big_bang()");
+    assert_true(_universe->mem_status == BB_MEM_ALLOCATED, "rs_big_bang()");
+    ret = rs_big_bang();
+    assert_true(ret == RS_SUCCESS, "rs_big_bang()");
+    assert_by_address(mem, _universe->mem, "rs_ultimate_fate_of_the_universe()");
+    assert_true(_universe->mem_status == BB_MEM_ALLOCATED, "rs_big_bang()");
+
+    ret = rs_ultimate_fate_of_the_universe();
+    assert_true(ret == RS_SUCCESS, "rs_ultimate_fate_of_the_universe()");
+    assert_by_not_null(_universe->mem, "rs_ultimate_fate_of_the_universe()");
+    assert_true(_universe->mem_status == BB_MEM_FREED, "rs_big_bang()");
+
+    ret = rs_ultimate_fate_of_the_universe();
+    assert_true(ret == RS_FREE_ERROR, "rs_ultimate_fate_of_the_universe()");
+    assert_by_not_null(_universe->mem, "rs_ultimate_fate_of_the_universe()");
+    assert_true(_universe->mem_status == BB_MEM_FREED, "rs_big_bang()");
+
+    _universe->mem_status = BB_MEM_NO_ALLOCATE;
+    _universe->mem = NULL;
+}
+
 void test_rs(void)
 {
+    test_rs_big_bang_and_rs_ultimate_fate_of_the_universe();
+
+    rs_big_bang();
+
     test_rs_take_rs();
     test_rs_take_rs_failed();
+
     /*
-    test_take_rs();
     test_rs_add();
     test_rs_mul();
     */
+
+    rs_ultimate_fate_of_the_universe();
 }
 
 int main(void)
@@ -109,10 +162,8 @@ int main(void)
     */
     fprintf(stdout, "%s start!\n", __FILE__);
 
-    rs_big_bang();
     test_rs();
     fprintf(stdout, "\n");
-    rs_ultimate_fate_of_the_universe();
 
     fprintf(stdout, "%s done!\n", __FILE__);
     return 0;

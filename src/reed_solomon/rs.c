@@ -20,7 +20,7 @@ int rs_big_bang(void)
 
     ret = _rs_init_the_universe(universe);
     if (ret < 0) {
-        LOGGER(ERROR, "error occured with ret=%d in rs_big_bang().", ret);
+        LOGGER(ERROR, "error occured with ret=%d in rs_big_bang().\n", ret);
         return ret;
     }
     universe->mem_status = BB_MEM_ALLOCATED;
@@ -598,7 +598,7 @@ static int _rs_init_the_universe(big_bang_t *universe)
 
     universe = _rs_bright();
     if (universe->mem_status == BB_MEM_ALLOCATED) {
-        LOGGER(WARN, "already allocated memory for universe->mem.");
+        LOGGER(WARN, "already allocated memory for universe->mem(=%p).\n", universe->mem);
         return RS_SUCCESS;
     }
 
@@ -925,4 +925,9 @@ ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b)
     return _rs_mul16(rs, a, b);
 }
 
+big_bang_t *_rs_get_universe_for_test(void)
+{
+    big_bang_t *universe = _rs_bright();
+    return universe;
+}
 #endif
