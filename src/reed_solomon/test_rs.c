@@ -15,20 +15,21 @@ void test_rs_add(void)
 
 void test_rs_mul(void)
 {
-    reed_solomon_t *rs;
-    /*
-    assert_by_ushort(65581, rs[1].poly, "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(0, _rs_mul16_for_test(rs + 1, 0, 0), "test_rs_mul() with _rs_mul16_for_test16()");
-    */
-    assert_by_ushort(0, _rs_mul16_for_test(rs + 1, 0, 0x1), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(0, _rs_mul16_for_test(rs + 1, 0x1, 0), "test_rs_mul() with _rs_mul16_for_test16()");
-    /*
-    assert_by_ushort(1, _rs_mul16_for_test(rs + 1, 0x01, 0x01), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(1, _rs_mul16_for_test(rs + 1, 0x01, 0xff), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(1, _rs_mul16_for_test(rs + 1, 0xff, 0xff), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(1, _rs_mul16_for_test(rs + 1, 0x8d, 0x4c), "test_rs_mul() with _rs_mul16_for_test16()");
-    */
-    assert_by_ushort(0xa, _rs_mul16_for_test(rs + 1, 0xc, 0x6), "test_rs_mul() with _rs_mul16_for_test16()");
+    reed_solomon_t *rs16 = NULL;
+    uint bits, division;
+    ushort expected, exponent_in_gf;
+
+    bits = 16, division = 1000;
+    assert_by_null(rs16, "test_rs_mul() with _rs_mul16_for_test16()");
+    rs_take_rs(&rs16, bits, division);
+    assert_by_not_null(rs16, "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_uint(65581, RS_poly(rs16), "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0x1), "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_ushort(0, _rs_mul16_for_test(rs16, 0x1, 0), "test_rs_mul() with _rs_mul16_for_test16()");
+    exponent_in_gf = (RS_gf16(rs16)[0x28a1] + RS_gf16(rs16)[0x7cce]) % RS_gf_max(rs16);
+    expected = RS_gfi16(rs16)[exponent_in_gf];
+    assert_by_ushort(expected, _rs_mul16_for_test(rs16, 0x28a1, 0x7cce), "test_rs_mul() with _rs_mul16_for_test16()");
+
     /*
     assert_by_uint(0, _rs_mul32(0, 0x2), "test_rs_mul() with _rs_mul32()");
     assert_by_uint(0, _rs_mul32(0x2, 0), "test_rs_mul() with _rs_mul32()");
@@ -47,9 +48,12 @@ void test_rs_take_rs(void)
 
     /* 正常系、good case */
     bits = 4, division = 15;
+    assert_by_null(rs4, "rs_take_rs(&rs4) with value of rs4");
     ret = rs_take_rs(&rs4, bits, division);
     assert_success(ret, "rs_take_rs(&rs4) with ret");
     assert_by_not_null(rs4, "rs_take_rs(&rs4) with value of rs4");
+    assert_by_not_null(RS_gf16(rs4), "rs_take_rs(&rs4) with gf16");
+    assert_by_not_null(RS_gfi16(rs4), "rs_take_rs(&rs4) with gfi16");
     assert_by_uint(bits, RS_bits(rs4), "rs_take_rs(&rs4) with bits");
     assert_by_uint(19, RS_poly(rs4), "rs_take_rs(&rs4) with poly");
     assert_by_size(1, RS_symbol_size(rs4), "rs_take_rs(&rs4) with symbol_size");
@@ -65,9 +69,6 @@ void test_rs_take_rs(void)
 
     assert_by_size(RS_w(rs4) * RS_register_size(rs4), RS_gf_size(rs4), "rs_take_rs(&rs4) with gf_size");
     assert_by_size(RS_gf_size(rs4) * 2, RS_allocate_size(rs4), "rs_take_rs(&rs4) with allocate_size");
-    /*
-    assert_by_uint(RS_division(rs4), division, "rs_take_rs(&rs4) with division");
-    */
 }
 
 void test_rs_take_rs_failed(void)
@@ -146,9 +147,7 @@ void test_rs(void)
     test_rs_take_rs_failed();
 
     test_rs_add();
-    /*
     test_rs_mul();
-    */
 
     rs_ultimate_fate_of_the_universe();
 }

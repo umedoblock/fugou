@@ -511,8 +511,8 @@ static big_bang_t _dokkaan = {
 /* bits      poly  symbol_size   register_size */
     { 4,       19,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
     { 8,      285,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
-    /*
     {16,    65581,      2,          2, 0, 0, {NULL}, {NULL}, 0, 0},
+    /*
     {24, 16777243,      3,          4, 0, 0, {NULL}, {NULL}, 0, 0},
     */
     }
