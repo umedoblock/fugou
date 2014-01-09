@@ -38,6 +38,30 @@ void test_rs_mul(void)
     */
 }
 
+void test_rs_div(void)
+{
+    reed_solomon_t *rs16 = NULL;
+    uint bits, division;
+    ushort expected, exponent_in_gf16;
+
+    bits = 16, division = 1000;
+    assert_by_null(rs16, "test_rs_div() with _rs_div16_for_test16()");
+    rs_take_rs(&rs16, bits, division);
+    assert_by_not_null(rs16, "test_rs_div() with _rs_div16_for_test16()");
+    assert_by_uint(65581, RS_poly(rs16), "test_rs_div() with _rs_div16_for_test16()");
+    assert_by_ushort(0, _rs_div16_for_test(rs16, 0, 0x1), "test_rs_div() with _rs_div16_for_test16()");
+    /* whe b div a then _rs_div16(a, b) NEVER accept b of value of zero. */
+    /* below sentence occur FATAL error.
+    _rs_div16_for_test(rs16, 0x1, 0)
+    */
+    exponent_in_gf16 = RS_gf16(rs16)[0x28a1] - RS_gf16(rs16)[0x7cce];
+    if (RS_gf16(rs16)[0x28a1] < RS_gf16(rs16)[0x7cce]) {
+        exponent_in_gf16 += RS_gf_max(rs16);
+    }
+    expected = RS_gfi16(rs16)[exponent_in_gf16];
+    assert_by_ushort(expected, _rs_div16_for_test(rs16, 0x28a1, 0x7cce), "test_rs_div() with _rs_div16_for_test16()");
+}
+
 void test_rs_take_rs(void)
 {
     char ss[SS_SIZE];
