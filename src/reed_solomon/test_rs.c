@@ -17,7 +17,7 @@ void test_rs_mul(void)
 {
     reed_solomon_t *rs16 = NULL;
     uint bits, division;
-    ushort expected, exponent_in_gf;
+    ushort expected, exponent_in_gf16;
 
     bits = 16, division = 1000;
     assert_by_null(rs16, "test_rs_mul() with _rs_mul16_for_test16()");
@@ -27,8 +27,8 @@ void test_rs_mul(void)
     assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0), "test_rs_mul() with _rs_mul16_for_test16()");
     assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0x1), "test_rs_mul() with _rs_mul16_for_test16()");
     assert_by_ushort(0, _rs_mul16_for_test(rs16, 0x1, 0), "test_rs_mul() with _rs_mul16_for_test16()");
-    exponent_in_gf = (RS_gf16(rs16)[0x28a1] + RS_gf16(rs16)[0x7cce]) % RS_gf_max(rs16);
-    expected = RS_gfi16(rs16)[exponent_in_gf];
+    exponent_in_gf16 = (RS_gf16(rs16)[0x28a1] + RS_gf16(rs16)[0x7cce]) % RS_gf_max(rs16);
+    expected = RS_gfi16(rs16)[exponent_in_gf16];
     assert_by_ushort(expected, _rs_mul16_for_test(rs16, 0x28a1, 0x7cce), "test_rs_mul() with _rs_mul16_for_test16()");
 
     /*
