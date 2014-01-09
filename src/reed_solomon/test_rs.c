@@ -145,8 +145,8 @@ void test_rs(void)
     test_rs_take_rs();
     test_rs_take_rs_failed();
 
-    /*
     test_rs_add();
+    /*
     test_rs_mul();
     */
 
