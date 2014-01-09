@@ -143,8 +143,8 @@ static inline uint _rs_mul32(reed_solomon_t *rs, uint a, uint b)
     /* no need to think about 32bit */
     register uint c;
 
-    if (a == 0 || b == 0)
-        return 0;
+    if (a == 0U || b == 0U)
+        return 0U;
 
     c = rs->gf.u32[a] + rs->gf.u32[b];
     if (c < rs->gf_max)
@@ -159,7 +159,13 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
     if (a == 0)
         return 0;
 
-    c = rs->gf.u16[a] - rs->gf.u16[b];
+    /* u16 同士の差を求めて、その差が0以上かを調べている以下の箇所は
+     * bug臭いが cast がうまい具合に働いているんだろうか？
+     * c = rs->gf.u16[a] - rs->gf.u16[b];
+     * 不安でしょうがないので cast するように修正。
+     * c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
+     */
+    c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
     if (c >= 0)
         return rs->gfi.u16[c];
     return rs->gfi.u16[c + rs->gf_max];
@@ -170,8 +176,8 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
     /* no need to think about 32bit */
     int c;
 
-    if (a == 0)
-        return 0;
+    if (a == 0U)
+        return 0U;
 
     c = rs->gf.u32[a] - rs->gf.u32[b];
     if (rs->gf.u32[a] >= rs->gf.u32[b])
@@ -923,6 +929,11 @@ static void _rs_decode32_slots(slot_t *recover,
 ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b)
 {
     return _rs_mul16(rs, a, b);
+}
+
+ushort _rs_div16_for_test(reed_solomon_t *rs, ushort a, ushort b)
+{
+    return _rs_div16(rs, a, b);
 }
 
 big_bang_t *_rs_get_universe_for_test(void)
