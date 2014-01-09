@@ -24,6 +24,7 @@ void test_rs_mul(void)
     rs_take_rs(&rs16, bits, division);
     assert_by_not_null(rs16, "test_rs_mul() with _rs_mul16_for_test16()");
     assert_by_uint(65581, RS_poly(rs16), "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0), "test_rs_mul() with _rs_mul16_for_test16()");
     assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0x1), "test_rs_mul() with _rs_mul16_for_test16()");
     assert_by_ushort(0, _rs_mul16_for_test(rs16, 0x1, 0), "test_rs_mul() with _rs_mul16_for_test16()");
     exponent_in_gf = (RS_gf16(rs16)[0x28a1] + RS_gf16(rs16)[0x7cce]) % RS_gf_max(rs16);
