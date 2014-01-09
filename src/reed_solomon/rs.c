@@ -189,6 +189,7 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
     #if 0
     /* 高速化する機会があれば、今(=平成26年1月9日23時11分7秒)思いついた
      * 手法を適用してみたい。
+     * 高速化手法の結果は、reed_solomon/guard.c を実行すると明らかに！
      * あと、RS_gf32, RS_gfi32 使うようにしないと。
      */
     guard = 0U;
