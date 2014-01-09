@@ -174,15 +174,17 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
 static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
 {
     /* no need to think about 32bit */
-    int c;
+    uint a32, b32;
 
     if (a == 0U)
         return 0U;
 
-    c = rs->gf.u32[a] - rs->gf.u32[b];
-    if (rs->gf.u32[a] >= rs->gf.u32[b])
-        return rs->gfi.u32[c];
-    return rs->gfi.u32[c + rs->gf_max];
+    a32 = rs->gf.u32[a];
+    b32 = rs->gf.u32[b];
+    if (a32 >= b32)
+        return rs->gfi.u32[a32 - b32];
+    /* a32 < b32 */
+    return rs->gfi.u32[rs->gf_max + a32 - b32];
 }
 
 #if 0
