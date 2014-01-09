@@ -185,6 +185,17 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
         return rs->gfi.u32[a32 - b32];
     /* a32 < b32 */
     return rs->gfi.u32[rs->gf_max + a32 - b32];
+
+    #if 0
+    /* 高速化する機会があれば、今(=平成26年1月9日23時11分7秒)思いついた
+     * 手法を適用してみたい。
+     * あと、RS_gf32, RS_gfi32 使うようにしないと。
+     */
+    guard = 0U;
+    if (a32 < b32)
+        guard = rs->gf_max;
+    return rs->gfi.u32[guard + a32 - b32];
+    #endif
 }
 
 #if 0
