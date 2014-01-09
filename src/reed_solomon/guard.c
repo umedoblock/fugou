@@ -1,4 +1,4 @@
-/* http://www.umedoblock.net/trac/fugou/changeset/8dfb2f0278711a10a1173c0932039cc84f0ce350/fugou 
+/* http://www.umedoblock.net/trac/fugou/changeset/8dfb2f0278711a10a1173c0932039cc84f0ce350/fugou
  * の commit 時に考えた高速化が有効か検証する。
  */
 
