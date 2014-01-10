@@ -5,7 +5,7 @@
 
 #define _f (stderr)
 
-int failed(int success);
+int failed(int success, char *test_name);
 void assert_by_00(uchar *result,
                   size_t zero_size,
                   char *test_name);
