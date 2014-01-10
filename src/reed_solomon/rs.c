@@ -326,15 +326,15 @@ _rs_mul_matrix_vector32(
 }
 
 static void _rs_make_e_matrix(_ptr_t e_matrix,
-                                 reed_solomon_t *rs,
-                                 uint division)
+                               size_t register_size,
+                               uint division)
 {
     uint i;
 
     memset(e_matrix.ptr, '\0',
-           division * division * rs->register_size);
+           division * division * register_size);
 
-    if (rs->register_size == 2) {
+    if (register_size == 2) {
         for (i=0;i<division;i++) {
             e_matrix.u16[i * division + i] = 1;
         }
@@ -358,7 +358,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
     uint work;
     reed_solomon_t *rs = rsd->rs;
 
-    _rs_make_e_matrix(inverse, rs, division);
+    _rs_make_e_matrix(inverse, rs->register_size, division);
 
     for (k=0;k<division;k++) {
         work = 0;
@@ -943,6 +943,13 @@ static void _rs_decode32_slots(slot_t *recover,
 ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b)
 {
     return _rs_mul16(rs, a, b);
+}
+
+void _rs_make_e_matrix_for_test(_ptr_t e_matrix,
+                               size_t register_size,
+                               uint division)
+{
+    _rs_make_e_matrix(e_matrix, register_size, division);
 }
 
 ushort _rs_div16_for_test(reed_solomon_t *rs, ushort a, ushort b)

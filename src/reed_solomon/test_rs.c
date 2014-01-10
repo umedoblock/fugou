@@ -168,6 +168,11 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     _universe->mem = NULL;
 }
 
+/*
+void test_solve _rs_solve_inverse()
+_rank_matrix(void)
+*/
+
 void test_invalid_rank_matrix(void)
 {
     reed_solomon_t *rs4 = NULL;
