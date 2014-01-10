@@ -273,6 +273,8 @@ typedef struct {
 #define RS_RSD_AND_RSE_SET_ERROR (-5)
 #define RS_NORM_SIZE_ERROR (-6)
 #define RS_FREE_ERROR (-7)
+#define RS_BIG_BANG_ERROR (-8)
+#define RS_FATE_ERROR (-9)
 
 int rs_big_bang(void);
 int rs_ultimate_fate_of_the_universe(void);

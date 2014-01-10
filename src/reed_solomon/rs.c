@@ -15,7 +15,8 @@ int rs_big_bang(void)
     int ret;
 
     if (universe->mem_status == BB_MEM_ALLOCATED) {
-        return RS_SUCCESS;
+        LOGGER(ERROR, "try to call rs_big_bang() after run rs_big_bang(). must call rs_big_bang() just one time.\n");
+        return RS_BIG_BANG_ERROR;
     }
 
     ret = _rs_init_the_universe(universe);
@@ -40,7 +41,7 @@ int rs_ultimate_fate_of_the_universe(void)
         universe->mem_status = BB_MEM_FREED;
     }
     else {
-        ret = RS_FREE_ERROR;
+        ret = RS_FATE_ERROR;
         LOGGER(ERROR, "try to free(universe->mem) when universe->mem_status(=%d) is not appropriate value(=BB_MEM_ALLOCATED, 2).\nmust call rs_big_bang() before call rs_ultimate_fate_of_the_universe().\n", universe->mem_status);
     }
     return ret;

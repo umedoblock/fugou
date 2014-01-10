@@ -150,7 +150,7 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     assert_true(ret == RS_SUCCESS, "rs_big_bang()");
     assert_true(_universe->mem_status == BB_MEM_ALLOCATED, "rs_big_bang()");
     ret = rs_big_bang();
-    assert_true(ret == RS_SUCCESS, "rs_big_bang()");
+    assert_true(ret == RS_BIG_BANG_ERROR, "rs_big_bang()");
     assert_by_address(mem, _universe->mem, "rs_ultimate_fate_of_the_universe()");
     assert_true(_universe->mem_status == BB_MEM_ALLOCATED, "rs_big_bang()");
 
@@ -160,7 +160,7 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     assert_true(_universe->mem_status == BB_MEM_FREED, "rs_big_bang()");
 
     ret = rs_ultimate_fate_of_the_universe();
-    assert_true(ret == RS_FREE_ERROR, "rs_ultimate_fate_of_the_universe()");
+    assert_true(ret == RS_FATE_ERROR, "rs_ultimate_fate_of_the_universe()");
     assert_by_not_null(_universe->mem, "rs_ultimate_fate_of_the_universe()");
     assert_true(_universe->mem_status == BB_MEM_FREED, "rs_big_bang()");
 
