@@ -5,8 +5,14 @@
 #define _rs_ADD(a, b) (a ^ b)
 */
 
+#define TEMPORARY_SIZE (1024 * 1024)
+static char *temporary = NULL;
+
 ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b);
 big_bang_t *_rs_get_universe_for_test(void);
+void _rs_make_e_matrix_for_test(_ptr_t e_matrix,
+                                 size_t register_size,
+                                 uint division);
 
 void test_rs_add(void)
 {
@@ -162,6 +168,55 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     _universe->mem = NULL;
 }
 
+void test_invalid_rank_matrix(void)
+{
+    reed_solomon_t *rs4 = NULL;
+
+    rs_take_rs(&rs4, 4, 4);
+
+    /*
+    _rs_mul_matrix_vector16();
+    */
+}
+
+void test_make_e_matrix(void)
+{
+    uint division = 4;
+    _ptr_t e_matrix;
+    int i, j;
+    char msg[SS_SIZE];
+
+    e_matrix.ptr = temporary;
+
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+    _rs_make_e_matrix_for_test(e_matrix, 2, division);
+    for (j=0;j<division;j++) {
+        for (i=0;i<division;i++) {
+            sprintf(msg, "test_make_e_matrix(u16)(j, i)=(%d, %d)", j, i);
+            if (j == i) {
+            assert_by_ushort(1, e_matrix.u16[j * division + i], msg);
+            }
+            else {
+            assert_by_ushort(0, e_matrix.u16[j * division + i], msg);
+            }
+        }
+    }
+
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+    _rs_make_e_matrix_for_test(e_matrix, 4, division);
+    for (j=0;j<division;j++) {
+        for (i=0;i<division;i++) {
+            sprintf(msg, "test_make_e_matrix(u32)(j, i)=(%d, %d)", j, i);
+            if (j == i) {
+            assert_by_uint(1, e_matrix.u32[j * division + i], msg);
+            }
+            else {
+            assert_by_uint(0, e_matrix.u32[j * division + i], msg);
+            }
+        }
+    }
+}
+
 void test_rs(void)
 {
     test_rs_big_bang_and_rs_ultimate_fate_of_the_universe();
@@ -174,6 +229,9 @@ void test_rs(void)
     test_rs_add();
     test_rs_mul();
 
+    test_make_e_matrix();
+    test_invalid_rank_matrix();
+
     rs_ultimate_fate_of_the_universe();
 }
 
@@ -184,11 +242,20 @@ int main(void)
     /* -DDEBUG を付けて compile する事。
     _DEBUG("%s start!\n", __FILE__);
     */
+    temporary = malloc(TEMPORARY_SIZE);
+    if (temporary == NULL) {
+        fprintf(stderr, "cannot malloc() enough memory space.\n");
+        return -1;
+    }
+
     fprintf(stdout, "%s start!\n", __FILE__);
 
     test_rs();
     fprintf(stdout, "\n");
 
     fprintf(stdout, "%s done!\n", __FILE__);
+
+    free(temporary);
+
     return 0;
 }
