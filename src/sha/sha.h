@@ -1,7 +1,7 @@
 #ifndef __SHA_H__
 #define __SHA_H__
 /* libsha.h
- * Copyright (C) 平成25(2013)年 梅どぶろく(umedoblock)
+ * Copyright (C) 平成25(2013)年 梅濁酒(umedoblock)
  * FIP180 SECURE HASH STANDARD
  * refs: http://www.itl.nist.gov/fipspubs/fip180-1.htm
  */

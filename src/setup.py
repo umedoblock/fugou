@@ -76,7 +76,7 @@ module_camellia = \
 
 setup(  name = 'fugou',
         version = '8.0',
-        author = '梅どぶろく(umedoblock)',
+        author = '梅濁酒(umedoblock)',
         author_email = 'umedoblock@gmail.com',
         url = 'empty',
         description = 'This is a gcdext() package',

@@ -1,4 +1,4 @@
-/* author: 梅どぶろく(umedoblock)
+/* author: 梅濁酒(umedoblock)
  * Copyright 平成23-24(2011-2012)年
  */
 #include "Python.h"

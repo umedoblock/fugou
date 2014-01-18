@@ -1,5 +1,5 @@
 /* sha1.c
- * Copyright (C) 2008-2012 梅どぶろく(umedoblock)
+ * Copyright (C) 2008-2012 梅濁酒(umedoblock)
  */
 
 #include <stdio.h>

@@ -1,5 +1,5 @@
 /* camellia.h
- * Copyright (C) 平成17-20(2005-2008)年 梅どぶろく(umedoblock)
+ * Copyright (C) 平成17-20(2005-2008)年 梅濁酒(umedoblock)
  */
 
 #ifndef __CAMELLIA_H__

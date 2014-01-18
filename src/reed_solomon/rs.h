@@ -1,4 +1,4 @@
-/* Copyright (C) 平成20-25(2008-2013)年 梅どぶろく(umedoblock)
+/* Copyright (C) 平成20-25(2008-2013)年 梅濁酒(umedoblock)
  #258  libpar の仕様をはっきりさせる。
  rs library header
  Reed Solomon 符号により、任意のdataに対して冗長性を持たせる。

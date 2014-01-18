@@ -33,7 +33,7 @@ module_montgomery = \
 
 setup(  name = 'montgomery',
         version = '0.0',
-        author = '梅どぶろく(umedoblock)',
+        author = '梅濁酒(umedoblock)',
         author_email = 'umedoblock@gmail.com',
         url = 'empty',
         description = 'This is a fugou package',

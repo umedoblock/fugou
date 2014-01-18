@@ -10,7 +10,7 @@ module_foo = \
 
 setup(  name = 'sample',
         version = '0.0',
-        author = '梅どぶろく(umedoblock)',
+        author = '梅濁酒(umedoblock)',
         author_email = 'umedoblock@gmail.com',
         url = 'empty',
         description = 'This is a foo object package',

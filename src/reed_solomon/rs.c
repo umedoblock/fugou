@@ -1,4 +1,4 @@
-/* Copyright (C) 平成20-25(2008-2013)年 梅どぶろく(umedoblock)
+/* Copyright (C) 平成20-25(2008-2013)年 梅濁酒(umedoblock)
  * rs library source
  */
 

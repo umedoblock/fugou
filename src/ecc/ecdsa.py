@@ -1,4 +1,4 @@
-# author: 梅どぶろく(umedoblock)
+# author: 梅濁酒(umedoblock)
 # references: ECDSA http://www.rfc-editor.org/rfc/rfc4754.txt
 # Copyright 平成24年(2012)
 

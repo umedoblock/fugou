@@ -1,5 +1,5 @@
 # Makefile
-# Copyright (C) 平成20-25(2008-2013)年 梅どぶろく(umedoblock)
+# Copyright (C) 平成20-25(2008-2013)年 梅濁酒(umedoblock)
 
 CC		= cc
 SOURCES	= libpar2.c libsha.c tool.c
