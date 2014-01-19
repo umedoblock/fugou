@@ -128,11 +128,23 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     big_bang_t *_universe;
     char *mem;
 
+ /*
+  * rs_big_bang() を呼び出す前の初期状態の確認、
+  * mem が NULL であり、
+  * mem_status が BB_MEM_NO_ALLOCATE である事
+  * を確認する。
+  */
     _universe = _rs_get_universe_for_test();
 
     assert_by_null(_universe->mem, "rs_big_bang()");
     assert_true(_universe->mem_status == BB_MEM_NO_ALLOCATE, "rs_big_bang()");
 
+ /*
+  * rs_big_bang() の呼び出しによって、
+  * mem が有効な address に変わり、
+  * mem_status が BB_MEM_ALLOCATED に変わっている事、
+  * を確認する。
+  */
     ret = rs_big_bang();
     assert_true(ret == RS_SUCCESS, "rs_big_bang()");
     assert_by_not_null(_universe->mem, "rs_big_bang()");
@@ -169,7 +181,7 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
 }
 
 /*
-void test_solve _rs_solve_inverse()
+void test_rs_solve_inverse()
 _rank_matrix(void)
 */
 
@@ -184,7 +196,7 @@ void test_invalid_rank_matrix(void)
     */
 }
 
-void test_make_e_matrix(void)
+void test_rs_make_e_matrix(void)
 {
     uint division = 4;
     _ptr_t e_matrix;
@@ -197,7 +209,7 @@ void test_make_e_matrix(void)
     _rs_make_e_matrix_for_test(e_matrix, 2, division);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
-            sprintf(msg, "test_make_e_matrix(u16)(j, i)=(%d, %d)", j, i);
+            sprintf(msg, "test_rs_make_e_matrix(u16)(j, i)=(%d, %d)", j, i);
             if (j == i) {
             assert_by_ushort(1, e_matrix.u16[j * division + i], msg);
             }
@@ -211,7 +223,7 @@ void test_make_e_matrix(void)
     _rs_make_e_matrix_for_test(e_matrix, 4, division);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
-            sprintf(msg, "test_make_e_matrix(u32)(j, i)=(%d, %d)", j, i);
+            sprintf(msg, "test_rs_make_e_matrix(u32)(j, i)=(%d, %d)", j, i);
             if (j == i) {
             assert_by_uint(1, e_matrix.u32[j * division + i], msg);
             }
@@ -234,11 +246,17 @@ void test_rs(void)
     test_rs_add();
     test_rs_mul();
 
-    test_make_e_matrix();
-    test_invalid_rank_matrix();
+    test_rs_make_e_matrix();
+    test_rs_invalid_rank_matrix();
 
     rs_ultimate_fate_of_the_universe();
 }
+
+/*
+void test_rs_solve_inverse()        正常系
+void test_rs_mul_matrixes()        正常系
+void test_rs_invalid_rank_matrix(void) 異常系
+*/
 
 int main(void)
 {
