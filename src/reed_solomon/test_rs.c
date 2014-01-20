@@ -122,6 +122,11 @@ void test_rs_take_rs_failed(void)
     assert_true(ret == RS_INVALID_DIVISION_ERROR, "rs_take_rs(&rs) with division=16");
 }
 
+/*
+ * rs_big_bang(), rs_ultimate_fate_of_the_universe()
+ * の組み合わせによってreed solomon code library
+ * 使用に必要な資源確保・解放を行う。
+ */
 void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
 {
     int ret;
@@ -129,7 +134,7 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     char *mem;
 
  /*
-  * rs_big_bang() を呼び出す前の初期状態の確認、
+  * rs_big_bang() を呼び出す前の初期状態の確認。
   * mem が NULL であり、
   * mem_status が BB_MEM_NO_ALLOCATE である事
   * を確認する。
@@ -141,8 +146,8 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
 
  /*
   * rs_big_bang() の呼び出しによって、
-  * mem が有効な address に変わり、
-  * mem_status が BB_MEM_ALLOCATED に変わっている事、
+  * mem が有効な address(!=NULL) に変わり、
+  * mem_status が BB_MEM_ALLOCATED に変わっている事
   * を確認する。
   */
     ret = rs_big_bang();
@@ -156,6 +161,9 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
     /* no change and not NULL */
     assert_by_address(mem, _universe->mem, "rs_ultimate_fate_of_the_universe()");
     assert_true(_universe->mem_status == BB_MEM_FREED, "rs_ultimate_fate_of_the_universe()");
+    /* ここまでで、正常系の一連の処理は実行した。
+     * rs_big_bang() => rs_ultimate_fate_of_the_universe()
+     */
 
     ret = rs_big_bang();
     mem = _universe->mem;
