@@ -8,9 +8,9 @@
 #define TEMPORARY_SIZE (1024 * 1024)
 static char *temporary = NULL;
 
-ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b);
-big_bang_t *_rs_get_universe_for_test(void);
-void _rs_make_e_matrix_for_test(_ptr_t e_matrix,
+ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
+big_bang_t *_rs_get_universe_wrap(void);
+void _rs_make_e_matrix_wrap(_ptr_t e_matrix,
                                  size_t register_size,
                                  uint division);
 
@@ -26,16 +26,16 @@ void test_rs_mul(void)
     ushort expected, exponent_in_gf16;
 
     bits = 16, division = 1000;
-    assert_by_null(rs16, "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_null(rs16, "test_rs_mul() with _rs_mul16_wrap16()");
     rs_take_rs(&rs16, bits, division);
-    assert_by_not_null(rs16, "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_uint(65581, RS_poly(rs16), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(0, _rs_mul16_for_test(rs16, 0, 0x1), "test_rs_mul() with _rs_mul16_for_test16()");
-    assert_by_ushort(0, _rs_mul16_for_test(rs16, 0x1, 0), "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_not_null(rs16, "test_rs_mul() with _rs_mul16_wrap16()");
+    assert_by_uint(65581, RS_poly(rs16), "test_rs_mul() with _rs_mul16_wrap16()");
+    assert_by_ushort(0, _rs_mul16_wrap(rs16, 0, 0), "test_rs_mul() with _rs_mul16_wrap16()");
+    assert_by_ushort(0, _rs_mul16_wrap(rs16, 0, 0x1), "test_rs_mul() with _rs_mul16_wrap16()");
+    assert_by_ushort(0, _rs_mul16_wrap(rs16, 0x1, 0), "test_rs_mul() with _rs_mul16_wrap16()");
     exponent_in_gf16 = (RS_gf16(rs16)[0x28a1] + RS_gf16(rs16)[0x7cce]) % RS_gf_max(rs16);
     expected = RS_gfi16(rs16)[exponent_in_gf16];
-    assert_by_ushort(expected, _rs_mul16_for_test(rs16, 0x28a1, 0x7cce), "test_rs_mul() with _rs_mul16_for_test16()");
+    assert_by_ushort(expected, _rs_mul16_wrap(rs16, 0x28a1, 0x7cce), "test_rs_mul() with _rs_mul16_wrap16()");
 
     /*
     assert_by_uint(0, _rs_mul32(0, 0x2), "test_rs_mul() with _rs_mul32()");
@@ -51,21 +51,21 @@ void test_rs_div(void)
     ushort expected, exponent_in_gf16;
 
     bits = 16, division = 1000;
-    assert_by_null(rs16, "test_rs_div() with _rs_div16_for_test16()");
+    assert_by_null(rs16, "test_rs_div() with _rs_div16_wrap16()");
     rs_take_rs(&rs16, bits, division);
-    assert_by_not_null(rs16, "test_rs_div() with _rs_div16_for_test16()");
-    assert_by_uint(65581, RS_poly(rs16), "test_rs_div() with _rs_div16_for_test16()");
-    assert_by_ushort(0, _rs_div16_for_test(rs16, 0, 0x1), "test_rs_div() with _rs_div16_for_test16()");
+    assert_by_not_null(rs16, "test_rs_div() with _rs_div16_wrap16()");
+    assert_by_uint(65581, RS_poly(rs16), "test_rs_div() with _rs_div16_wrap16()");
+    assert_by_ushort(0, _rs_div16_wrap(rs16, 0, 0x1), "test_rs_div() with _rs_div16_wrap16()");
     /* whe b div a then _rs_div16(a, b) NEVER accept b of value of zero. */
     /* below sentence occur FATAL error.
-    _rs_div16_for_test(rs16, 0x1, 0)
+    _rs_div16_wrap(rs16, 0x1, 0)
     */
     exponent_in_gf16 = RS_gf16(rs16)[0x28a1] - RS_gf16(rs16)[0x7cce];
     if (RS_gf16(rs16)[0x28a1] < RS_gf16(rs16)[0x7cce]) {
         exponent_in_gf16 += RS_gf_max(rs16);
     }
     expected = RS_gfi16(rs16)[exponent_in_gf16];
-    assert_by_ushort(expected, _rs_div16_for_test(rs16, 0x28a1, 0x7cce), "test_rs_div() with _rs_div16_for_test16()");
+    assert_by_ushort(expected, _rs_div16_wrap(rs16, 0x28a1, 0x7cce), "test_rs_div() with _rs_div16_wrap16()");
 }
 
 void test_rs_take_rs(void)
@@ -139,7 +139,7 @@ void test_rs_big_bang_and_rs_ultimate_fate_of_the_universe(void)
   * mem_status が BB_MEM_NO_ALLOCATE である事
   * を確認する。
   */
-    _universe = _rs_get_universe_for_test();
+    _universe = _rs_get_universe_wrap();
 
     assert_by_null(_universe->mem, "rs_big_bang()");
     assert_true(_universe->mem_status == BB_MEM_NO_ALLOCATE, "rs_big_bang()");
@@ -214,7 +214,7 @@ void test_rs_make_e_matrix(void)
     e_matrix.ptr = temporary;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
-    _rs_make_e_matrix_for_test(e_matrix, 2, division);
+    _rs_make_e_matrix_wrap(e_matrix, 2, division);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
             sprintf(msg, "test_rs_make_e_matrix(u16)(j, i)=(%d, %d)", j, i);
@@ -228,7 +228,7 @@ void test_rs_make_e_matrix(void)
     }
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
-    _rs_make_e_matrix_for_test(e_matrix, 4, division);
+    _rs_make_e_matrix_wrap(e_matrix, 4, division);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
             sprintf(msg, "test_rs_make_e_matrix(u32)(j, i)=(%d, %d)", j, i);

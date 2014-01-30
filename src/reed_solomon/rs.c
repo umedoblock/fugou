@@ -941,24 +941,24 @@ static void _rs_decode32_slots(slot_t *recover,
 /* for test functions ********************************************************/
 /*****************************************************************************/
 
-ushort _rs_mul16_for_test(reed_solomon_t *rs, ushort a, ushort b)
+ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b)
 {
     return _rs_mul16(rs, a, b);
 }
 
-void _rs_make_e_matrix_for_test(_ptr_t e_matrix,
+void _rs_make_e_matrix_wrap(_ptr_t e_matrix,
                                size_t register_size,
                                uint division)
 {
     _rs_make_e_matrix(e_matrix, register_size, division);
 }
 
-ushort _rs_div16_for_test(reed_solomon_t *rs, ushort a, ushort b)
+ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b)
 {
     return _rs_div16(rs, a, b);
 }
 
-big_bang_t *_rs_get_universe_for_test(void)
+big_bang_t *_rs_get_universe_wrap(void)
 {
     big_bang_t *universe = _rs_bright();
     return universe;
