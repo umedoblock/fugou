@@ -648,6 +648,7 @@ static int _rs_init_the_universe(big_bang_t *universe)
         rs->gf.ptr = mem;
         mem += rs->gf_size;
 
+        /* 後で上と同じように直す。*/
         universe->rs[i].gfi.ptr = mem;
         mem += rs->gf_size;
     }
