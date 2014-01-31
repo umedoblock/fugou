@@ -331,6 +331,10 @@ static void _rs_make_e_matrix(_ptr_t e_matrix,
                                uint division)
 {
     uint i;
+    size_t matrix_size; /* division の値によって変わりうる値。
+                         * 書き込み用構造体の導入によって、
+                         * 書き込み用構造体に新たにmember入りさせる。
+                         */
 
     memset(e_matrix.ptr, '\0',
            division * division * register_size);
