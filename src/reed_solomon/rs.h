@@ -189,6 +189,75 @@ typedef struct {
     size_t allocate_size;
 } reed_solomon_t;
 
+/* row, 行
+ * column, 列
+ *              column
+ *                |
+ *                |
+ *                |
+ *                |
+ * row -----------+-----------
+ *                |
+ *                |
+ *                |
+ *                |
+ */
+
+typedef struct {
+    uint columns;     /* = division */
+    uint rows;   /* = division */
+    size_t register_size;  /* not need to use here ? */
+    size_t size;    /* = division * division * register_size */
+    _ptr_t mem;
+} matrix_t;
+
+typedef struct {
+    uint columns;     /* = division */
+    size_t register_size;  /* not need to use here ? */
+    size_t size;    /* = division * register_size */
+    _ptr_t mem;
+} vector_t;
+
+typedef struct {
+    uint poly;
+    uint division;
+
+    size_t mem_size; /* = 3 * matrix_size + 2 * vector_size */
+    _ptr_t mem;
+    matrix_t vandermonde; /* rse */
+    matrix_t inverse;     /* rsd */
+    matrix_t elementary;  /* rsd */
+    vector_t vec1;        /* rse and rsd, for tempolary area */
+    vector_t vec2;        /* rse and rsd, for tempolary area */
+} rs_buffer_t;
+
+#define MATRIX(mtrx) ((matrix_t *)mtrx)
+#define MATRIX_size(mtrx) (MATRIX(mtrx)->size)
+#define MATRIX_register_size(mtrx) (MATRIX(mtrx)->register_size)
+#define MATRIX_mem(mtrx) (MATRIX(mtrx)->mem)
+#define MATRIX_ptr(mtrx) (MATRIX_mem(mtrx).ptr)
+#define MATRIX_uXX(mtrx, XX) (MATRIX_mem(mtrx).u ## XX)
+#define MATRIX_get(mtrx, XX, INDEX, VALUE) \
+    for(;;) { \
+    if (MATRIX_register_size(mtrx) == 2) { \
+        VALUE = MATRIX_uXX(mtrx, 16)[INDEX]; \
+    } \
+    else { \
+        VALUE = MATRIX_uXX(mtrx, 32)[INDEX]; \
+    } \
+    break; \
+    }
+#define MATRIX_set(mtrx, INDEX, VALUE) \
+    for(;;) { \
+    if (MATRIX_register_size(mtrx) == 2) { \
+        MATRIX_uXX(mtrx, 16)[INDEX] = VALUE; \
+    } \
+    else { \
+        MATRIX_uXX(mtrx, 32)[INDEX] = VALUE; \
+    } \
+    break; \
+    }
+
 #define RS_ptr(r) ((reed_solomon_t *)r)
 #define RS_bits(r) (RS_ptr(r)->bits)
 #define RS_poly(r) (RS_ptr(r)->poly)
@@ -290,7 +359,7 @@ void rs_decode_slots(slot_t *recover,
                      rs_decode_t *rsd,
                      uint symbol_num);
 size_t aligned_size(size_t size);
-static int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
+int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
 
 /*****************************************************************************/
 /* prototype *****************************************************************/

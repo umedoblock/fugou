@@ -326,19 +326,19 @@ _rs_mul_matrix_vector32(
     }
 }
 
-static void _rs_make_e_matrix(_ptr_t e_matrix,
-                               size_t register_size,
-                               uint division)
+static void _rs_make_e_matrix(matrix_t *elementary,
+                              uint n)
 {
     uint i;
-    size_t matrix_size; /* division の値によって変わりうる値。
-                         * 書き込み用構造体の導入によって、
-                         * 書き込み用構造体に新たにmember入りさせる。
-                         */
 
-    memset(e_matrix.ptr, '\0',
-           division * division * register_size);
+    memset(MATRIX_ptr(elementary), '\0', \
+           MATRIX_size(elementary));
 
+    for (i=0;i<n;i++) {
+        MATRIX_set(elementary, i * n + i, 1);
+    }
+
+    #if 0
     if (register_size == 2) {
         for (i=0;i<division;i++) {
             e_matrix.u16[i * division + i] = 1;
@@ -349,11 +349,13 @@ static void _rs_make_e_matrix(_ptr_t e_matrix,
             e_matrix.u32[i * division + i] = 1;
         }
     }
+    #endif
 }
 
-static int _rs_solve_inverse(_ptr_t inverse,
-                               _ptr_t matrix,
-                                rs_decode_t *rsd)
+#if 0
+static int _rs_solve_inverse(matrix_t *inverse,
+                             matrix_t *matrix,
+                             rs_decode_t *rsd)
 {
     uint i, j, k, swap;
     uint division = rsd->division;
@@ -363,7 +365,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
     uint work;
     reed_solomon_t *rs = rsd->rs;
 
-    _rs_make_e_matrix(inverse, rs->register_size, division);
+    _rs_make_e_matrix(inverse, division);
 
     for (k=0;k<division;k++) {
         work = 0;
@@ -519,6 +521,7 @@ static int _rs_solve_inverse(_ptr_t inverse,
 
     return RS_SUCCESS;
 }
+#endif
 
 size_t aligned_size(size_t size)
 {
@@ -955,7 +958,7 @@ void _rs_make_e_matrix_wrap(_ptr_t e_matrix,
                                size_t register_size,
                                uint division)
 {
-    _rs_make_e_matrix(e_matrix, register_size, division);
+    _rs_make_e_matrix(e_matrix, division);
 }
 
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b)
