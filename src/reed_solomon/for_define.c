@@ -18,6 +18,16 @@ uint mul32(uint n, number_t *num)
     return n * num->u32;
 }
 
+#define _mulXXX(X)                    \
+uint _mul ## X(uint n, number_t *num) \
+{                                     \
+    return n * num->u##X;             \
+}
+
+_mulXXX(16)
+_mulXXX(32)
+
+#if 0
 #define _mulXXX(X) \
     for (;;) { \
         _TMP = n * num->u##X; \
@@ -41,6 +51,7 @@ uint _mul32(uint n, number_t *num)
 
     return _TMP;
 }
+#endif
 
 int main(void)
 {
