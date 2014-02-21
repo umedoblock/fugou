@@ -26,7 +26,7 @@ uint mul32(uint n, number_t *num)
 
 uint _mul16(uint n, number_t *num)
 {
-    ushort _TMP;
+    uint _TMP;
 
     _mulXXX(16);
 
