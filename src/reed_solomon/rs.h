@@ -204,19 +204,21 @@ typedef struct {
  */
 
 typedef struct {
-    uint columns;     /* = division */
-    uint rows;   /* = division */
-    size_t register_size;  /* not need to use here ? */
-    size_t size;    /* = division * division * register_size */
-    _ptr_t mem;
-} matrix_t;
+    uint elements;        /* = division */
+    size_t element_size; /* see name */
+    size_t vector_size;  /* = elements * element_size */
+    size_t mem_size;     /* = sizeof(vector_t) + vector_size */
+    _ptr_t mem;          /* memory area */
+} vector_t;
 
 typedef struct {
-    uint columns;     /* = division */
-    size_t register_size;  /* not need to use here ? */
-    size_t size;    /* = division * register_size */
-    _ptr_t mem;
-} vector_t;
+    uint columns;        /* = division */
+    uint rows;           /* = division */
+    size_t element_size; /* see name */
+    size_t matrix_size;  /* = columns * rows * element_size */
+    size_t mem_size;     /* = sizeof(matrix_t) + matrix_size */
+    _ptr_t mem;          /* memory area */
+} matrix_t;
 
 typedef struct {
     uint poly;
@@ -229,17 +231,31 @@ typedef struct {
     matrix_t elementary;  /* rsd */
     vector_t vec1;        /* rse and rsd, for tempolary area */
     vector_t vec2;        /* rse and rsd, for tempolary area */
-} rs_buffer_t;
+} rs_readonly_t;
+
+typedef struct {
+    uint poly;
+    uint division;
+
+    size_t mem_size; /* = 3 * matrix_size + 2 * vector_size */
+    _ptr_t mem;
+    matrix_t vandermonde; /* rse */
+    matrix_t inverse;     /* rsd */
+    matrix_t elementary;  /* rsd */
+    vector_t vec1;        /* rse and rsd, for tempolary area */
+    vector_t vec2;        /* rse and rsd, for tempolary area */
+} rs_writable_t;
 
 #define MATRIX(mtrx) ((matrix_t *)mtrx)
-#define MATRIX_size(mtrx) (MATRIX(mtrx)->size)
-#define MATRIX_register_size(mtrx) (MATRIX(mtrx)->register_size)
+#define MATRIX_matrix_size(mtrx) (MATRIX(mtrx)->matrix_size)
+#define MATRIX_element_size(mtrx) (MATRIX(mtrx)->element_size)
 #define MATRIX_mem(mtrx) (MATRIX(mtrx)->mem)
+#define MATRIX_mem_size(mtrx) (MATRIX(mtrx)->mem_size)
 #define MATRIX_ptr(mtrx) (MATRIX_mem(mtrx).ptr)
 #define MATRIX_uXX(mtrx, XX) (MATRIX_mem(mtrx).u ## XX)
 #define MATRIX_get(mtrx, XX, INDEX, VALUE) \
     for(;;) { \
-    if (MATRIX_register_size(mtrx) == 2) { \
+    if (MATRIX_element_size(mtrx) == 2) { \
         VALUE = MATRIX_uXX(mtrx, 16)[INDEX]; \
     } \
     else { \
@@ -249,7 +265,7 @@ typedef struct {
     }
 #define MATRIX_set(mtrx, INDEX, VALUE) \
     for(;;) { \
-    if (MATRIX_register_size(mtrx) == 2) { \
+    if (MATRIX_element_size(mtrx) == 2) { \
         MATRIX_uXX(mtrx, 16)[INDEX] = VALUE; \
     } \
     else { \

@@ -10,9 +10,7 @@ static char *temporary = NULL;
 
 ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 big_bang_t *_rs_get_universe_wrap(void);
-void _rs_make_e_matrix_wrap(_ptr_t e_matrix,
-                                 size_t register_size,
-                                 uint division);
+void _matrix_make_e_wrap(matrix_t *elementaryary, uint n);
 
 void test_rs_add(void)
 {
@@ -204,43 +202,80 @@ void test_invalid_rank_matrix(void)
     */
 }
 
-void test_rs_make_e_matrix(void)
+void test_rs_make_elementary(void)
 {
-    uint division = 4;
-    _ptr_t e_matrix;
+    uint division = 4, expected_value;
+    matrix_t *elementary;
     int i, j;
     char msg[SS_SIZE];
+    size_t matrix_size;
 
-    e_matrix.ptr = temporary;
+    elementary = (matrix_t *)temporary;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
-    _rs_make_e_matrix_wrap(e_matrix, 2, division);
+    matrix_calc_mem_size(division, division, 2);
+    matrix_init(elementary, division, division, 2);
+    matrix_make_elementary(elementary, division, 2);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
-            sprintf(msg, "test_rs_make_e_matrix(u16)(j, i)=(%d, %d)", j, i);
+            sprintf(msg, "test_rs_make_elementary(u16)(j, i)=(%d, %d)", j, i);
+            expected_value = 0;
             if (j == i) {
-            assert_by_ushort(1, e_matrix.u16[j * division + i], msg);
+                expected_value = 1;
             }
-            else {
-            assert_by_ushort(0, e_matrix.u16[j * division + i], msg);
-            }
+            assert_by_ushort(expected_value, MATRIX_uXX(elementary, 16)[j * division + i], msg);
         }
     }
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
-    _rs_make_e_matrix_wrap(e_matrix, 4, division);
+    matrix_calc_mem_size(division, division, 4);
+    matrix_init(elementary, division, division, 4);
+    matrix_make_elementary(elementary, division, 4);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
-            sprintf(msg, "test_rs_make_e_matrix(u32)(j, i)=(%d, %d)", j, i);
+            sprintf(msg, "test_rs_make_elementary(u32)(j, i)=(%d, %d)", j, i);
+            expected_value = 0;
             if (j == i) {
-            assert_by_uint(1, e_matrix.u32[j * division + i], msg);
+                expected_value = 1;
             }
-            else {
-            assert_by_uint(0, e_matrix.u32[j * division + i], msg);
-            }
+            assert_by_uint(expected_value, MATRIX_uXX(elementary, 32)[j * division + i], msg);
         }
     }
 }
+
+#if 0
+/* E * E = E,
+   E * D = D,
+   D * E = D,
+   D1 * D2 = D3
+*/
+
+void test_rs_mul_matrix_vectorXX(void)
+{
+    int ret;
+    uint bits, division;
+    _ptr_t e_matrix, e_matrix2;
+    int i, j;
+    char msg[SS_SIZE];
+    reed_solomon_t *rs16;
+    rs_buffer_t *rs_buf;
+
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+
+    bits = 16, division = (1 << bits) - 1;
+    ret = rs_take_rs(&rs16, bits, division);
+    e_matrix.ptr = temporary;
+    e_matrix2.ptr = temporary + rs16->gf_size;
+    e_matrix3.ptr = temporary + 2 * rs16->gf_size;
+    _rs_make_e_matrix_wrap(e_matrix, 2, division);
+    _rs_make_e_matrix_wrap(e_matrix2, 2, division);
+    _rs_mul_matrix_vector16(result, e_matrix, e_matrix2);
+    assert_equal_matrix(result, e_matrix3);
+    /*
+    ret = rs_take_rs(&rs32, bits, division);
+    */
+}
+#endif
 
 void test_rs(void)
 {
@@ -254,8 +289,14 @@ void test_rs(void)
     test_rs_add();
     test_rs_mul();
 
-    test_rs_make_e_matrix();
+    #if 0
+    test_rs_mul_matrix_vectorXX();
+    #endif
+
+    test_rs_make_elementary();
+    /*
     test_rs_invalid_rank_matrix();
+    */
 
     rs_ultimate_fate_of_the_universe();
 }

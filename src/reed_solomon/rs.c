@@ -326,13 +326,46 @@ _rs_mul_matrix_vector32(
     }
 }
 
-static void _rs_make_e_matrix(matrix_t *elementary,
-                              uint n)
+size_t matrix_calc_matrix_size(uint rows, uint columns,
+                               size_t element_size)
+{
+    size_t matrix_size;
+
+    matrix_size = rows * columns * element_size;
+
+    return matrix_size;
+}
+
+size_t matrix_calc_mem_size(uint rows, uint columns,
+                            size_t element_size)
+{
+    size_t matrix_size, mem_size;
+
+    matrix_size = matrix_calc_matrix_size(rows, columns, element_size);
+    mem_size = sizeof(matrix_size) + matrix_size;
+
+    return mem_size;
+}
+
+int matrix_init(matrix_t *matrix, uint rows, uint columns, size_t element_size)
+{
+    matrix->rows = rows;
+    matrix->columns = columns;
+    matrix->element_size = element_size;
+    matrix->matrix_size = matrix_calc_matrix_size(rows, columns, element_size);
+    matrix->mem_size = matrix_calc_mem_size(rows, columns, element_size);
+    MATRIX_ptr(matrix) = ((char *)matrix) + sizeof(matrix_t);
+    memset((void *)MATRIX_ptr(matrix), '\0', matrix->matrix_size);
+
+    return 0;
+}
+
+void matrix_make_elementary(matrix_t *elementary, uint n)
 {
     uint i;
 
     memset(MATRIX_ptr(elementary), '\0', \
-           MATRIX_size(elementary));
+           MATRIX_matrix_size(elementary));
 
     for (i=0;i<n;i++) {
         MATRIX_set(elementary, i * n + i, 1);
@@ -365,7 +398,7 @@ static int _rs_solve_inverse(matrix_t *inverse,
     uint work;
     reed_solomon_t *rs = rsd->rs;
 
-    _rs_make_e_matrix(inverse, division);
+    _matrix_make_e(inverse, division);
 
     for (k=0;k<division;k++) {
         work = 0;
@@ -954,11 +987,9 @@ ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b)
     return _rs_mul16(rs, a, b);
 }
 
-void _rs_make_e_matrix_wrap(_ptr_t e_matrix,
-                               size_t register_size,
-                               uint division)
+void matrix_make_elementary_wrap(matrix_t *elementary, uint n)
 {
-    _rs_make_e_matrix(e_matrix, division);
+    matrix_make_elementary(elementary, n);
 }
 
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b)
