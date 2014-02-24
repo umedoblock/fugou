@@ -385,34 +385,6 @@ size_t matrix_calc_mem_size(uint rows, uint columns, size_t element_size);
 int matrix_init(matrix_t *matrix, uint rows, uint columns, size_t element_size);
 void matrix_make_elementary(matrix_t *elementary, uint n);
 
-static size_t _rs_calc_rsd_memory_size(rs_decode_t *rsd,
-                                         reed_solomon_t *rs,
-                                         uint division);
-static big_bang_t *_rs_bright(void);
-static void _rs_encode16_slots(slot_t *parity,
-                               slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num);
-static void _rs_encode32_slots(slot_t *parity,
-                               slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num);
-static void _rs_decode16_slots(slot_t *recover,
-                               slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num);
-static void _rs_decode32_slots(slot_t *recover,
-                               slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num);
-static reed_solomon_t *_rs_get_rs(uint bits);
-static int _rs_init_the_universe(big_bang_t *universe);
-static int _rs_init_gf_gfi(big_bang_t *universe);
-
-static void _rs_view_rs(reed_solomon_t *rs);
-static void _rs_view_big_bang(void);
-static void _rs_view_matrix16(ushort *matrix, uint division);
-
 #ifdef __cplusplus
 }
 #endif

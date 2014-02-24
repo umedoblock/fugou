@@ -5,6 +5,31 @@
 #include "rs.h"
 
 /*****************************************************************************/
+/* static functions **********************************************************/
+/*****************************************************************************/
+
+static big_bang_t *_rs_bright(void);
+static void _rs_encode16_slots(slot_t *parity,
+                               slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num);
+static void _rs_encode32_slots(slot_t *parity,
+                               slot_t *norm,
+                               rs_encode_t *rse,
+                               uint symbol_num);
+static void _rs_decode32_slots(slot_t *recover,
+                               slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num);
+static void _rs_decode16_slots(slot_t *recover,
+                               slot_t *merged,
+                               rs_decode_t *rsd,
+                               uint symbol_num);
+static int _rs_init_gf_gfi(big_bang_t *universe);
+static int _rs_init_the_universe(big_bang_t *universe);
+static reed_solomon_t *_rs_get_rs(uint bits);
+
+/*****************************************************************************/
 /* API ***********************************************************************/
 /*****************************************************************************/
 
