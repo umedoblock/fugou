@@ -380,6 +380,11 @@ int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
 /*****************************************************************************/
 /* prototype *****************************************************************/
 /*****************************************************************************/
+size_t matrix_calc_matrix_size(uint rows, uint columns, size_t element_size);
+size_t matrix_calc_mem_size(uint rows, uint columns, size_t element_size);
+int matrix_init(matrix_t *matrix, uint rows, uint columns, size_t element_size);
+void matrix_make_elementary(matrix_t *elementary, uint n);
+
 static size_t _rs_calc_rsd_memory_size(rs_decode_t *rsd,
                                          reed_solomon_t *rs,
                                          uint division);

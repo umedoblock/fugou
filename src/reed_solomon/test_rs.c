@@ -1,3 +1,4 @@
+#include "../libfugou.h"
 #include "rs.h"
 #include "../assert_xxx.h"
 
@@ -9,6 +10,7 @@
 static char *temporary = NULL;
 
 ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
+ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 big_bang_t *_rs_get_universe_wrap(void);
 void _matrix_make_e_wrap(matrix_t *elementaryary, uint n);
 
@@ -103,21 +105,24 @@ void test_rs_take_rs(void)
 void test_rs_take_rs_failed(void)
 {
     char ss[SS_SIZE];
-    int ret, i;
+    int ret;
     reed_solomon_t *rs = NULL;
     uint bits, division;
 
     /* 失敗系、bad case */
     bits = 100, division = 15;
     ret = rs_take_rs(&rs, bits, division);
-    assert_true(ret == RS_INVALID_BITS_ERROR, "rs_take_rs(&rs) with bits=100");
+    sprintf(ss, "rs_take_rs(&rs) with bits=%u, division=%u", bits, division);
+    assert_true(ret == RS_INVALID_BITS_ERROR, ss);
 
     bits = 4, division = 1;
     ret = rs_take_rs(&rs, bits, division);
-    assert_true(ret == RS_INVALID_DIVISION_ERROR, "rs_take_rs(&rs) with division=1");
+    sprintf(ss, "rs_take_rs(&rs) with bits=%u, division=%u", bits, division);
+    assert_true(ret == RS_INVALID_DIVISION_ERROR, ss);
     bits = 4, division = 16;
     ret = rs_take_rs(&rs, bits, division);
-    assert_true(ret == RS_INVALID_DIVISION_ERROR, "rs_take_rs(&rs) with division=16");
+    sprintf(ss, "rs_take_rs(&rs) with bits=%u, division=%u", bits, division);
+    assert_true(ret == RS_INVALID_DIVISION_ERROR, ss);
 }
 
 /*
@@ -208,14 +213,13 @@ void test_rs_make_elementary(void)
     matrix_t *elementary;
     int i, j;
     char msg[SS_SIZE];
-    size_t matrix_size;
-
-    elementary = (matrix_t *)temporary;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
+    elementary = (matrix_t *)temporary;
+
     matrix_calc_mem_size(division, division, 2);
     matrix_init(elementary, division, division, 2);
-    matrix_make_elementary(elementary, division, 2);
+    matrix_make_elementary(elementary, division);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
             sprintf(msg, "test_rs_make_elementary(u16)(j, i)=(%d, %d)", j, i);
@@ -230,7 +234,7 @@ void test_rs_make_elementary(void)
     memset(temporary, 0xff, TEMPORARY_SIZE);
     matrix_calc_mem_size(division, division, 4);
     matrix_init(elementary, division, division, 4);
-    matrix_make_elementary(elementary, division, 4);
+    matrix_make_elementary(elementary, division);
     for (j=0;j<division;j++) {
         for (i=0;i<division;i++) {
             sprintf(msg, "test_rs_make_elementary(u32)(j, i)=(%d, %d)", j, i);
