@@ -16,6 +16,8 @@ void assert_by_mem(uchar *expected,
 void assert_by_str(char *expected,
                    char *result,
                    char *test_name);
+void assert_by_null(void *result,
+                        char *test_name);
 void assert_by_not_null(void *result,
                         char *test_name);
 void assert_by_address(void *expected,
@@ -27,6 +29,9 @@ void assert_by_size(size_t expected,
 void assert_by_uint(uint expected,
                     uint result,
                     char *test_name);
+void assert_by_ushort(ushort expected,
+                      ushort result,
+                      char *test_name);
 void assert_success(int ret, char *test_name);
 void assert_true(int success, char *test_name);
 #endif

@@ -1,3 +1,4 @@
+#include "libfugou.h"
 #include "assert_xxx.h"
 
 int failed(int success, char *test_name)
