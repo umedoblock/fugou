@@ -5,8 +5,8 @@ OPTIONS	= -D__TEST__
 TARGET	= test_rs
 
 test_rs: $(OBJS)
-	ls rs.o && mv -f rs.o ./reed_solomon
-	ls test_rs.o && mv -f test_rs.o ./reed_solomon
+	-ls rs.o && mv -f rs.o ./reed_solomon
+	-ls test_rs.o && mv -f test_rs.o ./reed_solomon
 	rm -f ./core
 	$(CC) $(CFLAGS) $(OPTIONS) -o $(TARGET) $(OBJS)
 	mv $(TARGET) ./reed_solomon
