@@ -14,6 +14,6 @@
 default : A B
 	@echo this is top dir
 A :
-	make -C dirA
+	$(MAKE) -C dirA
 B :
-	make -C dirB
+	$(MAKE) -C dirB
