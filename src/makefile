@@ -1,3 +1,5 @@
+# make の再帰利用
+# http://www.ecoop.net/coop/translated/GNUMake3.77/make_5.jp.html#SEC49
 CC		= cc
 OBJS	= assert_xxx.o libfugou.o reed_solomon/test_rs.o reed_solomon/rs.o
 CFLAGS	= -Wall -g
