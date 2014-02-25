@@ -5,7 +5,8 @@ OPTIONS	= -D__TEST__
 TARGET	= test_rs
 
 test_rs: $(OBJS)
-	mv -f test_rs.o rs.o ./reed_solomon
+	ls rs.o && mv -f rs.o ./reed_solomon
+	ls test_rs.o && mv -f test_rs.o ./reed_solomon
 	rm -f ./core
 	$(CC) $(CFLAGS) $(OPTIONS) -o $(TARGET) $(OBJS)
 	mv $(TARGET) ./reed_solomon
@@ -20,8 +21,8 @@ gdb:
 
 .c.o:
 	$(CC) $(OPTIONS) -c $<
-reed_solomon/test_rs.o: reed_solomon/rs.h
 reed_solomon/rs.o: reed_solomon/rs.h
+reed_solomon/test_rs.o: reed_solomon/rs.h
 assert_xxx.o: assert_xxx.h
 libfugou.o: libfugou.h libfugou_base.h
 
