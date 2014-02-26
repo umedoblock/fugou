@@ -1,11 +1,11 @@
 CC		= cc
-OBJS	= test_rs.o rs.o
+OBJS	= test_rs.o rs.o ../libfugou.o ../assert_xxx.o
 CFLAGS	= -Wall -g
 #CFLAGS	= -Wall -g -O3
 OPTIONS	= -D__TEST__
 TARGET	= test_rs
 
-test_rs: $(OBJS)
+test: $(OBJS)
 	rm -f ./core
 	$(CC) $(CFLAGS) $(OPTIONS) -o $(TARGET) $(OBJS)
 	./test_rs

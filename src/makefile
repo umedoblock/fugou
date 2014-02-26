@@ -5,6 +5,8 @@ OBJS	= assert_xxx.o libfugou.o
 
 default: rs
 	@echo this is top dir
+test: $(OBJS)
+	$(MAKE) test -C reed_solomon
 rs: $(OBJS)
 	$(MAKE) -C reed_solomon
 
