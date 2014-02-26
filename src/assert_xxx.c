@@ -1,18 +1,37 @@
 #include "libfugou.h"
 #include "assert_xxx.h"
 
+static int count_failure = 0, count_success = 0;
+
 int failed(int success, char *test_name)
 {
     int fail;
+
     if (success) {
         fprintf(stdout, ".");
         fail = 0;
+        count_success++;
     }
     else {
         fprintf(_f, "[FAILED] %s\n", test_name);
         fail = 1;
+        count_failure++;
     }
     return fail;
+}
+
+int result_test(void)
+{
+    double count_total = 0.0;
+
+    count_total = count_success + count_failure;
+    fprintf(stdout, "        success = %d\n", count_success);
+    fprintf(stdout, "        failure = %d\n", count_failure);
+    fprintf(stdout, "          total = %.3lf\n", count_total);
+    fprintf(stdout, "success / total = %.3lf\n", count_success / count_total);
+    fprintf(stdout, "failure / total = %.3lf\n", count_failure / count_total);
+
+    return 0;
 }
 
 void assert_by_00(uchar *result,

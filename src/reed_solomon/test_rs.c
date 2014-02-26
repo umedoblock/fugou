@@ -329,6 +329,7 @@ int main(void)
     test_rs();
     fprintf(stdout, "\n");
 
+    result_test();
     fprintf(stdout, "%s done!\n", __FILE__);
 
     free(temporary);
