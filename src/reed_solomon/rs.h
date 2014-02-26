@@ -204,7 +204,7 @@ typedef struct {
  */
 
 typedef struct {
-    uint elements;        /* = division */
+    uint elements;       /* = division */
     size_t element_size; /* see name */
     size_t vector_size;  /* = elements * element_size */
     size_t mem_size;     /* = sizeof(vector_t) + vector_size */
