@@ -19,3 +19,4 @@ libfugou.o: libfugou.h libfugou_base.h
 .PHONY: clean
 clean:
 	$(RM) core $(OBJS)
+	$(MAKE) clean -C reed_solomon
