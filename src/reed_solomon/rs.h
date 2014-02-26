@@ -248,6 +248,8 @@ typedef struct {
 
 #define MATRIX(mtrx) ((matrix_t *)mtrx)
 #define MATRIX_matrix_size(mtrx) (MATRIX(mtrx)->matrix_size)
+#define MATRIX_rows(mtrx) (MATRIX(mtrx)->rows)
+#define MATRIX_columns(mtrx) (MATRIX(mtrx)->columns)
 #define MATRIX_element_size(mtrx) (MATRIX(mtrx)->element_size)
 #define MATRIX_mem(mtrx) (MATRIX(mtrx)->mem)
 #define MATRIX_mem_size(mtrx) (MATRIX(mtrx)->mem_size)

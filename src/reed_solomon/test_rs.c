@@ -13,6 +13,25 @@ ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 big_bang_t *_rs_get_universe_wrap(void);
 void _matrix_make_e_wrap(matrix_t *elementaryary, uint n);
+void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,                                                             vector_t *answer,
+                                  matrix_t *mat,
+                                  vector_t *vec,
+                                  uint division);
+
+void assert_by_matrix(matrix_t *expected,
+                      matrix_t *result,
+                      char *test_name)
+{
+    char msg[SS_SIZE];
+
+    sprintf(msg, "assert_by_matrix(expected=%p, result=%p) in %s", expected, result, test_name);
+    assert_by_uint(MATRIX_rows(expected), MATRIX_rows(result), msg);
+    assert_by_uint(MATRIX_columns(expected), MATRIX_columns(result), msg);
+    assert_by_size(MATRIX_element_size(expected), MATRIX_element_size(result), msg);
+    assert_by_size(MATRIX_matrix_size(expected), MATRIX_matrix_size(result), msg);
+    assert_by_size(MATRIX_mem_size(expected), MATRIX_mem_size(result), msg);
+    assert_by_mem((void *)MATRIX_ptr(expected), (void *)MATRIX_ptr(result), MATRIX_matrix_size(expected), msg);
+}
 
 void test_rs_add(void)
 {
@@ -247,7 +266,6 @@ void test_rs_make_elementary(void)
     }
 }
 
-#if 0
 /* E * E = E,
    E * D = D,
    D * E = D,
@@ -258,28 +276,39 @@ void test_rs_mul_matrix_vectorXX(void)
 {
     int ret;
     uint bits, division;
-    _ptr_t e_matrix, e_matrix2;
+    matrix_t *elementary1, *elementary2, *elementary3, *result;
     int i, j;
     char msg[SS_SIZE];
     reed_solomon_t *rs16;
-    rs_buffer_t *rs_buf;
+    size_t mem_size;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
     bits = 16, division = (1 << bits) - 1;
+    mem_size = matrix_calc_mem_size(division, division, 2);
+
+    elementary1 = (matrix_t *)temporary;
+    elementary2 = (matrix_t *)(temporary + mem_size);
+    elementary3 = (matrix_t *)(temporary + mem_size * 2);
+    result = (matrix_t *)(temporary + mem_size * 3);
+
+    matrix_init(elementary1, division, division, 2);
+    matrix_init(elementary2, division, division, 2);
+    matrix_init(elementary3, division, division, 2);
+    matrix_make_elementary(elementary1, division);
+    matrix_make_elementary(elementary2, division);
+    matrix_make_elementary(elementary3, division);
+
+    matrix_init(result, division, division, 2);
+
     ret = rs_take_rs(&rs16, bits, division);
-    e_matrix.ptr = temporary;
-    e_matrix2.ptr = temporary + rs16->gf_size;
-    e_matrix3.ptr = temporary + 2 * rs16->gf_size;
-    _rs_make_e_matrix_wrap(e_matrix, 2, division);
-    _rs_make_e_matrix_wrap(e_matrix2, 2, division);
-    _rs_mul_matrix_vector16(result, e_matrix, e_matrix2);
-    assert_equal_matrix(result, e_matrix3);
+
+    _rs_mul_matrix_vector16_wrap(result, elementary1, elementary2);
+    assert_by_matrix(elementary3, result, "test_rs_mul_matrix_vectorXX()");
     /*
     ret = rs_take_rs(&rs32, bits, division);
     */
 }
-#endif
 
 void test_rs(void)
 {
@@ -293,9 +322,7 @@ void test_rs(void)
     test_rs_add();
     test_rs_mul();
 
-    #if 0
     test_rs_mul_matrix_vectorXX();
-    #endif
 
     test_rs_make_elementary();
     /*

@@ -1027,4 +1027,13 @@ big_bang_t *_rs_get_universe_wrap(void)
     big_bang_t *universe = _rs_bright();
     return universe;
 }
+
+void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,
+                                  vector_t *answer,
+                                  matrix_t *mat,
+                                  vector_t *vec,
+                                  uint division)
+{
+    return _rs_mul_matrix_vector16(rs, answer, mat, vec, division);
+}
 #endif
