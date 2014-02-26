@@ -34,6 +34,14 @@ int result_test(void)
     return 0;
 }
 
+int result_clear(void)
+{
+    count_success = 0;
+    count_failure = 0;
+
+    return 0;
+}
+
 void assert_by_00(uchar *result,
                   size_t zero_size,
                   char *test_name)
