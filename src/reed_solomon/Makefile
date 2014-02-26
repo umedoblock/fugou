@@ -17,7 +17,7 @@ gdb:
 	gdb ./$(TARGET) ./core
 
 .c.o:
-	$(CC) $(OPTIONS) -c $<
+	$(CC) $(OPTIONS) $(CFLAGS) -c $<
 rs.o: rs.h
 test_rs.o: rs.h
 
