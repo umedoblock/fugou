@@ -367,7 +367,7 @@ size_t matrix_calc_mem_size(uint rows, uint columns,
     size_t matrix_size, mem_size;
 
     matrix_size = matrix_calc_matrix_size(rows, columns, element_size);
-    mem_size = sizeof(matrix_size) + matrix_size;
+    mem_size = sizeof(matrix_t) + matrix_size;
 
     return mem_size;
 }
