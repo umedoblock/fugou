@@ -18,6 +18,21 @@ void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,                           
                                   vector_t *vec,
                                   uint division);
 
+void assert_by_vector(vector_t *expected,
+                      vector_t *result,
+                      char *test_name)
+{
+    char msg[SS_SIZE];
+
+    sprintf(msg, "assert_by_vector(expected=%p, result=%p) in %s", expected, result, test_name);
+    assert_by_uint(VECTOR_rows(expected), VECTOR_rows(result), msg);
+    assert_by_uint(VECTOR_columns(expected), VECTOR_columns(result), msg);
+    assert_by_size(VECTOR_element_size(expected), VECTOR_element_size(result), msg);
+    assert_by_size(VECTOR_vector_size(expected), VECTOR_vector_size(result), msg);
+    assert_by_size(VECTOR_mem_size(expected), VECTOR_mem_size(result), msg);
+    assert_by_mem((void *)VECTOR_ptr(expected), (void *)VECTOR_ptr(result), VECTOR_vector_size(expected), msg);
+}
+
 void assert_by_matrix(matrix_t *expected,
                       matrix_t *result,
                       char *test_name)
@@ -276,35 +291,38 @@ void test_rs_mul_matrix_vectorXX(void)
 {
     int ret;
     uint bits, division;
-    matrix_t *elementary1, *elementary2, *elementary3, *result;
-    int i, j;
-    char msg[SS_SIZE];
+    matrix_t *elementary1, *elementary2, *elementary3;
+    char *mem;
     reed_solomon_t *rs16;
-    size_t mem_size;
+    size_t matrix_mem_size;
+    vector_t *vector1, *result;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
     bits = 16, division = (1 << bits) - 1;
-    mem_size = matrix_calc_mem_size(division, division, 2);
+    matrix_mem_size = matrix_calc_matrix_mem_size(division, division, 2);
 
-    elementary1 = (matrix_t *)temporary;
-    elementary2 = (matrix_t *)(temporary + mem_size);
-    elementary3 = (matrix_t *)(temporary + mem_size * 2);
-    result = (matrix_t *)(temporary + mem_size * 3);
+    mem = (char *)temporary;
+    elementary1 = (matrix_t *)mem; mem += matrix_mem_size;
+    elementary2 = (matrix_t *)mem; mem += matrix_mem_size;
+    elementary3 = (matrix_t *)mem; mem += matrix_mem_size;
+    result = (vector_t *)mem; mem += vector_mem_size;
+    vector1 = (vector_t *)mem; mem += vector_mem_size;
 
     matrix_init(elementary1, division, division, 2);
     matrix_init(elementary2, division, division, 2);
     matrix_init(elementary3, division, division, 2);
+    vector_init(result, division, 2);
+    vector_init(vector1, division, 2);
     matrix_make_elementary(elementary1, division);
     matrix_make_elementary(elementary2, division);
     matrix_make_elementary(elementary3, division);
 
-    matrix_init(result, division, division, 2);
-
     ret = rs_take_rs(&rs16, bits, division);
+    assert_success(ret, "rs_take_rs() in test_rs_mul_matrix_vectorXX");
 
-    _rs_mul_matrix_vector16_wrap(result, elementary1, elementary2);
-    assert_by_matrix(elementary3, result, "test_rs_mul_matrix_vectorXX()");
+    _rs_mul_matrix_vector16_wrap(rs16, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
     /*
     ret = rs_take_rs(&rs32, bits, division);
     */

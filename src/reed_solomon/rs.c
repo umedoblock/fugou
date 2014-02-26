@@ -309,22 +309,22 @@ for debug.
     }
 }
 
-static inline void _rs_mul_matrix_vector16(
-                         reed_solomon_t *rs,
-                        _ptr_t answer, _ptr_t matrix, _ptr_t vec,
-                         uint division)
+static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
+                                           vector_t *answer,
+                                           matrix_t *mat,
+                                           vector_t *vec)
 {
-    register uint i, j;
+    register uint e, j;
     register uint ans, tmp;
 
-    for (j=0;j<division;j++){
+    for (j=0;j<MATIX_columns(mat);j++){
         ans = 0;
-        for (i=0;i<division;i++){
+        for (e=0;e<vec->elements;e++){
             tmp = _rs_mul16(rs,
-                             matrix.u16[j * division + i],
-                             vec.u16[i]);
+                            matrix.u16[j * mat->rows + e],
+                            vec.u16[e]);
             ans = _rs_ADD(ans, tmp);
-            answer.u16[j] = ans;
+            answer.u16[j] = ans; /* bug ? */
         }
     }
 }
@@ -349,6 +349,37 @@ _rs_mul_matrix_vector32(
             answer.u32[j] = ans;
         }
     }
+}
+
+size_t vector_calc_vector_size(uint elements, size_t element_size)
+{
+    size_t vector_size;
+
+    vector_size = elements * element_size;
+
+    return vector_size;
+}
+
+size_t vector_calc_mem_size(uint elements, size_t element_size)
+{
+    size_t vector_size, mem_size;
+
+    vector_size = vector_calc_vector_size(elements, element_size);
+    mem_size = sizeof(vector_t) + vector_size;
+
+    return mem_size;
+}
+
+int vector_init(vector_t *vector, uint elements, size_t element_size)
+{
+    vector->elements = elements;
+    vector->element_size = element_size;
+    vector->vector_size = vector_calc_vector_size(elements, element_size);
+    vector->mem_size = vector_calc_mem_size(elements, element_size);
+    MATRIX_ptr(vector) = ((char *)vector) + sizeof(vector_t);
+    memset((void *)MATRIX_ptr(vector), '\0', vector->vector_size);
+
+    return 0;
 }
 
 size_t matrix_calc_matrix_size(uint rows, uint columns,
@@ -1031,9 +1062,8 @@ big_bang_t *_rs_get_universe_wrap(void)
 void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,
                                   vector_t *answer,
                                   matrix_t *mat,
-                                  vector_t *vec,
-                                  uint division)
+                                  vector_t *vec)
 {
-    return _rs_mul_matrix_vector16(rs, answer, mat, vec, division);
+    return _rs_mul_matrix_vector16(rs, answer, mat, vec);
 }
 #endif
