@@ -309,13 +309,6 @@ void test_rs_mul_matrix_vectorXX(void)
     result = (vector_t *)mem; mem += vector_mem_size;
     vector1 = (vector_t *)mem; mem += vector_mem_size;
 
-fprintf(stderr, "sizeof(columns)=%zu\n", sizeof(MATRIX_columns(NULL)));
-fprintf(stderr, "sizeof(rows)=%zu\n", sizeof(MATRIX_rows(NULL)));
-fprintf(stderr, "sizeof(element_size)=%zu\n", sizeof(MATRIX_element_size(NULL)));
-fprintf(stderr, "sizeof(matrix_size)=%zu\n", sizeof(MATRIX_matrix_size(NULL)));
-fprintf(stderr, "sizeof(mem_size)=%zu\n", sizeof(MATRIX_mem_size(NULL)));
-fprintf(stderr, "sizeof(mem)=%zu\n", sizeof(MATRIX_mem(NULL)));
-
     matrix_init(elementary1, division, division, 2);
     matrix_init(elementary2, division, division, 2);
     matrix_init(elementary3, division, division, 2);
