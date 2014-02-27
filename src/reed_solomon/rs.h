@@ -246,6 +246,15 @@ typedef struct {
     vector_t vec2;        /* rse and rsd, for tempolary area */
 } rs_writable_t;
 
+#define VECTOR(vctr) ((vector_t *)vctr)
+#define VECTOR_vector_size(vctr) (VECTOR(vctr)->vector_size)
+#define VECTOR_elements(vctr) (VECTOR(vctr)->elements)
+#define VECTOR_element_size(vctr) (VECTOR(vctr)->element_size)
+#define VECTOR_mem(vctr) (VECTOR(vctr)->mem)
+#define VECTOR_mem_size(vctr) (VECTOR(vctr)->mem_size)
+#define VECTOR_ptr(vctr) (VECTOR_mem(vctr).ptr)
+#define VECTOR_uXX(vctr, XX) (VECTOR_mem(vctr).u ## XX)
+
 #define MATRIX(mtrx) ((matrix_t *)mtrx)
 #define MATRIX_matrix_size(mtrx) (MATRIX(mtrx)->matrix_size)
 #define MATRIX_rows(mtrx) (MATRIX(mtrx)->rows)
@@ -382,6 +391,10 @@ int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
 /*****************************************************************************/
 /* prototype *****************************************************************/
 /*****************************************************************************/
+size_t vector_calc_vector_size(uint elements, size_t element_size);
+size_t vector_calc_mem_size(uint elements, size_t element_size);
+int vector_init(vector_t *vector, uint elements, size_t element_size);
+
 size_t matrix_calc_matrix_size(uint rows, uint columns, size_t element_size);
 size_t matrix_calc_mem_size(uint rows, uint columns, size_t element_size);
 int matrix_init(matrix_t *matrix, uint rows, uint columns, size_t element_size);

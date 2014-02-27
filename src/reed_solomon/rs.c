@@ -9,6 +9,7 @@
 /*****************************************************************************/
 
 static big_bang_t *_rs_bright(void);
+#if 0
 static void _rs_encode16_slots(slot_t *parity,
                                slot_t *norm,
                                rs_encode_t *rse,
@@ -25,6 +26,7 @@ static void _rs_decode16_slots(slot_t *recover,
                                slot_t *merged,
                                rs_decode_t *rsd,
                                uint symbol_num);
+#endif
 static int _rs_init_gf_gfi(big_bang_t *universe);
 static int _rs_init_the_universe(big_bang_t *universe);
 static reed_solomon_t *_rs_get_rs(uint bits);
@@ -125,6 +127,7 @@ void _rs_view_rsd(rs_decode_t *rsd)
 
 /* for slots *****************************************************************/
 
+#if 0
 void rs_encode_slots(slot_t *parity,
                      slot_t *norm,
                      rs_encode_t *rse,
@@ -146,6 +149,7 @@ void rs_decode_slots(slot_t *recover,
     else
         _rs_decode32_slots(recover, merged, rsd, symbol_num);
 }
+#endif
 
 /*****************************************************************************/
 /* private functions *********************************************************/
@@ -317,15 +321,18 @@ static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
     register uint e, j;
     register uint ans, tmp;
 
-    for (j=0;j<MATIX_columns(mat);j++){
+    for (j=0;j<MATRIX_columns(mat);j++){
         ans = 0;
         for (e=0;e<vec->elements;e++){
             tmp = _rs_mul16(rs,
-                            matrix.u16[j * mat->rows + e],
-                            vec.u16[e]);
+                            MATRIX_uXX(mat, 16)[j * mat->rows + e],
+                            VECTOR_uXX(vec, 16)[e]);
             ans = _rs_ADD(ans, tmp);
-            answer.u16[j] = ans; /* bug ? */
+            #if 0
+            VECTOR_uXX(answer, 16)[j] = ans; /* bug ? */
+            #endif
         }
+        answer->mem.u16[j] = ans;
     }
 }
 
@@ -376,8 +383,8 @@ int vector_init(vector_t *vector, uint elements, size_t element_size)
     vector->element_size = element_size;
     vector->vector_size = vector_calc_vector_size(elements, element_size);
     vector->mem_size = vector_calc_mem_size(elements, element_size);
-    MATRIX_ptr(vector) = ((char *)vector) + sizeof(vector_t);
-    memset((void *)MATRIX_ptr(vector), '\0', vector->vector_size);
+    VECTOR_ptr(vector) = ((char *)vector) + sizeof(vector_t);
+    memset((void *)VECTOR_ptr(vector), '\0', vector->vector_size);
 
     return 0;
 }
@@ -882,6 +889,7 @@ static void _rs_view_matrix16(ushort *matrix, uint division)
     }
 }
 
+#if 0
 static void _rs_encode16_slots(slot_t *parity,
                                slot_t *norm,
                                rs_encode_t *rse,
@@ -1031,6 +1039,7 @@ static void _rs_decode32_slots(slot_t *recover,
         }
     }
 }
+#endif
 
 #ifdef __TEST__
 

@@ -15,8 +15,7 @@ big_bang_t *_rs_get_universe_wrap(void);
 void _matrix_make_e_wrap(matrix_t *elementaryary, uint n);
 void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,                                                             vector_t *answer,
                                   matrix_t *mat,
-                                  vector_t *vec,
-                                  uint division);
+                                  vector_t *vec);
 
 void assert_by_vector(vector_t *expected,
                       vector_t *result,
@@ -25,8 +24,7 @@ void assert_by_vector(vector_t *expected,
     char msg[SS_SIZE];
 
     sprintf(msg, "assert_by_vector(expected=%p, result=%p) in %s", expected, result, test_name);
-    assert_by_uint(VECTOR_rows(expected), VECTOR_rows(result), msg);
-    assert_by_uint(VECTOR_columns(expected), VECTOR_columns(result), msg);
+    assert_by_uint(VECTOR_elements(expected), VECTOR_elements(result), msg);
     assert_by_size(VECTOR_element_size(expected), VECTOR_element_size(result), msg);
     assert_by_size(VECTOR_vector_size(expected), VECTOR_vector_size(result), msg);
     assert_by_size(VECTOR_mem_size(expected), VECTOR_mem_size(result), msg);
@@ -294,13 +292,15 @@ void test_rs_mul_matrix_vectorXX(void)
     matrix_t *elementary1, *elementary2, *elementary3;
     char *mem;
     reed_solomon_t *rs16;
-    size_t matrix_mem_size;
+    size_t vector_mem_size, matrix_mem_size;
     vector_t *vector1, *result;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
-    bits = 16, division = (1 << bits) - 1;
-    matrix_mem_size = matrix_calc_matrix_mem_size(division, division, 2);
+    bits = 8, division = (1 << bits) - 1;
+    division = 4;
+    matrix_mem_size = matrix_calc_mem_size(division, division, 2);
+    vector_mem_size = vector_calc_mem_size(division, 2);
 
     mem = (char *)temporary;
     elementary1 = (matrix_t *)mem; mem += matrix_mem_size;
@@ -308,6 +308,13 @@ void test_rs_mul_matrix_vectorXX(void)
     elementary3 = (matrix_t *)mem; mem += matrix_mem_size;
     result = (vector_t *)mem; mem += vector_mem_size;
     vector1 = (vector_t *)mem; mem += vector_mem_size;
+
+fprintf(stderr, "sizeof(columns)=%zu\n", sizeof(MATRIX_columns(NULL)));
+fprintf(stderr, "sizeof(rows)=%zu\n", sizeof(MATRIX_rows(NULL)));
+fprintf(stderr, "sizeof(element_size)=%zu\n", sizeof(MATRIX_element_size(NULL)));
+fprintf(stderr, "sizeof(matrix_size)=%zu\n", sizeof(MATRIX_matrix_size(NULL)));
+fprintf(stderr, "sizeof(mem_size)=%zu\n", sizeof(MATRIX_mem_size(NULL)));
+fprintf(stderr, "sizeof(mem)=%zu\n", sizeof(MATRIX_mem(NULL)));
 
     matrix_init(elementary1, division, division, 2);
     matrix_init(elementary2, division, division, 2);
