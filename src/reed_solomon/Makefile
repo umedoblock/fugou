@@ -18,8 +18,8 @@ gdb:
 
 .c.o:
 	$(CC) $(OPTIONS) $(CFLAGS) -c $<
-rs.o: rs.h
-test_rs.o: rs.h
+rs.o: rs.h ../libfugou.h ../libfugou_base.h ../slot/slot.h
+test_rs.o: rs.h ../libfugou.h ../libfugou_base.h ../slot/slot.h
 
 .PHONY: clean
 clean:
