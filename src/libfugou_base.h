@@ -42,7 +42,7 @@ void _debug(char *__file__, int __line__, const char *_func_, int level, char *f
 #define EIGHT (8ULL)
 #define OCTET EIGHT
 
-#define SS_SIZE 80
+#define SS_SIZE (1024)
 
 typedef void (*code_function)(uchar *, uchar *, void *);
 /*
