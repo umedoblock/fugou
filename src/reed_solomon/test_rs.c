@@ -394,10 +394,6 @@ void test_rs_mul_matrix_vectorXX(void)
     VECTOR_set(vector1, 3 * VECTOR_elements(vector1) + 3, 88);
     _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
     assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
-
-    /*
-    ret = rs_take_rs(&rs32, bits, division);
-    */
 }
 
 void test_rs(void)
