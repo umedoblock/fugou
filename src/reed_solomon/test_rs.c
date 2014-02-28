@@ -321,8 +321,11 @@ void test_rs_mul_matrix_vectorXX(void)
     ret = rs_take_rs(&rs16, bits, division);
     assert_success(ret, "rs_take_rs() in test_rs_mul_matrix_vectorXX");
 
+    /* 単位行列に対して zero vector を掛ける */
     _rs_mul_matrix_vector16_wrap(rs16, result, elementary1, vector1);
+    /* result と vector1 が一致する事を確認 */
     assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
     /*
     ret = rs_take_rs(&rs32, bits, division);
     */
