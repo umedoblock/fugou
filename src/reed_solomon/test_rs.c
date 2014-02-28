@@ -519,6 +519,7 @@ void test_rs(void)
     test_rs_mul_matrix_vectorXX();
 
     test_rs_make_elementary();
+    test_rs_mul_matrixes();
     /*
     test_rs_invalid_rank_matrix();
     */
