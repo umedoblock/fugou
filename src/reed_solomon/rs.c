@@ -429,19 +429,6 @@ void matrix_make_elementary(matrix_t *elementary, uint n)
     for (i=0;i<n;i++) {
         MATRIX_set(elementary, i * n + i, 1);
     }
-
-    #if 0
-    if (register_size == 2) {
-        for (i=0;i<division;i++) {
-            e_matrix.u16[i * division + i] = 1;
-        }
-    }
-    else {
-        for (i=0;i<division;i++) {
-            e_matrix.u32[i * division + i] = 1;
-        }
-    }
-    #endif
 }
 
 #if 0
