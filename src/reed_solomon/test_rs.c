@@ -259,7 +259,7 @@ void test_rs_make_elementary(void)
             if (j == i) {
                 expected_value = 1;
             }
-            assert_by_ushort(expected_value, MATRIX_uXX(elementary, 16)[j * division + i], msg);
+            assert_by_ushort(expected_value, MATRIX_u(16, elementary)[j * division + i], msg);
         }
     }
 
@@ -274,7 +274,7 @@ void test_rs_make_elementary(void)
             if (j == i) {
                 expected_value = 1;
             }
-            assert_by_uint(expected_value, MATRIX_uXX(elementary, 32)[j * division + i], msg);
+            assert_by_uint(expected_value, MATRIX_u(32, elementary)[j * division + i], msg);
         }
     }
 }

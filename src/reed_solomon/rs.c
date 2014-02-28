@@ -325,14 +325,11 @@ static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
         ans = 0;
         for (e=0;e<vec->elements;e++){
             tmp = _rs_mul16(rs,
-                            MATRIX_uXX(mat, 16)[j * mat->rows + e],
-                            VECTOR_uXX(vec, 16)[e]);
+                            MATRIX_u(16, mat)[j * mat->rows + e],
+                            VECTOR_u(16, vec)[e]);
             ans = _rs_ADD(ans, tmp);
-            #if 0
-            VECTOR_uXX(answer, 16)[j] = ans; /* bug ? */
-            #endif
         }
-        answer->mem.u16[j] = ans;
+        VECTOR_u(16, answer)[j] = ans;
     }
 }
 

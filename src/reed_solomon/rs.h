@@ -253,7 +253,7 @@ typedef struct {
 #define VECTOR_mem(vctr) (VECTOR(vctr)->mem)
 #define VECTOR_mem_size(vctr) (VECTOR(vctr)->mem_size)
 #define VECTOR_ptr(vctr) (VECTOR_mem(vctr).ptr)
-#define VECTOR_uXX(vctr, XX) (VECTOR_mem(vctr).u ## XX)
+#define VECTOR_u(XX, vctr) (VECTOR_mem(vctr).u ## XX)
 
 #define MATRIX(mtrx) ((matrix_t *)mtrx)
 #define MATRIX_matrix_size(mtrx) (MATRIX(mtrx)->matrix_size)
@@ -263,24 +263,24 @@ typedef struct {
 #define MATRIX_mem(mtrx) (MATRIX(mtrx)->mem)
 #define MATRIX_mem_size(mtrx) (MATRIX(mtrx)->mem_size)
 #define MATRIX_ptr(mtrx) (MATRIX_mem(mtrx).ptr)
-#define MATRIX_uXX(mtrx, XX) (MATRIX_mem(mtrx).u ## XX)
+#define MATRIX_u(XX, mtrx) (MATRIX_mem(mtrx).u ## XX)
 #define MATRIX_get(mtrx, XX, INDEX, VALUE) \
     for(;;) { \
     if (MATRIX_element_size(mtrx) == 2) { \
-        VALUE = MATRIX_uXX(mtrx, 16)[INDEX]; \
+        VALUE = MATRIX_u(16, mtrx)[INDEX]; \
     } \
     else { \
-        VALUE = MATRIX_uXX(mtrx, 32)[INDEX]; \
+        VALUE = MATRIX_u(32, mtrx)[INDEX]; \
     } \
     break; \
     }
 #define MATRIX_set(mtrx, INDEX, VALUE) \
     for(;;) { \
     if (MATRIX_element_size(mtrx) == 2) { \
-        MATRIX_uXX(mtrx, 16)[INDEX] = VALUE; \
+        MATRIX_u(16, mtrx)[INDEX] = VALUE; \
     } \
     else { \
-        MATRIX_uXX(mtrx, 32)[INDEX] = VALUE; \
+        MATRIX_u(32, mtrx)[INDEX] = VALUE; \
     } \
     break; \
     }
