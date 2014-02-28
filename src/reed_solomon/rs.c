@@ -358,6 +358,10 @@ size_t vector_calc_vector_size(uint elements, size_t element_size)
 {
     size_t vector_size;
 
+    if (element_size != 2 && element_size != 4) {
+        return 0;
+    }
+
     vector_size = elements * element_size;
 
     return vector_size;
@@ -367,6 +371,10 @@ size_t vector_calc_mem_size(uint elements, size_t element_size)
 {
     size_t vector_size, mem_size;
 
+    if (element_size != 2 && element_size != 4) {
+        return 0;
+    }
+
     vector_size = vector_calc_vector_size(elements, element_size);
     mem_size = sizeof(vector_t) + vector_size;
 
@@ -375,6 +383,10 @@ size_t vector_calc_mem_size(uint elements, size_t element_size)
 
 int vector_init(vector_t *vector, uint elements, size_t element_size)
 {
+    if (element_size != 2 && element_size != 4) {
+        return -1;
+    }
+
     vector->elements = elements;
     vector->element_size = element_size;
     vector->vector_size = vector_calc_vector_size(elements, element_size);
@@ -390,6 +402,10 @@ size_t matrix_calc_matrix_size(uint rows, uint columns,
 {
     size_t matrix_size;
 
+    if (element_size != 2 && element_size != 4) {
+        return 0;
+    }
+
     matrix_size = rows * columns * element_size;
 
     return matrix_size;
@@ -400,6 +416,10 @@ size_t matrix_calc_mem_size(uint rows, uint columns,
 {
     size_t matrix_size, mem_size;
 
+    if (element_size != 2 && element_size != 4) {
+        return 0;
+    }
+
     matrix_size = matrix_calc_matrix_size(rows, columns, element_size);
     mem_size = sizeof(matrix_t) + matrix_size;
 
@@ -408,6 +428,10 @@ size_t matrix_calc_mem_size(uint rows, uint columns,
 
 int matrix_init(matrix_t *matrix, uint rows, uint columns, size_t element_size)
 {
+    if (element_size != 2 && element_size != 4) {
+        return -1;
+    }
+
     matrix->rows = rows;
     matrix->columns = columns;
     matrix->element_size = element_size;
