@@ -21,6 +21,10 @@ void _rs_mul_matrix_vector32_wrap(reed_solomon_t *rs,
                                   vector_t *answer,
                                   matrix_t *mat,
                                   vector_t *vec);
+void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
+                           matrix_t *answer,
+                           matrix_t *mat1,
+                           matrix_t *mat2);
 
 void assert_by_vector(vector_t *expected,
                       vector_t *result,
@@ -394,6 +398,110 @@ void test_rs_mul_matrix_vectorXX(void)
     VECTOR_set(vector1, 3 * VECTOR_elements(vector1) + 3, 88);
     _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
     assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+}
+
+void test_rs_mul_matrixes(void)
+{
+    int ret, i;
+    uint bits, division;
+    matrix_t *elementary1, *elementary2, *elementary3, *result;
+    char *mem;
+    reed_solomon_t *rs16, *rs32;
+    size_t matrix_mem_size;
+
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+
+    bits = 8, division = (1 << bits) - 1;
+    division = 4;
+    matrix_mem_size = matrix_calc_mem_size(division, division, 2);
+
+    mem = (char *)temporary;
+    elementary1 = (matrix_t *)mem; mem += matrix_mem_size;
+    elementary2 = (matrix_t *)mem; mem += matrix_mem_size;
+    elementary3 = (matrix_t *)mem; mem += matrix_mem_size;
+    result = (matrix_t *)mem; mem += matrix_mem_size;
+
+    matrix_init(elementary1, division, division, 2);
+    matrix_init(elementary2, division, division, 2);
+    matrix_init(elementary3, division, division, 2);
+    matrix_init(result, division, division, 2);
+    matrix_make_elementary(elementary1, division);
+    matrix_make_elementary(elementary2, division);
+    matrix_make_elementary(elementary3, division);
+
+    ret = rs_take_rs(&rs16, bits, division);
+    assert_success(ret, "rs_take_rs() in test_rs_mul_matrix_vectorXX");
+
+    /* 単位行列に対して単位行列を掛ける */
+    _rs_mul_matrixes_wrap(rs16, result, elementary1, elementary2);
+    /* result が 単位行列と一致する事を確認 */
+    assert_by_matrix(elementary3, result, "test_rs_mul_matrix_vectorXX()");
+
+#if 0
+    /* [0][0] = 1, [1][1] = 2, [2][2] = 3, [3][3] = 4 を設定 */
+    for (i=0;i<VECTOR_elements(vector1);i++) {
+        VECTOR_set(vector1, i * VECTOR_elements(vector1) + i, i + 1);
+    }
+    _rs_mul_matrix_vector16_wrap(rs16, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    /* [0][0] = 231, [1][1] = 39, [2][2] = 111, [3][3] = 88 を設定 */
+    VECTOR_set(vector1, 0 * VECTOR_elements(vector1) + 0, 231);
+    VECTOR_set(vector1, 1 * VECTOR_elements(vector1) + 1, 39);
+    VECTOR_set(vector1, 2 * VECTOR_elements(vector1) + 2, 111);
+    VECTOR_set(vector1, 3 * VECTOR_elements(vector1) + 3, 88);
+    _rs_mul_matrix_vector16_wrap(rs16, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    /* element_size = 3 */
+    bits = 24, division = (1 << bits) - 1;
+    division = 14;
+    matrix_mem_size = matrix_calc_mem_size(division, division, 4);
+    vector_mem_size = vector_calc_mem_size(division, 4);
+
+    mem = (char *)temporary;
+    elementary1 = (matrix_t *)mem; mem += matrix_mem_size;
+    elementary2 = (matrix_t *)mem; mem += matrix_mem_size;
+    elementary3 = (matrix_t *)mem; mem += matrix_mem_size;
+    result = (vector_t *)mem; mem += vector_mem_size;
+    vector1 = (vector_t *)mem; mem += vector_mem_size;
+
+    matrix_init(elementary1, division, division, 4);
+    matrix_init(elementary2, division, division, 4);
+    matrix_init(elementary3, division, division, 4);
+    vector_init(result, division, 4);
+    vector_init(vector1, division, 4);
+    matrix_make_elementary(elementary1, division);
+    matrix_make_elementary(elementary2, division);
+    matrix_make_elementary(elementary3, division);
+
+    ret = rs_take_rs(&rs32, bits, division);
+    assert_success(ret, "rs_take_rs() in test_rs_mul_matrix_vectorXX");
+    if (ret < 0) {
+        result_test();
+        return;
+    }
+
+    /* 単位行列に対して zero vector を掛ける */
+    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
+    /* result と vector1 が一致する事を確認 */
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    /* [0][0] = 1, [1][1] = 2, [2][2] = 3, [3][3] = 4 を設定 */
+    for (i=0;i<VECTOR_elements(vector1);i++) {
+        VECTOR_set(vector1, i * VECTOR_elements(vector1) + i, i + 1);
+    }
+    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    /* [0][0] = 231, [1][1] = 39, [2][2] = 111, [3][3] = 88 を設定 */
+    VECTOR_set(vector1, 0 * VECTOR_elements(vector1) + 0, 231);
+    VECTOR_set(vector1, 1 * VECTOR_elements(vector1) + 1, 39);
+    VECTOR_set(vector1, 2 * VECTOR_elements(vector1) + 2, 111);
+    VECTOR_set(vector1, 3 * VECTOR_elements(vector1) + 3, 88);
+    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+#endif
 }
 
 void test_rs(void)
