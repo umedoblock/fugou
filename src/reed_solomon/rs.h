@@ -254,6 +254,27 @@ typedef struct {
 #define VECTOR_mem_size(vctr) (VECTOR(vctr)->mem_size)
 #define VECTOR_ptr(vctr) (VECTOR_mem(vctr).ptr)
 #define VECTOR_u(XX, vctr) (VECTOR_mem(vctr).u ## XX)
+#define VECTOR_get(vctr, XX, INDEX, VALUE) \
+    for(;;) { \
+    if (VECTOR_element_size(vctr) == 2) { \
+        VALUE = VECTOR_u(16, vctr)[INDEX]; \
+    } \
+    else { \
+        VALUE = VECTOR_u(32, vctr)[INDEX]; \
+    } \
+    break; \
+    }
+#define VECTOR_set(vctr, INDEX, VALUE) \
+    for(;;) { \
+    if (VECTOR_element_size(vctr) == 2) { \
+        VECTOR_u(16, vctr)[INDEX] = VALUE; \
+    } \
+    else { \
+        VECTOR_u(32, vctr)[INDEX] = VALUE; \
+    } \
+    break; \
+    }
+
 
 #define MATRIX(mtrx) ((matrix_t *)mtrx)
 #define MATRIX_matrix_size(mtrx) (MATRIX(mtrx)->matrix_size)

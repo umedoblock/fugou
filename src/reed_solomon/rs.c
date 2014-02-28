@@ -323,9 +323,9 @@ static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
 
     for (j=0;j<MATRIX_columns(mat);j++){
         ans = 0;
-        for (e=0;e<vec->elements;e++){
+        for (e=0;e<VECTOR_elements(vec);e++){
             tmp = _rs_mul16(rs,
-                            MATRIX_u(16, mat)[j * mat->rows + e],
+                            MATRIX_u(16, mat)[j * MATRIX_rows(mat) + e],
                             VECTOR_u(16, vec)[e]);
             ans = _rs_ADD(ans, tmp);
         }
@@ -334,24 +334,23 @@ static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
 }
 
 static inline void
-_rs_mul_matrix_vector32(
-                reed_solomon_t *rs,
-                _ptr_t answer, _ptr_t matrix, _ptr_t vec,
-                uint division)
+_rs_mul_matrix_vector32(reed_solomon_t *rs,
+                        vector_t *answer,
+                        matrix_t *mat,
+                        vector_t *vec)
 {
-    register uint i, j;
+    register uint e, j;
     register uint ans, tmp;
 
-    for (j=0;j<division;j++){
+    for (j=0;j<MATRIX_columns(mat);j++){
         ans = 0;
-        for (i=0;i<division;i++){
-                          /* matrix.u32[index] */
+        for (e=0;e<VECTOR_elements(vec);e++){
             tmp = _rs_mul32(rs,
-                             matrix.u32[j * division + i],
-                             vec.u32[i]);
+                            MATRIX_u(32, mat)[j * MATRIX_rows(mat) + e],
+                            VECTOR_u(32, vec)[e]);
             ans = _rs_ADD(ans, tmp);
-            answer.u32[j] = ans;
         }
+        VECTOR_u(32, answer)[j] = ans;
     }
 }
 
