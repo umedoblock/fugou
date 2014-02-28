@@ -1071,4 +1071,12 @@ void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,
 {
     return _rs_mul_matrix_vector16(rs, answer, mat, vec);
 }
+
+void _rs_mul_matrix_vector32_wrap(reed_solomon_t *rs,
+                                  vector_t *answer,
+                                  matrix_t *mat,
+                                  vector_t *vec)
+{
+    return _rs_mul_matrix_vector32(rs, answer, mat, vec);
+}
 #endif
