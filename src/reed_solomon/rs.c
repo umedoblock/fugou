@@ -396,7 +396,7 @@ size_t vector_calc_vector_size(uint elements, size_t element_size)
 
     vector_size = elements * element_size;
 
-    return vector_size;
+    return aligned_size(vector_size);
 }
 
 size_t vector_calc_mem_size(uint elements, size_t element_size)
@@ -440,7 +440,7 @@ size_t matrix_calc_matrix_size(uint rows, uint columns,
 
     matrix_size = rows * columns * element_size;
 
-    return matrix_size;
+    return aligned_size(matrix_size);
 }
 
 size_t matrix_calc_mem_size(uint rows, uint columns,

@@ -166,6 +166,16 @@ void test_rs_take_rs_failed(void)
     assert_true(ret == RS_INVALID_DIVISION_ERROR, ss);
 }
 
+void test_aligned_size(void)
+{
+    assert_by_size(0, aligned_size(0), "aligned_size(0)");
+    assert_by_size(sizeof(void *) * 1, aligned_size(1), "aligned_size(1)");
+    assert_by_size(sizeof(void *) * 1, aligned_size(2), "aligned_size(1)");
+    assert_by_size(sizeof(void *) * 1, aligned_size(3), "aligned_size(1)");
+    assert_by_size(sizeof(void *) * 1, aligned_size(sizeof(void *)), "aligned_size(sizeof(void *))");
+    assert_by_size(sizeof(void *) * 2, aligned_size(1 + sizeof(void *)), "aligned_size(1)");
+}
+
 /*
  * rs_big_bang(), rs_ultimate_fate_of_the_universe()
  * の組み合わせによってreed solomon code library
@@ -506,6 +516,8 @@ void test_rs_mul_matrixes(void)
 
 void test_rs(void)
 {
+    test_aligned_size();
+
     test_rs_big_bang_and_rs_ultimate_fate_of_the_universe();
 
     rs_big_bang();
