@@ -662,8 +662,9 @@ size_t aligned_size(size_t size)
 {
     size_t padding_size, mod;
     mod = size % ALIGHNMENT_SIZE;
-    padding_size = ALIGHNMENT_SIZE - mod;
-    if (padding_size == ALIGHNMENT_SIZE)
+    if (mod != 0)
+        padding_size = ALIGHNMENT_SIZE - mod;
+    else
         padding_size = 0;
     return size + padding_size;
 }
