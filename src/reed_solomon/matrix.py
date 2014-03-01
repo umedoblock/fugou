@@ -61,7 +61,6 @@ class Matrix(object):
         return Matrix(mat)
 
 def mul_matrixes(mat1, mat2):
-    return
     mat3 = [None] * 4
     for i in range(4):
         mat3[i] = [None] * 4
@@ -154,3 +153,4 @@ if __name__ == "__main__":
     Matrix(matE) * Matrix(mat1)
     Matrix(mat2) * Matrix(matE)
     mmat3 * mmat2
+    Matrix(mat1) * Matrix(mat2)
