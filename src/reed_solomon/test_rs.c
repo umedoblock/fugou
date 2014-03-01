@@ -170,10 +170,10 @@ void test_aligned_size(void)
 {
     assert_by_size(0, aligned_size(0), "aligned_size(0)");
     assert_by_size(sizeof(void *) * 1, aligned_size(1), "aligned_size(1)");
-    assert_by_size(sizeof(void *) * 1, aligned_size(2), "aligned_size(1)");
-    assert_by_size(sizeof(void *) * 1, aligned_size(3), "aligned_size(1)");
+    assert_by_size(sizeof(void *) * 1, aligned_size(2), "aligned_size(2)");
+    assert_by_size(sizeof(void *) * 1, aligned_size(3), "aligned_size(3)");
     assert_by_size(sizeof(void *) * 1, aligned_size(sizeof(void *)), "aligned_size(sizeof(void *))");
-    assert_by_size(sizeof(void *) * 2, aligned_size(1 + sizeof(void *)), "aligned_size(1)");
+    assert_by_size(sizeof(void *) * 2, aligned_size(1 + sizeof(void *)), "aligned_size(1 + sizeof(void *))");
 }
 
 /*
