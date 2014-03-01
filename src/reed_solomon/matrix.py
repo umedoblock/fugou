@@ -30,14 +30,16 @@ class Matrix(object):
         return self
 
     def __mul__(self, other):
-        print("self = {}".format(self))
-        print("other = {}".format(other))
+        if self.len_columns != other.len_rows:
+            raise ValueError("self.len_columns(={}) and other.len_rows(={}) must be equal.".format(self.len_columns, other.len_rows))
+#       print("self = {}".format(self))
+#       print("other = {}".format(other))
         mat = [None] * self.len_rows
         for i in range(self.len_rows):
       # for i in range(len(mat)):
             mat[i] = [None] * other.len_columns
-        print("mat = ")
-        pp.pprint(mat)
+#       print("mat = ")
+#       pp.pprint(mat)
     #   for j in range(4):
     #       for i in range(4):
     #           mat[j][i] = j * i
@@ -47,7 +49,7 @@ class Matrix(object):
                 for i in range(other.len_rows):
                   # print("self[{0}][{1}] = {2}".format(j, i, self[j][i]))
                   # print("other[{0}][{1}] = {2}".format(i, j, other[i][j]))
-                    print("(k, j, i)=({}, {}, {})".format(k, j, i))
+                  # print("(k, j, i)=({}, {}, {})".format(k, j, i))
                     sum += self._matrix[k][i] * other._matrix[i][j]
                 mat[k][j] = sum
     #           print("mat = ")
@@ -116,19 +118,39 @@ if __name__ == "__main__":
         [7, 6, ],
         [3, 2, ]
     ]
+    seq3 = [
+        [4, 5, 6, 7],
+    ]
     seqE = [
         [1, 0],
         [0, 1],
     ]
-    mat1 = Matrix(seq1)
-    mat2 = Matrix(seq2)
-    matE = Matrix(seqE)
-    print("mat1 =")
-    print(mat1)
-    print("mat2 =")
-    print(mat2)
-    print("matE =")
-    print(matE)
-    mat = mat1 * mat2
-    print("mat1 * mat2 =")
-    print(mat)
+    seqA = [
+        [0, 1],
+        [4, 5],
+    ]
+    mmat1 = Matrix(seq1)
+    mmat2 = Matrix(seq2)
+    mmat3 = Matrix(seq3)
+    mmatE = Matrix(seqE)
+    print("mmat1 =")
+    print(mmat1)
+    print("mmat2 =")
+    print(mmat2)
+    print("mmatE =")
+    print(mmatE)
+    mmat = mmat1 * mmat2
+    print("mmat1 * mmat2 =")
+    print(mmat._matrix)
+    try:
+        mmat1 * mmatE
+    except ValueError as e:
+        pass
+    try:
+        mmatE * mmat2
+    except ValueError as e:
+        pass
+    Matrix(matE) * Matrix(matE)
+    Matrix(matE) * Matrix(mat1)
+    Matrix(mat2) * Matrix(matE)
+    mmat3 * mmat2
