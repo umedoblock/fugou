@@ -1,7 +1,7 @@
 import collections
 import pprint
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=4, width=40)
 
 class Matrix(object):
     def __init__(self, seq):
