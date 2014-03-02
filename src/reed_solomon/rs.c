@@ -322,7 +322,7 @@ static inline void _rs_mul_matrixes(reed_solomon_t *rs,
     register uint ans, tmp;
 
 /*
-    see reed_solomon/mul_matrixes.py
+    see reed_solomon/matrix.py
 
     for k in range(4):
         for j in range(4):
