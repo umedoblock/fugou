@@ -7,6 +7,8 @@ pp = pprint.PrettyPrinter(indent=4, width=40)
 class Matrix(object):
     def __init__(self, seq):
         if isinstance(seq, Matrix):
+            print("seq =")
+            pp.pprint(seq)
             seq = seq._matrix
 
         if not isinstance(seq, collections.Sequence) or \
@@ -29,9 +31,6 @@ class Matrix(object):
 
     def __str__(self):
         return "(len_rows, len_columns)=({}, {})".format(self.len_rows, self.len_columns)
-
-    def __repr__(self):
-        return self
 
     def __mul__(self, other):
         if self.len_columns != other.len_rows:
@@ -143,7 +142,10 @@ class Matrix(object):
                     im[y][i] = im3 + im2
       # print()
 
-        return inverse_matrix
+        print("type(im) =", type(im))
+        print("im =")
+        pp.pprint(im)
+        return Matrix(im)
 
 def mul_matrixes(mat1, mat2):
     mat3 = [None] * 4
