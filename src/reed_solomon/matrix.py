@@ -29,6 +29,13 @@ class Matrix(object):
             elif len_row != row_elements:
                 ValueError("row of length must be equal in all rows.")
 
+    def str(self, value):
+      # print("value =", value, "type(value) =", type(value))
+        if isinstance(value, float):
+            return "{:.3f}".format(value)
+        else:
+            return str(value)
+
     def __repr__(self):
 
         s = "["
@@ -37,7 +44,7 @@ class Matrix(object):
                 h = ""
             else:
                 h = " "
-            s += h + "[" + ", ".join([str(element) for element in row]) + "]"
+            s += h + "[" + ", ".join([self.str(element) for element in row]) + "]"
             s += ",\n"
         s = s[:-2]
         s += "]"
@@ -59,7 +66,7 @@ class Matrix(object):
                     sum += self._matrix[k][i] * other._matrix[i][j]
                 mat[k][j] = sum
 
-        return mat
+        return Matrix(mat)
 
     # see in par2/par2/py3.py
     def _make_square_matrix(self, value=None):
@@ -135,9 +142,9 @@ class Matrix(object):
                     im3 = im[y][i]
                     im[y][i] = im3 + im2
 
-        print("type(im) =", type(im))
-        print("im =")
-        pp.pprint(im)
+      # print("type(im) =", type(im))
+      # print("im =")
+      # pp.pprint(im)
         return Matrix(im)
 
 def mul_matrixes(mat1, mat2):
@@ -182,10 +189,10 @@ if __name__ == "__main__":
         [0, 0, 1, 0],
         [0, 0, 0, 1],
     ]
-    mul_matrixes(matE, matE)
-    mul_matrixes(matE, mat1)
-    mul_matrixes(mat2, matE)
-    mul_matrixes(mat1, mat2)
+  # mul_matrixes(matE, matE)
+  # mul_matrixes(matE, mat1)
+  # mul_matrixes(mat2, matE)
+  # mul_matrixes(mat1, mat2)
 
     seq1 = [
         [0, 1, 2, 3],
@@ -234,9 +241,15 @@ if __name__ == "__main__":
     Matrix(mat2) * Matrix(matE)
     mmat3 * mmat2
     Matrix(mat1) * Matrix(mat2)
-    print("seqA ^ -1 =")
-    pp.pprint(Matrix(seqA)._solve_inverse_matrix())
-    pp.pprint(Matrix(seqA) * Matrix(Matrix(seqA)._solve_inverse_matrix()))
-    print("mat1 ^ -1 =")
-    pp.pprint(Matrix(mat1)._solve_inverse_matrix())
-    pp.pprint(Matrix(mat1) * Matrix(mat1)._solve_inverse_matrix())
+    mat_seqA = Matrix(seqA)
+    print("mat_seqA =")
+    print(mat_seqA)
+    print("mat_seqA ^ -1 =")
+    mat_seqA_inv = mat_seqA._solve_inverse_matrix()
+    print(mat_seqA_inv)
+    print("seqA * seqA ^ -1 =")
+    print(mat_seqA * mat_seqA_inv)
+#   print("mat1 ^ -1 =")
+#   print(Matrix(mat1)._solve_inverse_matrix())
+#   print("mat1 * mat1 ^ -1 =")
+#   print(Matrix(mat1) * Matrix(mat1)._solve_inverse_matrix())
