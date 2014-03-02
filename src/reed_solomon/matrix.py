@@ -142,11 +142,10 @@ class Matrix(object):
                 foo = matrix[y][x]
 
                 for i in range(self.len_rows):
-                    print("[i={}][j={}][k={}]".format(i, j, k))
-              #     tmp1 = matrix[z][i]
-              #     tmp2 = foo * tmp1
-              #     tmp3 = matrix[y][i]
-              #     matrix[y][i] = tmp3 - tmp2
+                    tmp1 = matrix[z][i]
+                    tmp2 = foo * tmp1
+                    tmp3 = matrix[y][i]
+                    matrix[y][i] = tmp3 - tmp2
 
                     im1 = im[z][i]
                     im2 = foo * im1
@@ -154,8 +153,8 @@ class Matrix(object):
                     # xor では "+" も "-" も等価だった。。。。
                     im[y][i] = im3 - im2
 
-      # self._view(matrix, "matrix =")
-      # self._view(inverse_matrix, "inverse_matrix =")
+        self._view(matrix, "matrix =")
+        self._view(inverse_matrix, "inverse_matrix =")
       # print("type(im) =", type(im))
       # print("im =")
       # pp.pprint(im)
