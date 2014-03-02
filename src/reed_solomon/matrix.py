@@ -134,14 +134,15 @@ class Matrix(object):
                     im[j][i] = im3 + im2
       # print('前進完了') # moving front done
 
-        for k in range(self.len_rows - 1):
-            for j in range(self.len_rows - 1 - k):
-                z = self.len_rows - 1 - k
-                x = self.len_rows - 1 - k
-                y = self.len_rows - 1 - k - j - 1
+        for k in range(1, self.len_rows):
+            for j in range(self.len_rows - k):
+                z = self.len_rows - k
+                x = self.len_rows - k
+                y = self.len_rows - k - j - 1
                 foo = matrix[y][x]
 
                 for i in range(self.len_rows):
+                    print("[i={}][j={}][k={}]".format(i, j, k))
               #     tmp1 = matrix[z][i]
               #     tmp2 = foo * tmp1
               #     tmp3 = matrix[y][i]
