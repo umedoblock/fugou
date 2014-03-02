@@ -134,51 +134,32 @@ class Matrix(object):
                     im2 = foo * im1
                     im3 = im[j][i]
                     im[j][i] = im3 - im2
-        print('前進完了') # moving front done
-        self._view(matrix, "matrix =")
-        self._view(im, "im =")
-        self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
+      # print('前進完了') # moving front done
+      # self._view(matrix, "matrix =")
+      # self._view(im, "im =")
+      # self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
 
-        for k in range(self.len_rows - 1):
-            for j in range(self.len_rows - 1 - k):
-                z = self.len_rows - 1 - k
-                x = self.len_rows - 1 - k
-                y = self.len_rows - 1 - k - j - 1
+        for k in range(1, self.len_rows):
+            for j in range(self.len_rows - k):
+                z = self.len_rows - k
+                x = self.len_rows - k
+                y = self.len_rows - k - j - 1
                 foo = matrix[y][x]
 
                 for i in range(self.len_rows):
                     tmp1 = matrix[z][i]
                     tmp2 = foo * tmp1
-                    tmp3 = matrix[y][i]
-                    matrix[y][i] = tmp3 - tmp2
+                    matrix[y][i] -= tmp2
 
                     im1 = im[z][i]
                     im2 = foo * im1
-                    im3 = im[y][i]
                     # xor では "+" も "-" も等価だった。。。。
-                    im[y][i] = im3 - im2
+                    im[y][i] -= im2
 
-       #for k in range(1, self.len_rows):
-       #    for j in range(self.len_rows - k):
-       #        z = self.len_rows - k
-       #        x = self.len_rows - k
-       #        y = self.len_rows - k - j - 1
-       #        foo = matrix[y][x]
-
-       #        for i in range(self.len_rows):
-       #            tmp1 = matrix[z][i]
-       #            tmp2 = foo * tmp1
-       #            matrix[y][i] -= tmp2
-
-       #            im1 = im[z][i]
-       #            im2 = foo * im1
-       #            # xor では "+" も "-" も等価だった。。。。
-       #            im[y][i] -= im2
-
-        self._view(matrix, "matrix =")
-        self._view(inverse_matrix, "inverse_matrix =")
-        print("type(im) =", type(im))
-        print("--------------------------------------------------")
+      # self._view(matrix, "matrix =")
+      # self._view(inverse_matrix, "inverse_matrix =")
+      # print("type(im) =", type(im))
+      # print("--------------------------------------------------")
 
         return Matrix(inverse_matrix)
 
