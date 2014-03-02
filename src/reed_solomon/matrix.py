@@ -29,38 +29,35 @@ class Matrix(object):
             elif len_row != row_elements:
                 ValueError("row of length must be equal in all rows.")
 
-    def __str__(self):
-        return "(len_rows, len_columns)=({}, {})".format(self.len_rows, self.len_columns)
+    def __repr__(self):
+
+        s = "["
+        for row in self._matrix:
+            if s == "[":
+                h = ""
+            else:
+                h = " "
+            s += h + "[" + ", ".join([str(element) for element in row]) + "]"
+            s += ",\n"
+        s = s[:-2]
+        s += "]"
+
+        return s
 
     def __mul__(self, other):
         if self.len_columns != other.len_rows:
             raise ValueError("self.len_columns(={}) and other.len_rows(={}) must be equal.".format(self.len_columns, other.len_rows))
 
-#       print("self = {}".format(self))
-#       print("other = {}".format(other))
         mat = [None] * self.len_rows
         for i in range(self.len_rows):
-      # for i in range(len(mat)):
             mat[i] = [None] * other.len_columns
-#       print("mat = ")
-#       pp.pprint(mat)
-    #   for j in range(4):
-    #       for i in range(4):
-    #           mat[j][i] = j * i
+
         for k in range(self.len_rows):
             for j in range(other.len_columns):
                 sum = 0
                 for i in range(other.len_rows):
-                  # print("self[{0}][{1}] = {2}".format(j, i, self[j][i]))
-                  # print("other[{0}][{1}] = {2}".format(i, j, other[i][j]))
-                  # print("(k, j, i)=({}, {}, {})".format(k, j, i))
                     sum += self._matrix[k][i] * other._matrix[i][j]
                 mat[k][j] = sum
-    #           print("mat = ")
-    #           pp.pprint(mat)
-    #           input()
-        print("mat = ")
-        pp.pprint(mat)
 
         return mat
 
@@ -85,10 +82,7 @@ class Matrix(object):
         matrix = copy.deepcopy(self._matrix)
         im = inverse_matrix = self._make_e_matrix()
 
-      # self._at_a_glance(matrix, im)
-      # print()
         for k in range(self.len_rows):
-            # self._at_a_glance(matrix, im)
             if not matrix[k][k]:
                 swap = False
                 for j in range(k + 1, self.len_rows):
@@ -140,7 +134,6 @@ class Matrix(object):
                     im2 = foo * im1
                     im3 = im[y][i]
                     im[y][i] = im3 + im2
-      # print()
 
         print("type(im) =", type(im))
         print("im =")
