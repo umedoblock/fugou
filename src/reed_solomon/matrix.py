@@ -144,14 +144,12 @@ class Matrix(object):
                 for i in range(self.len_rows):
                     tmp1 = matrix[z][i]
                     tmp2 = foo * tmp1
-                    tmp3 = matrix[y][i]
-                    matrix[y][i] = tmp3 - tmp2
+                    matrix[y][i] -= tmp2
 
                     im1 = im[z][i]
                     im2 = foo * im1
-                    im3 = im[y][i]
                     # xor では "+" も "-" も等価だった。。。。
-                    im[y][i] = im3 - im2
+                    im[y][i] -= im2
 
         self._view(matrix, "matrix =")
         self._view(inverse_matrix, "inverse_matrix =")
