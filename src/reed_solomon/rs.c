@@ -313,6 +313,42 @@ for debug.
     }
 }
 
+#define _rs_mul_matrixes(XX) \
+static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs, \
+                                        matrix_t *answer, \
+                                        matrix_t *mat1, \
+                                        matrix_t *mat2) \
+{ \
+    register uint i, j, k; \
+    register uint ans, tmp; \
+ \
+/* \
+    see reed_solomon/matrix.py \
+ \
+    for k in range(4): \
+        for j in range(4): \
+            sum = 0 \
+            for i in range(4): \
+                sum += mat1[k][i] * mat2[i][j] \
+            mat3[k][j] = sum \
+*/ \
+    for (k=0;k<MATRIX_rows(mat1);k++){ \
+        for (j=0;j<MATRIX_columns(mat2);j++){ \
+            ans = 0; \
+            for (i=0;i<MATRIX_rows(mat2);i++){ \
+                tmp = _rs_mul16(rs, \
+                                   MATRIX_u( ##XX, mat1)[k * MATRIX_rows(mat1) + i], \
+                                   MATRIX_u( ##XX, mat2)[i * MATRIX_rows(mat2) + j]); \
+                ans = _rs_ADD(ans, tmp); \
+            } \
+            MATRIX_u( ##XX, answer)[k * MATRIX_columns(mat2) + j] = ans; \
+        } \
+    } \
+}
+
+_rs_mul_matrixes(16)
+
+#if 0
 static inline void _rs_mul_matrixes(reed_solomon_t *rs,
                                     matrix_t *answer,
                                     matrix_t *mat1,
@@ -344,6 +380,7 @@ static inline void _rs_mul_matrixes(reed_solomon_t *rs,
         }
     }
 }
+#endif
 
 static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
                                            vector_t *answer,
@@ -1127,6 +1164,6 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
                            matrix_t *mat1,
                            matrix_t *mat2)
 {
-    return _rs_mul_matrixes(rs, answer, mat1, mat2);
+    return _rs_mul_matrixes16(rs, answer, mat1, mat2);
 }
 #endif
