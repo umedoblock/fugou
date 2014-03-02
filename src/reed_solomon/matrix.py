@@ -109,6 +109,8 @@ class Matrix(object):
                         swap = True
                         break
                 if not swap:
+                    self._view(matrix, "matrix =")
+                    self._view(im, "im =")
                     message = 'cannot make inverse_matrix.'
                     raise ValueError(message)
 
@@ -126,37 +128,57 @@ class Matrix(object):
                     tmp1 = matrix[k][i]
                     tmp2 = foo * tmp1
                     tmp3 = matrix[j][i]
-                    matrix[j][i] = tmp3 + tmp2
+                    matrix[j][i] = tmp3 - tmp2
 
                     im1 = im[k][i]
                     im2 = foo * im1
                     im3 = im[j][i]
-                    im[j][i] = im3 + im2
-      # print('前進完了') # moving front done
+                    im[j][i] = im3 - im2
+        print('前進完了') # moving front done
+        self._view(matrix, "matrix =")
+        self._view(im, "im =")
+        self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
 
-        for k in range(1, self.len_rows):
-            for j in range(self.len_rows - k):
-                z = self.len_rows - k
-                x = self.len_rows - k
-                y = self.len_rows - k - j - 1
+        for k in range(self.len_rows - 1):
+            for j in range(self.len_rows - 1 - k):
+                z = self.len_rows - 1 - k
+                x = self.len_rows - 1 - k
+                y = self.len_rows - 1 - k - j - 1
                 foo = matrix[y][x]
 
                 for i in range(self.len_rows):
                     tmp1 = matrix[z][i]
                     tmp2 = foo * tmp1
-                    matrix[y][i] -= tmp2
+                    tmp3 = matrix[y][i]
+                    matrix[y][i] = tmp3 - tmp2
 
                     im1 = im[z][i]
                     im2 = foo * im1
+                    im3 = im[y][i]
                     # xor では "+" も "-" も等価だった。。。。
-                    im[y][i] -= im2
+                    im[y][i] = im3 - im2
+
+       #for k in range(1, self.len_rows):
+       #    for j in range(self.len_rows - k):
+       #        z = self.len_rows - k
+       #        x = self.len_rows - k
+       #        y = self.len_rows - k - j - 1
+       #        foo = matrix[y][x]
+
+       #        for i in range(self.len_rows):
+       #            tmp1 = matrix[z][i]
+       #            tmp2 = foo * tmp1
+       #            matrix[y][i] -= tmp2
+
+       #            im1 = im[z][i]
+       #            im2 = foo * im1
+       #            # xor では "+" も "-" も等価だった。。。。
+       #            im[y][i] -= im2
 
         self._view(matrix, "matrix =")
         self._view(inverse_matrix, "inverse_matrix =")
-      # print("type(im) =", type(im))
-      # print("im =")
-      # pp.pprint(im)
-      # print("--------------------------------------------------")
+        print("type(im) =", type(im))
+        print("--------------------------------------------------")
 
         return Matrix(inverse_matrix)
 
@@ -184,7 +206,7 @@ def mul_matrixes(mat1, mat2):
     pp.pprint(mat3)
 
 if __name__ == "__main__":
-    mat1 = [
+    mat1 = [ # 逆行列は存在しない
         [0, 1, 2, 3],
         [4, 5, 6, 7],
         [8, 9, 10, 11],
@@ -195,6 +217,12 @@ if __name__ == "__main__":
         [11, 10, 9, 8],
         [7, 6, 5, 4],
         [3, 2, 1, 0]
+    ]
+    mat3 = [
+        [10, 1, 2, 3],
+        [4, 1, 6, 7],
+        [8, 9, 10, 11],
+        [12, 13, 14, 15]
     ]
     matE = [
         [1, 0, 0, 0],
@@ -262,7 +290,12 @@ if __name__ == "__main__":
     print(mat_seqA_inv)
     print("seqA * seqA ^ -1 =")
     print(mat_seqA * mat_seqA_inv)
-#   print("mat1 ^ -1 =")
-#   print(Matrix(mat1)._solve_inverse_matrix())
-#   print("mat1 * mat1 ^ -1 =")
-#   print(Matrix(mat1) * Matrix(mat1)._solve_inverse_matrix())
+
+    mat3 = Matrix(mat3)
+    print("mat3 =")
+    print(mat3)
+    mat3_inv = mat3._solve_inverse_matrix()
+    print("mat3 ^ -1 =")
+    print(mat3_inv)
+    print("mat3 * mat3 ^ -1 =")
+    print(mat3 * mat3_inv)
