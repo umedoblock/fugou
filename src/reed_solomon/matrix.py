@@ -7,8 +7,8 @@ pp = pprint.PrettyPrinter(indent=4, width=40)
 class Matrix(object):
     def __init__(self, seq):
         if isinstance(seq, Matrix):
-            print("seq =")
-            pp.pprint(seq)
+          # print("seq =")
+          # pp.pprint(seq)
             seq = seq._matrix
 
         if not isinstance(seq, collections.Sequence) or \
@@ -82,14 +82,24 @@ class Matrix(object):
             e[i][i] = 1
         return e
 
+    def _view(self, m, msg):
+        print(msg)
+        print(Matrix(m))
+        print()
+
     # see in par2/par2/py3.py
     def _solve_inverse_matrix(self):
+        print("--------------------------------------------------")
+
         if self.len_columns != self.len_rows:
             raise ValueError("self.len_columns(={}) and self.len_rows(={}) must be equal.".format(self.len_columns, self.len_rows))
         matrix = copy.deepcopy(self._matrix)
         im = inverse_matrix = self._make_e_matrix()
 
         for k in range(self.len_rows):
+            self._view(matrix, "matrix =")
+            self._view(im, "im =")
+            self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
             if not matrix[k][k]:
                 swap = False
                 for j in range(k + 1, self.len_rows):
@@ -133,19 +143,24 @@ class Matrix(object):
 
                 for i in range(self.len_rows):
               #     tmp1 = matrix[z][i]
-              #     tmp2 = self._mul(foo, tmp1)
+              #     tmp2 = foo * tmp1
               #     tmp3 = matrix[y][i]
-              #     matrix[y][i] = self._add(tmp3, tmp2)
+              #     matrix[y][i] = tmp3 - tmp2
 
                     im1 = im[z][i]
                     im2 = foo * im1
                     im3 = im[y][i]
-                    im[y][i] = im3 + im2
+                    # xor では "+" も "-" も等価だった。。。。
+                    im[y][i] = im3 - im2
 
+        self._view(matrix, "matrix =")
+        self._view(inverse_matrix, "inverse_matrix =")
       # print("type(im) =", type(im))
       # print("im =")
       # pp.pprint(im)
-        return Matrix(im)
+        print("--------------------------------------------------")
+
+        return Matrix(inverse_matrix)
 
 def mul_matrixes(mat1, mat2):
     mat3 = [None] * 4
