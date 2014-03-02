@@ -89,7 +89,7 @@ class Matrix(object):
 
     # see in par2/par2/py3.py
     def _solve_inverse_matrix(self):
-        print("--------------------------------------------------")
+      # print("--------------------------------------------------")
 
         if self.len_columns != self.len_rows:
             raise ValueError("self.len_columns(={}) and self.len_rows(={}) must be equal.".format(self.len_columns, self.len_rows))
@@ -97,9 +97,9 @@ class Matrix(object):
         im = inverse_matrix = self._make_e_matrix()
 
         for k in range(self.len_rows):
-            self._view(matrix, "matrix =")
-            self._view(im, "im =")
-            self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
+          # self._view(matrix, "matrix =")
+          # self._view(im, "im =")
+          # self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
             if not matrix[k][k]:
                 swap = False
                 for j in range(k + 1, self.len_rows):
@@ -153,12 +153,12 @@ class Matrix(object):
                     # xor では "+" も "-" も等価だった。。。。
                     im[y][i] = im3 - im2
 
-        self._view(matrix, "matrix =")
-        self._view(inverse_matrix, "inverse_matrix =")
+      # self._view(matrix, "matrix =")
+      # self._view(inverse_matrix, "inverse_matrix =")
       # print("type(im) =", type(im))
       # print("im =")
       # pp.pprint(im)
-        print("--------------------------------------------------")
+      # print("--------------------------------------------------")
 
         return Matrix(inverse_matrix)
 
