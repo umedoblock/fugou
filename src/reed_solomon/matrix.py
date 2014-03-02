@@ -109,6 +109,7 @@ class Matrix(object):
                         swap = True
                         break
                 if not swap:
+                    print("k = {}".format(k))
                     self._view(matrix, "matrix =")
                     self._view(im, "im =")
                     message = 'cannot make inverse_matrix.'
@@ -137,6 +138,7 @@ class Matrix(object):
       # print('前進完了') # moving front done
       # self._view(matrix, "matrix =")
       # self._view(im, "im =")
+      # input()
       # self._view(Matrix(matrix) * Matrix(im), "matrix * im =")
 
         for k in range(1, self.len_rows):
@@ -147,15 +149,18 @@ class Matrix(object):
                 foo = matrix[y][x]
 
                 for i in range(self.len_rows):
-                    tmp1 = matrix[z][i]
-                    tmp2 = foo * tmp1
-                    matrix[y][i] -= tmp2
+                  # tmp1 = matrix[z][i]
+                  # tmp2 = foo * tmp1
+                  # matrix[y][i] -= tmp2
 
                     im1 = im[z][i]
                     im2 = foo * im1
                     # xor では "+" も "-" も等価だった。。。。
                     im[y][i] -= im2
 
+          # self._view(matrix, "matrix =")
+          # self._view(inverse_matrix, "inverse_matrix =")
+#           input()
       # self._view(matrix, "matrix =")
       # self._view(inverse_matrix, "inverse_matrix =")
       # print("type(im) =", type(im))
