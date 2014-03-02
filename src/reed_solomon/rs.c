@@ -331,16 +331,16 @@ static inline void _rs_mul_matrixes(reed_solomon_t *rs,
                 sum += mat1[k][i] * mat2[i][j]
             mat3[k][j] = sum
 */
-    for (k=0;k<MATRIX_columns(mat1);k++){
-        for (j=0;j<MATRIX_columns(mat1);j++){
+    for (k=0;k<MATRIX_rows(mat1);k++){
+        for (j=0;j<MATRIX_columns(mat2);j++){
             ans = 0;
-            for (i=0;i<MATRIX_rows(mat1);i++){
+            for (i=0;i<MATRIX_rows(mat2);i++){
                 tmp = _rs_mul16(rs,
                                 MATRIX_u(16, mat1)[k * MATRIX_rows(mat1) + i],
                                 MATRIX_u(16, mat2)[i * MATRIX_rows(mat2) + j]);
                 ans = _rs_ADD(ans, tmp);
             }
-            MATRIX_u(16, answer)[k * MATRIX_rows(mat1) + j] = ans;
+            MATRIX_u(16, answer)[k * MATRIX_columns(mat2) + j] = ans;
         }
     }
 }
