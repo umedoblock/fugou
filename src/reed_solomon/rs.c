@@ -155,32 +155,22 @@ void rs_decode_slots(slot_t *recover,
 /* private functions *********************************************************/
 /*****************************************************************************/
 
-static inline ushort _rs_mul16(reed_solomon_t *rs, ushort a, ushort b)
-{
-    register ushort c;
-
-    if (a == 0 || b == 0)
-        return 0;
-
-    c = rs->gf.u16[a] + rs->gf.u16[b];
-    if (c < rs->gf_max)
-        return rs->gfi.u16[c];
-    return rs->gfi.u16[c - rs->gf_max];
+#define _rs_mul(XX, TYPE)                                            \
+static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
+{                                                                    \
+    register TYPE c;                                                 \
+                                                                     \
+    if (a == 0 || b == 0)                                            \
+        return 0;                                                    \
+                                                                     \
+    c = rs->gf.u ## XX[a] + rs->gf.u ## XX[b];                       \
+    if (c < rs->gf_max)                                              \
+        return rs->gfi.u ## XX[c];                                   \
+    return rs->gfi.u ## XX[c - rs->gf_max];                          \
 }
 
-static inline uint _rs_mul32(reed_solomon_t *rs, uint a, uint b)
-{
-    /* no need to think about 32bit */
-    register uint c;
-
-    if (a == 0U || b == 0U)
-        return 0U;
-
-    c = rs->gf.u32[a] + rs->gf.u32[b];
-    if (c < rs->gf_max)
-        return rs->gfi.u32[c];
-    return rs->gfi.u32[c - rs->gf_max];
-}
+_rs_mul(16, ushort)
+_rs_mul(32, uint)
 
 static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
 {
