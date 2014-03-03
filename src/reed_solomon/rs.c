@@ -350,46 +350,30 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs, \
 _rs_mul_matrixes(16)
 _rs_mul_matrixes(32)
 
-static inline void _rs_mul_matrix_vector16(reed_solomon_t *rs,
-                                           vector_t *answer,
-                                           matrix_t *mat,
-                                           vector_t *vec)
-{
-    register uint e, j;
-    register uint ans, tmp;
-
-    for (j=0;j<MATRIX_columns(mat);j++){
-        ans = 0;
-        for (e=0;e<VECTOR_elements(vec);e++){
-            tmp = _rs_mul16(rs,
-                            MATRIX_u(16, mat)[j * MATRIX_rows(mat) + e],
-                            VECTOR_u(16, vec)[e]);
-            ans = _rs_ADD(ans, tmp);
-        }
-        VECTOR_u(16, answer)[j] = ans;
-    }
+#define _rs_mul_matrix_vector(XX)                                        \
+static inline void                                                       \
+_rs_mul_matrix_vector##XX(reed_solomon_t *rs,                            \
+                          vector_t *answer,                              \
+                          matrix_t *mat,                                 \
+                          vector_t *vec)                                 \
+{                                                                        \
+    register uint e, j;                                                  \
+    register uint ans, tmp;                                              \
+                                                                         \
+    for (j=0;j<MATRIX_columns(mat);j++){                                 \
+        ans = 0;                                                         \
+        for (e=0;e<VECTOR_elements(vec);e++){                            \
+            tmp = _rs_mul##XX(rs,                                        \
+                            MATRIX_u(XX, mat)[j * MATRIX_rows(mat) + e], \
+                            VECTOR_u(XX, vec)[e]);                       \
+            ans = _rs_ADD(ans, tmp);                                     \
+        }                                                                \
+        VECTOR_u(XX, answer)[j] = ans;                                   \
+    }                                                                    \
 }
 
-static inline void
-_rs_mul_matrix_vector32(reed_solomon_t *rs,
-                        vector_t *answer,
-                        matrix_t *mat,
-                        vector_t *vec)
-{
-    register uint e, j;
-    register uint ans, tmp;
-
-    for (j=0;j<MATRIX_columns(mat);j++){
-        ans = 0;
-        for (e=0;e<VECTOR_elements(vec);e++){
-            tmp = _rs_mul32(rs,
-                            MATRIX_u(32, mat)[j * MATRIX_rows(mat) + e],
-                            VECTOR_u(32, vec)[e]);
-            ans = _rs_ADD(ans, tmp);
-        }
-        VECTOR_u(32, answer)[j] = ans;
-    }
-}
+_rs_mul_matrix_vector(16)
+_rs_mul_matrix_vector(32)
 
 size_t vector_calc_vector_size(uint elements, size_t element_size)
 {
