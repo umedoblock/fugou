@@ -336,12 +336,13 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs, \
         for (j=0;j<MATRIX_columns(mat2);j++){ \
             ans = 0; \
             for (i=0;i<MATRIX_rows(mat2);i++){ \
-                tmp = _rs_mul16(rs, \
-                                   MATRIX_u( ##XX, mat1)[k * MATRIX_rows(mat1) + i], \
-                                   MATRIX_u( ##XX, mat2)[i * MATRIX_rows(mat2) + j]); \
+                tmp = _rs_mul##XX( \
+                            rs,  \
+                            MATRIX_u(XX, mat1)[k * MATRIX_rows(mat1) + i], \
+                            MATRIX_u(XX, mat2)[i * MATRIX_rows(mat2) + j]); \
                 ans = _rs_ADD(ans, tmp); \
             } \
-            MATRIX_u( ##XX, answer)[k * MATRIX_columns(mat2) + j] = ans; \
+            MATRIX_u(XX, answer)[k * MATRIX_columns(mat2) + j] = ans; \
         } \
     } \
 }
