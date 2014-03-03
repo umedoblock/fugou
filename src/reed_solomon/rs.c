@@ -348,6 +348,7 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs, \
 }
 
 _rs_mul_matrixes(16)
+_rs_mul_matrixes(32)
 
 #if 0
 static inline void _rs_mul_matrixes(reed_solomon_t *rs,
