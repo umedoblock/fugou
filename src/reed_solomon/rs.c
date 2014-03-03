@@ -467,6 +467,12 @@ void matrix_make_elementary(matrix_t *elementary, uint n)
 }
 
 #if 0
+/* #260 gaussian elimination の見直し。
+ * 確か汚いままにしていたはず。
+ * 整理して綺麗にしよう。
+ *
+ * umm...
+ */
 static int _rs_solve_inverse(matrix_t *inverse,
                              matrix_t *matrix,
                              rs_decode_t *rsd)
