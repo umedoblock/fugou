@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     int i, w, n_bits, n, len;
     int poly, field_max, digits;
     int bit_pattern, galois_field, *s;
-    size_t mem_size = 0, cpu_bit;
+    size_t mem_size = 0;
 
     fprintf(stderr, "argc = %d\n", argc);
     for(i=0;i<argc;i++){
@@ -64,12 +64,8 @@ int main(int argc, char *argv[])
     */
     fprintf(stderr, "galois_field =\n");
 
-    /*
-    mem_size = sizeof(int) * w;
-    */
     fprintf(stderr, "sizeof(long long int) = %d\n", sizeof(long long int));
-    cpu_bit = sizeof(int) * 8;
-    mem_size = w / cpu_bit;
+    mem_size = sizeof(int) * w;
     s = (int *)malloc(mem_size);
     if (s == NULL) {
         fprintf(stderr, "failed malloc(%u).\n", mem_size);
