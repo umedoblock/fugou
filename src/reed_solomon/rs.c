@@ -163,10 +163,10 @@ static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
     if (a == 0 || b == 0)                                            \
         return 0;                                                    \
                                                                      \
-    c = rs->gf.u ## XX[a] + rs->gf.u ## XX[b];                       \
+    c = MATRIX_u(XX, rs->gf)[a] + MATRIX_u(XX, rs->gf)[b];           \
     if (c < rs->gf_max)                                              \
-        return rs->gfi.u ## XX[c];                                   \
-    return rs->gfi.u ## XX[c - rs->gf_max];                          \
+        return MATRIX_u(XX, rs->gfi)[c];                             \
+    return MATRIX_u(XX, rs->gfi)[c - rs->gf_max];                    \
 }
 
 _rs_mul(16, ushort)
@@ -185,10 +185,10 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
      * 不安でしょうがないので cast するように修正。
      * c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
      */
-    c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
+    c = (int )MATRIX_u(16, rs->gf)[a] - (int )MATRIX_u(16, rs->gf)[b];
     if (c >= 0)
-        return rs->gfi.u16[c];
-    return rs->gfi.u16[c + rs->gf_max];
+        return MATRIX_u(16, rs->gfi)[c];
+    return MATRIX_u(16, rs->gfi)[c + RS_gf_max(rs)];
 }
 
 static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
@@ -199,24 +199,12 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
     if (a == 0U)
         return 0U;
 
-    a32 = rs->gf.u32[a];
-    b32 = rs->gf.u32[b];
+    a32 = MATRIX_u(32, rs->gf)[a];
+    b32 = MATRIX_u(32, rs->gf)[b];
     if (a32 >= b32)
-        return rs->gfi.u32[a32 - b32];
+        return MATRIX_u(32, rs->gfi)[a32 - b32];
     /* a32 < b32 */
-    return rs->gfi.u32[rs->gf_max + a32 - b32];
-
-    #if 0
-    /* 高速化する機会があれば、今(=平成26年1月9日23時11分7秒)思いついた
-     * 手法を適用してみたい。
-     * 高速化手法の結果は、reed_solomon/guard.c を実行すると明らかに！
-     * あと、RS_gf32, RS_gfi32 使うようにしないと。
-     */
-    guard = 0U;
-    if (a32 < b32)
-        guard = rs->gf_max;
-    return rs->gfi.u32[guard + a32 - b32];
-    #endif
+    return MATRIX_u(32, rs->gfi)[RS_gf_max(rs) + a32 - b32];
 }
 
 #if 0
@@ -260,20 +248,19 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
 {
     /* no need to think about 32bit */
     uint i, bit_pattern = 1;
-    _ptr_t gf = rs->gf, gfi = rs->gfi;
 
     _DEBUG("in _rs_make_gf_and_gfi()\n");
 
-    for (i=0;i<rs->gf_max;i++) {
-        if (bit_pattern & rs->w)
-            bit_pattern ^= rs->poly;
-    if (rs->register_size == 2) {
-        gf.u16[bit_pattern] = i;
-        gfi.u16[i] = bit_pattern;
+    for (i=0;i<RS_gf_max(rs);i++) {
+        if (bit_pattern & RS_w(rs))
+            bit_pattern ^= RS_poly(rs);
+    if (RS_register_size(rs) == 2) {
+        MATRIX_u(16, RS_gf(rs))[bit_pattern] = i;
+        MATRIX_u(16, RS_gfi(rs))[i] = bit_pattern;
     }
     else {
-        gf.u32[bit_pattern] = i;
-        gfi.u32[i] = bit_pattern;
+        MATRIX_u(32, RS_gf(rs))[bit_pattern] = i;
+        MATRIX_u(32, RS_gfi(rs))[i] = bit_pattern;
     }
         bit_pattern <<= 1;
     }
@@ -293,12 +280,12 @@ for debug.
 
     if (rs->bits <= 4) {
         _DEBUG("gf =\n");
-        for (i=0;i<rs->w;i++)
-            _DEBUG("i = %u, 0x%04x\n", i, gf.u16[i]);
+        for (i=0;i<RS_w(rs);i++)
+            _DEBUG("i = %u, 0x%04x\n", i, MATRIX_u(16, RS_gf(rs))[i]);
         _DEBUG("\n");
         _DEBUG("gfi =\n");
-        for (i=0;i<rs->w;i++)
-            _DEBUG("i = %u, 0x%04x\n", i, gfi.u16[i]);
+        for (i=0;i<RS_w(rs);i++)
+            _DEBUG("i = %u, 0x%04x\n", i, MATRIX_u(16, RS_gfi(rs))[i]);
         _DEBUG("\n\n");
     }
 }
@@ -680,8 +667,8 @@ static void _rs_view_rs(reed_solomon_t *rs)
     LOGGER(INFO, "                 w = %u\n", rs->w);
     LOGGER(INFO, "            gf_max = %u\n", rs->gf_max);
     LOGGER(INFO, "           gf_size = %zu\n", rs->gf_size);
-    LOGGER(INFO, "                gf = %p\n", rs->gf.ptr);
-    LOGGER(INFO, "               gfi = %p\n", rs->gfi.ptr);
+    LOGGER(INFO, "                gf = %p\n", rs->gf);
+    LOGGER(INFO, "               gfi = %p\n", rs->gfi);
     LOGGER(INFO, "\n");
 }
 
@@ -771,11 +758,11 @@ static int _rs_init_the_universe(big_bang_t *universe)
     universe->mem = mem;
     for (i=0;i<RS_GF_NUM;i++) {
         rs = universe->rs + i;
-        rs->gf.ptr = mem;
+
+        rs->gf = mem;
         mem += rs->gf_size;
 
-        /* 後で上と同じように直す。*/
-        universe->rs[i].gfi.ptr = mem;
+        rs->gfi = mem;
         mem += rs->gf_size;
     }
 
