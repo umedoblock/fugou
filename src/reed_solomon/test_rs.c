@@ -74,8 +74,8 @@ void test_rs_mul(void)
     assert_by_ushort(0, _rs_mul16_wrap(rs16, 0, 0), "test_rs_mul() with _rs_mul16_wrap16()");
     assert_by_ushort(0, _rs_mul16_wrap(rs16, 0, 0x1), "test_rs_mul() with _rs_mul16_wrap16()");
     assert_by_ushort(0, _rs_mul16_wrap(rs16, 0x1, 0), "test_rs_mul() with _rs_mul16_wrap16()");
-    exponent_in_gf16 = (RS_gf16(rs16)[0x28a1] + RS_gf16(rs16)[0x7cce]) % RS_gf_max(rs16);
-    expected = RS_gfi16(rs16)[exponent_in_gf16];
+    exponent_in_gf16 = (MATRIX_u(16, rs16->gf)[0x28a1] + MATRIX_u(16, rs16->gf)[0x7cce]) % RS_gf_max(rs16);
+    expected = MATRIX_u(16, rs16->gfi)[exponent_in_gf16];
     assert_by_ushort(expected, _rs_mul16_wrap(rs16, 0x28a1, 0x7cce), "test_rs_mul() with _rs_mul16_wrap16()");
 
     /*
@@ -101,11 +101,11 @@ void test_rs_div(void)
     /* below sentence occur FATAL error.
     _rs_div16_wrap(rs16, 0x1, 0)
     */
-    exponent_in_gf16 = RS_gf16(rs16)[0x28a1] - RS_gf16(rs16)[0x7cce];
-    if (RS_gf16(rs16)[0x28a1] < RS_gf16(rs16)[0x7cce]) {
+    exponent_in_gf16 = MATRIX_u(16, rs16->gf)[0x28a1] - MATRIX_u(16, rs16->gf)[0x7cce];
+    if (MATRIX_u(16, rs16->gf)[0x28a1] < MATRIX_u(16, rs16->gf)[0x7cce]) {
         exponent_in_gf16 += RS_gf_max(rs16);
     }
-    expected = RS_gfi16(rs16)[exponent_in_gf16];
+    expected = MATRIX_u(16, rs16->gfi)[exponent_in_gf16];
     assert_by_ushort(expected, _rs_div16_wrap(rs16, 0x28a1, 0x7cce), "test_rs_div() with _rs_div16_wrap16()");
 }
 
@@ -124,8 +124,8 @@ void test_rs_take_rs(void)
     ret = rs_take_rs(&rs4, bits, division);
     assert_success(ret, "rs_take_rs(&rs4) with ret");
     assert_by_not_null(rs4, "rs_take_rs(&rs4) with value of rs4");
-    assert_by_not_null(RS_gf16(rs4), "rs_take_rs(&rs4) with gf16");
-    assert_by_not_null(RS_gfi16(rs4), "rs_take_rs(&rs4) with gfi16");
+    assert_by_not_null(MATRIX_u(16, rs4->gf), "rs_take_rs(&rs4) with gf16");
+    assert_by_not_null(MATRIX_u(16, rs4->gfi), "rs_take_rs(&rs4) with gfi16");
     assert_by_uint(bits, RS_bits(rs4), "rs_take_rs(&rs4) with bits");
     assert_by_uint(19, RS_poly(rs4), "rs_take_rs(&rs4) with poly");
     assert_by_size(1, RS_symbol_size(rs4), "rs_take_rs(&rs4) with symbol_size");
@@ -134,9 +134,9 @@ void test_rs_take_rs(void)
     assert_by_uint(RS_w(rs4) - 1, RS_gf_max(rs4), "rs_take_rs(&rs4) with gf_max");
     for (i=0;i<RS_gf_max(rs4);i++) {
         sprintf(ss, "rs_take_rs(&rs4) gfi16[%d]\n", i);
-        assert_by_ushort(bits4_gfi16[i], RS_gfi16(rs4)[i], ss);
-        sprintf(ss, "rs_take_rs(&rs4) RS_gf16(rs4)[RS_gfi16(rs4)[%d]]\n", i);
-        assert_by_ushort(i, RS_gf16(rs4)[RS_gfi16(rs4)[i]], ss);
+        assert_by_ushort(bits4_gfi16[i], MATRIX_u(16, rs4->gfi)[i], ss);
+        sprintf(ss, "rs_take_rs(&rs4) MATRIX_u(16, rs4->gf)[MATRIX_u(16, rs4->gfi)[%d]]\n", i);
+        assert_by_ushort(i, MATRIX_u(16, rs4->gf)[MATRIX_u(16, rs4->gfi)[i]], ss);
     }
 
     assert_by_size(RS_w(rs4) * RS_register_size(rs4), RS_gf_size(rs4), "rs_take_rs(&rs4) with gf_size");
