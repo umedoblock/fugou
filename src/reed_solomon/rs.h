@@ -182,8 +182,8 @@ typedef struct {
 
     uint w;
     uint gf_max;
-    _ptr_t gf;
-    _ptr_t gfi;
+    matrix_t gf;
+    matrix_t gfi;
     size_t gf_size;
 
     size_t allocate_size;
