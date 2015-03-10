@@ -174,6 +174,23 @@ typedef union {
 } _ptr_t;
 
 typedef struct {
+    uint elements;       /* = division */
+    size_t element_size; /* see name */
+    size_t vector_size;  /* = elements * element_size */
+    size_t mem_size;     /* = sizeof(vector_t) + vector_size */
+    _ptr_t mem;          /* memory area */
+} vector_t;
+
+typedef struct {
+    uint columns;        /* = division */
+    uint rows;           /* = division */
+    size_t element_size; /* see name */
+    size_t matrix_size;  /* = columns * rows * element_size */
+    size_t mem_size;     /* = sizeof(matrix_t) + matrix_size */
+    _ptr_t mem;          /* memory area */
+} matrix_t;
+
+typedef struct {
     uint bits;
     uint poly;
     size_t symbol_size; /* for reed solomon error correction */
@@ -204,23 +221,6 @@ typedef struct {
  *          |       |       |
  *          |       |       |
  */
-
-typedef struct {
-    uint elements;       /* = division */
-    size_t element_size; /* see name */
-    size_t vector_size;  /* = elements * element_size */
-    size_t mem_size;     /* = sizeof(vector_t) + vector_size */
-    _ptr_t mem;          /* memory area */
-} vector_t;
-
-typedef struct {
-    uint columns;        /* = division */
-    uint rows;           /* = division */
-    size_t element_size; /* see name */
-    size_t matrix_size;  /* = columns * rows * element_size */
-    size_t mem_size;     /* = sizeof(matrix_t) + matrix_size */
-    _ptr_t mem;          /* memory area */
-} matrix_t;
 
 typedef struct {
     uint poly;
