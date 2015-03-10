@@ -199,8 +199,8 @@ typedef struct {
 
     uint w;
     uint gf_max;
-    matrix_t gf;
-    matrix_t gfi;
+    matrix_t *gf;
+    matrix_t *gfi;
     size_t gf_size;
 
     size_t allocate_size;
@@ -283,7 +283,7 @@ typedef struct {
 #define MATRIX_rows(mtrx) (MATRIX(mtrx)->rows)
 #define MATRIX_columns(mtrx) (MATRIX(mtrx)->columns)
 #define MATRIX_element_size(mtrx) (MATRIX(mtrx)->element_size)
-#define MATRIX_mem(mtrx) (MATRIX(mtrx)->mem)
+#define MATRIX_mem(mtrx) MATRIX(mtrx)->mem
 #define MATRIX_mem_size(mtrx) (MATRIX(mtrx)->mem_size)
 #define MATRIX_ptr(mtrx) (MATRIX_mem(mtrx).ptr)
 #define MATRIX_u(XX, mtrx) (MATRIX_mem(mtrx).u ## XX)
