@@ -199,9 +199,8 @@ typedef struct {
 
     uint w;
     uint gf_max;
-    matrix_t *gf;
-    matrix_t *gfi;
-    size_t gf_size;
+    vector_t *gf;
+    vector_t *gfi;
 
     size_t allocate_size;
 } reed_solomon_t;
@@ -319,7 +318,6 @@ typedef struct {
 #define RS_gfi(r) (RS_ptr(r)->gfi)
 #define RS_gf16(r) (RS_gf(r).u16)
 #define RS_gfi16(r) (RS_gfi(r).u16)
-#define RS_gf_size(r) (RS_ptr(r)->gf_size)
 #define RS_allocate_size(r) (RS_ptr(r)->allocate_size)
 
 #define RS_division(r) (RS_ptr(r)->division)

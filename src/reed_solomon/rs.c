@@ -641,14 +641,34 @@ size_t aligned_size(size_t size)
     return size + padding_size;
 }
 
+#if 0
+typedef struct {                  | typedef struct {
+    size_t allocate_size;         |     uint bits;
+    char *mem;                    |     uint poly;
+    int mem_status;               |     size_t symbol_size;
+    reed_solomon_t rs[RS_GF_NUM]; |
+} big_bang_t;                     |     size_t register_size;
+                                  |
+                                  |     uint w;
+                                  |     uint gf_max;
+                                  |     matrix_t *gf;
+                                  |     matrix_t *gfi;
+                                  |
+                                  |     size_t allocate_size;
+                                  | } reed_solomon_t;
+#endif
+
 static big_bang_t _dokkaan = {
 /* allocate_size       mem          mem_status */
                0,     NULL, BB_MEM_NO_ALLOCATE, {
-/* bits      poly  symbol_size   register_size */
-    { 4,       19,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
-    { 8,      285,      1,          2, 0, 0, {NULL}, {NULL}, 0, 0},
-    {16,    65581,      2,          2, 0, 0, {NULL}, {NULL}, 0, 0},
-    {24, 16777243,      3,          4, 0, 0, {NULL}, {NULL}, 0, 0},
+/* reed_solomon_t:
+   bits      poly  symbol_size   register_size
+                                       w, gf_max,
+                                             *gf,  *gfi, allocate_size */
+    { 4,       19,      1,          2, 0, 0, NULL, NULL, 0},
+    { 8,      285,      1,          2, 0, 0, NULL, NULL, 0},
+    {16,    65581,      2,          2, 0, 0, NULL, NULL, 0},
+    {24, 16777243,      3,          4, 0, 0, NULL, NULL, 0},
     }
 };
 
@@ -666,7 +686,6 @@ static void _rs_view_rs(reed_solomon_t *rs)
     LOGGER(INFO, "     register_size = %zu\n", rs->register_size);
     LOGGER(INFO, "                 w = %u\n", rs->w);
     LOGGER(INFO, "            gf_max = %u\n", rs->gf_max);
-    LOGGER(INFO, "           gf_size = %zu\n", rs->gf_size);
     LOGGER(INFO, "                gf = %p\n", rs->gf);
     LOGGER(INFO, "               gfi = %p\n", rs->gfi);
     LOGGER(INFO, "\n");
@@ -706,14 +725,15 @@ static reed_solomon_t *_rs_get_rs(uint bits)
 
 static int _rs_init_rs(reed_solomon_t *rs)
 {
-    matrix_t gf_, *gf = &gf_;
+    size_t matrix_mem_size;
 
     rs->w = 1 << rs->bits;
     rs->gf_max = rs->w - 1;
 
-    matrix_init(gf, RS_w(rs), RS_w(rs), rs->register_size);
+    matrix_mem_size = \
+        matrix_calc_mem_size(RS_w(rs), RS_w(rs), rs->register_size);
 
-    rs->allocate_size = gf->mem_size * 2;
+    rs->allocate_size = matrix_mem_size * 2; /* for gf and gfi */
 
     #ifdef DEBUG
     _rs_view_rs(rs);
@@ -770,6 +790,8 @@ static int _rs_init_the_universe(big_bang_t *universe)
         matrix_init(RS_gfi(rs), RS_w(rs), RS_w(rs), RS_register_size(rs));
         mem += MATRIX_mem_size(RS_gfi(rs));
     }
+    _DEBUG("mem=%p, universe->mem=%p\n", mem, universe->mem);
+    _DEBUG("mem - universe->mem = 0x%08x, allocate_size=0x%08x\n", mem - universe->mem, allocate_size);
 
     return RS_SUCCESS;
 }
