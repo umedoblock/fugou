@@ -288,7 +288,7 @@ typedef struct {
 #define MATRIX_u(XX, mtrx) (MATRIX_mem(mtrx).u ## XX)
 #define MATRIX_get(mtrx, XX, INDEX, VALUE) \
     for(;;) { \
-    if (MATRIX_element_size(mtrx) == 2) { \
+    if (MATRIX_register_size(mtrx) == 2) { \
         VALUE = MATRIX_u(16, mtrx)[INDEX]; \
     } \
     else { \
@@ -298,7 +298,7 @@ typedef struct {
     }
 #define MATRIX_set(mtrx, INDEX, VALUE) \
     for(;;) { \
-    if (MATRIX_element_size(mtrx) == 2) { \
+    if (MATRIX_register_size(mtrx) == 2) { \
         MATRIX_u(16, mtrx)[INDEX] = VALUE; \
     } \
     else { \
