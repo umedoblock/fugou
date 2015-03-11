@@ -706,11 +706,14 @@ static reed_solomon_t *_rs_get_rs(uint bits)
 
 static int _rs_init_rs(reed_solomon_t *rs)
 {
+    matrix_t gf_, *gf = &gf_;
 
     rs->w = 1 << rs->bits;
     rs->gf_max = rs->w - 1;
-    rs->gf_size = rs->w * rs->register_size;
-    rs->allocate_size = rs->gf_size * 2;
+
+    matrix_init(gf, RS_w(rs), RS_w(rs), rs->register_size);
+
+    rs->allocate_size = gf->mem_size * 2;
 
     #ifdef DEBUG
     _rs_view_rs(rs);
@@ -759,11 +762,13 @@ static int _rs_init_the_universe(big_bang_t *universe)
     for (i=0;i<RS_GF_NUM;i++) {
         rs = universe->rs + i;
 
-        rs->gf = mem;
-        mem += rs->gf_size;
+        RS_gf(rs) = (matrix_t *)mem;
+        matrix_init(RS_gf(rs), RS_w(rs), RS_w(rs), RS_register_size(rs));
+        mem += MATRIX_mem_size(RS_gf(rs));
 
-        rs->gfi = mem;
-        mem += rs->gf_size;
+        RS_gfi(rs) = (matrix_t *)mem;
+        matrix_init(RS_gfi(rs), RS_w(rs), RS_w(rs), RS_register_size(rs));
+        mem += MATRIX_mem_size(RS_gfi(rs));
     }
 
     return RS_SUCCESS;
