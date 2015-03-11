@@ -1,15 +1,17 @@
 CC		= cc
-OBJS	= test_rs.o rs.o ../libfugou.o ../assert_xxx.o
+OBJS	= test_rs.o rs.o
+OBJS_UPPER =../libfugou.o ../assert_xxx.o
 CFLAGS	= -Wall -g
 #CFLAGS	= -Wall -g -O3
+TEST_OPTIONS	= -D__TEST__
 OPTIONS	= -D__TEST__
 TARGET	= test_rs
 
-test: test_rs
+test: test_rs $(OBJS)
 	rm -f ./core
 	./test_rs
-test_rs: $(OBJS)
-	$(CC) $(CFLAGS) $(OPTIONS) -o $(TARGET) $(OBJS)
+test_rs: $(OBJS) $(OBJS_UPPER)
+	$(CC) $(CFLAGS) $(TEST_OPTIONS) -o $(TARGET) $(OBJS) $(OBJS_UPPER)
 # rs.o: reed_solomon/rs.c reed_solomon/rs.h
 # 	gcc -Wall -g -c reed_solomon/rs.c
 #rs_test.o: rs.c

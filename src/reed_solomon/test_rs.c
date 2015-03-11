@@ -139,8 +139,8 @@ void test_rs_take_rs(void)
         assert_by_ushort(i, MATRIX_u(16, rs4->gf)[MATRIX_u(16, rs4->gfi)[i]], ss);
     }
 
-    assert_by_size(RS_w(rs4) * RS_register_size(rs4), RS_gf_size(rs4), "rs_take_rs(&rs4) with gf_size");
-    assert_by_size(RS_gf_size(rs4) * 2, RS_allocate_size(rs4), "rs_take_rs(&rs4) with allocate_size");
+    assert_by_size(RS_w(rs4) * RS_register_size(rs4) + sizeof(vector_t), VECTOR_mem_size(rs4->gf), "rs_take_rs(&rs4) with VECTOR_mem_size");
+    assert_by_size(VECTOR_mem_size(rs4->gf) * 2, RS_allocate_size(rs4), "rs_take_rs(&rs4) with allocate_size");
 }
 
 void test_rs_take_rs_failed(void)

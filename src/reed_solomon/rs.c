@@ -651,8 +651,8 @@ typedef struct {                  | typedef struct {
                                   |
                                   |     uint w;
                                   |     uint gf_max;
-                                  |     matrix_t *gf;
-                                  |     matrix_t *gfi;
+                                  |     vector_t *gf;
+                                  |     vector_t *gfi;
                                   |
                                   |     size_t allocate_size;
                                   | } reed_solomon_t;
@@ -725,15 +725,15 @@ static reed_solomon_t *_rs_get_rs(uint bits)
 
 static int _rs_init_rs(reed_solomon_t *rs)
 {
-    size_t matrix_mem_size;
+    size_t vector_mem_size;
 
     rs->w = 1 << rs->bits;
     rs->gf_max = rs->w - 1;
 
-    matrix_mem_size = \
-        matrix_calc_mem_size(RS_w(rs), RS_w(rs), rs->register_size);
+    vector_mem_size = \
+        vector_calc_mem_size(RS_w(rs), rs->register_size);
 
-    rs->allocate_size = matrix_mem_size * 2; /* for gf and gfi */
+    rs->allocate_size = vector_mem_size * 2; /* for gf and gfi */
 
     #ifdef DEBUG
     _rs_view_rs(rs);
@@ -782,13 +782,13 @@ static int _rs_init_the_universe(big_bang_t *universe)
     for (i=0;i<RS_GF_NUM;i++) {
         rs = universe->rs + i;
 
-        RS_gf(rs) = (matrix_t *)mem;
-        matrix_init(RS_gf(rs), RS_w(rs), RS_w(rs), RS_register_size(rs));
-        mem += MATRIX_mem_size(RS_gf(rs));
+        RS_gf(rs) = (vector_t *)mem;
+        vector_init(RS_gf(rs), RS_w(rs), RS_register_size(rs));
+        mem += VECTOR_mem_size(RS_gf(rs));
 
-        RS_gfi(rs) = (matrix_t *)mem;
-        matrix_init(RS_gfi(rs), RS_w(rs), RS_w(rs), RS_register_size(rs));
-        mem += MATRIX_mem_size(RS_gfi(rs));
+        RS_gfi(rs) = (vector_t *)mem;
+        vector_init(RS_gfi(rs), RS_w(rs), RS_register_size(rs));
+        mem += VECTOR_mem_size(RS_gfi(rs));
     }
     _DEBUG("mem=%p, universe->mem=%p\n", mem, universe->mem);
     _DEBUG("mem - universe->mem = 0x%08x, allocate_size=0x%08x\n", mem - universe->mem, allocate_size);
