@@ -910,7 +910,7 @@ static size_t _rs_init_rsd(rs_decode_t *rsd,
     return (size_t )(mem - mem_);
 }
 
-static void _rs_make_vandermonde_matrix(matrix_t *vandermonde,
+static void matrix_make_vandermonde_matrix(matrix_t *vandermonde,
     reed_solomon_t *rs,
     uint division)
 {
@@ -966,19 +966,23 @@ static void _rs_make_vandermonde(rs_encode_t *rse)
 static void _rs_view_matrix16(ushort *matrix, uint division)
 {
     uint i, j;
+    extern FILE *_log;
+    extern int _log_level;
 
-    LOGGER(INFO, "_rs_view_matrix16(matrix=%p, division=%u)\n",
+    if (_log != NULL && DEBUG_ >= _log_level) {
+        LOGGER(DEBUG_, "_rs_view_matrix16(matrix=%p, division=%u)\n",
                                      matrix, division);
-    LOGGER(INFO, "     ");
-    for (i=0;i<division;i++)
-        LOGGER(INFO, "%4x ", i);
-    LOGGER(INFO, "\n");
-    for (j=0;j<division;j++) {
-        LOGGER(INFO, "%4x ", j);
-        for (i=0;i<division;i++) {
-            LOGGER(INFO, "%4x ", matrix[j * division + i]);
+        fprintf(_log, "     ");
+        for (i=0;i<division;i++)
+            fprintf(_log, "%4x ", i);
+        fprintf(_log, "\n");
+        for (j=0;j<division;j++) {
+            fprintf(_log, "%4x ", j);
+            for (i=0;i<division;i++) {
+                fprintf(_log, "%4x ", matrix[j * division + i]);
+            }
+            fprintf(_log, "\n");
         }
-        LOGGER(INFO, "\n");
     }
 }
 
@@ -1148,6 +1152,15 @@ ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b)
 void matrix_make_elementary_wrap(matrix_t *elementary, uint n)
 {
     matrix_make_elementary(elementary, n);
+}
+
+void matrix_make_vandermonde_wrap(
+    matrix_t *vandermonde,
+    reed_solomon_t *rs,
+    uint division)
+{
+    matrix_make_vandermonde_matrix(vandermonde, rs, division);
+    _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
 }
 
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b)

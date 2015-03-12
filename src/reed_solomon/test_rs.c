@@ -8,6 +8,7 @@
 
 #define TEMPORARY_SIZE (1024 * 1024)
 static char *temporary = NULL;
+static char msg[SS_SIZE];
 
 ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b);
@@ -30,8 +31,6 @@ void assert_by_vector(vector_t *expected,
                       vector_t *result,
                       char *test_name)
 {
-    char msg[SS_SIZE];
-
     sprintf(msg, "assert_by_vector(expected=%p, result=%p) in %s", expected, result, test_name);
     assert_by_uint(VECTOR_elements(expected), VECTOR_elements(result), msg);
     assert_by_size(VECTOR_element_size(expected), VECTOR_element_size(result), msg);
@@ -44,8 +43,6 @@ void assert_by_matrix(matrix_t *expected,
                       matrix_t *result,
                       char *test_name)
 {
-    char msg[SS_SIZE];
-
     sprintf(msg, "assert_by_matrix(expected=%p, result=%p) in %s", expected, result, test_name);
     assert_by_uint(MATRIX_rows(expected), MATRIX_rows(result), msg);
     assert_by_uint(MATRIX_columns(expected), MATRIX_columns(result), msg);
@@ -258,17 +255,38 @@ void test_invalid_rank_matrix(void)
     */
 }
 
+void test_matrix_make_vandermonde(void)
+{
+    uint bits, division = 4, expected_value;
+    matrix_t *vandermonde;
+    reed_solomon_t *rs4 = NULL;
+    int i, j, ret;
+
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+    vandermonde = (matrix_t *)temporary;
+
+    bits = 4, division = 10;
+    ret = rs_take_rs(&rs4, bits, division);
+
+    matrix_init(vandermonde, rs4->w, rs4->w, rs4->register_size);
+    matrix_make_vandermonde_wrap(vandermonde, rs4, division);
+
+    for (i=0;i<division;i++) {
+        sprintf(msg, "test_rs_make_vandermonde_matrix() vandermonde[%d]=0x%04x", i, MATRIX_u(16, vandermonde)[i]);
+        assert_by_uint(1, MATRIX_u(16, vandermonde)[i], msg);
+    }
+}
+
 void test_rs_make_elementary(void)
 {
     uint division = 4, expected_value;
     matrix_t *elementary;
     int i, j;
-    char msg[SS_SIZE];
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
     elementary = (matrix_t *)temporary;
 
-    matrix_calc_mem_size(division, division, 2);
+    matrix_calc_mem_size(division, division, 2); /*******/
     matrix_init(elementary, division, division, 2);
     matrix_make_elementary(elementary, division);
     for (j=0;j<division;j++) {
@@ -514,6 +532,15 @@ void test_rs_mul_matrixes(void)
 #endif
 }
 
+/* 逆行列を求めるための行列を用意するのは大変なので、
+ * vandermonde matrix の逆行列を計算する。
+ */
+void test_rs_solve_inverse(void)
+{
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+
+}
+
 void test_rs(void)
 {
     test_aligned_size();
@@ -531,7 +558,9 @@ void test_rs(void)
     test_rs_mul_matrix_vectorXX();
 
     test_rs_make_elementary();
+    test_matrix_make_vandermonde();
     test_rs_mul_matrixes();
+    test_rs_solve_inverse();
     /*
     test_rs_invalid_rank_matrix();
     */
