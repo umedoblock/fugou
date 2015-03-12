@@ -257,25 +257,41 @@ void test_invalid_rank_matrix(void)
 
 void test_matrix_make_vandermonde(void)
 {
-    uint bits, division = 4, expected_value;
-    matrix_t *vandermonde;
+    uint bits, division = 0, expected_value;
+    ushort expected_vm16[][10] = {
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+                {1, 4, 5, 3, 2, 7, 6, 12, 13, 8},
+                {1, 8, 15, 12, 10, 1, 1, 10, 15, 15},
+                {1, 3, 2, 5, 4, 6, 7, 15, 14, 12},
+                {1, 6, 6, 7, 7, 7, 6, 1, 7, 1},
+                {1, 12, 10, 15, 8, 1, 1, 8, 10, 10},
+                {1, 11, 13, 9, 14, 6, 7, 12, 5, 8},
+                {1, 5, 4, 2, 3, 7, 6, 10, 11, 15},
+                {1, 10, 12, 8, 15, 1, 1, 15, 12, 12}
+           };
+    matrix_t *vandermonde, *vm;
     reed_solomon_t *rs4 = NULL;
     int i, j, ret;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
-    vandermonde = (matrix_t *)temporary;
+    vm = vandermonde = (matrix_t *)temporary;
 
     bits = 4, division = 10;
     ret = rs_take_rs(&rs4, bits, division);
 
-    matrix_init(vandermonde, rs4->w, rs4->w, rs4->register_size);
-    matrix_make_vandermonde_wrap(vandermonde, rs4, division);
+    matrix_init(vm, rs4->w, rs4->w, rs4->register_size);
+    matrix_make_vandermonde_wrap(vm, rs4, division);
 
+    for (j=0;j<division;j++) {
     for (i=0;i<division;i++) {
-        sprintf(msg, "test_rs_make_vandermonde_matrix() vandermonde[%d]=0x%04x", i, MATRIX_u(16, vandermonde)[i]);
-        assert_by_uint(1, MATRIX_u(16, vandermonde)[i], msg);
+        sprintf(msg, "test_rs_make_vandermonde() expected=0x%04x, vm[%d][%d]=0x%04x", expected_vm16[j][i], j, i, MATRIX_u(16, vm)[j * division + i]);
+        assert_by_uint(expected_vm16[j][i], MATRIX_u(16, vm)[j * division + i], msg);
+    }
     }
 }
+/*
+*/
 
 void test_rs_make_elementary(void)
 {
