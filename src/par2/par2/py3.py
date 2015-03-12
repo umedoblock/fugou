@@ -54,7 +54,7 @@ class ReedSolomon(object):
             ( 4,       19,      1,          2),
             ( 8,      285,      1,          2),
             (16,    65581,      2,          2),
-            (24, 16777243,      3,          4),
+#           (24, 16777243,      3,          4),
         )
 
         for bits, poly, octets, code_size in dokkaan:
