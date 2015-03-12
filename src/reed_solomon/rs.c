@@ -446,76 +446,76 @@ void matrix_make_elementary(matrix_t *elementary, uint n)
     uint i;
 
     memset(MATRIX_ptr(elementary), '\0', \
-           MATRIX_matrix_size(elementary));
+           MATRIX_element_size(elementary));
 
     for (i=0;i<n;i++) {
         MATRIX_set(elementary, i * n + i, 1);
     }
 }
 
-#if 0
-/* #260 gaussian elimination の見直し。
- * 確か汚いままにしていたはず。
- * 整理して綺麗にしよう。
- *
- * umm...
- */
 static int _rs_solve_inverse(matrix_t *inverse,
                              matrix_t *matrix,
-                             rs_decode_t *rsd)
+                             reed_solomon_t *rs,
+                             uint division,
+                             vector_t *buffer)
 {
-    uint i, j, k, swap;
-    uint division = rsd->division;
+    uint i, j, k, need_swap = 0;
     int index, index_j, index_k, index_x, index_y, index_z;
-    _ptr_t im = inverse, mt = matrix;
+    matrix_t *im = inverse, *mt = matrix;
     uint tmp, tmp1, tmp2, tmp3;
     uint work;
-    reed_solomon_t *rs = rsd->rs;
 
-    _matrix_make_e(inverse, division);
+    matrix_make_elementary(inverse, division);
 
     for (k=0;k<division;k++) {
-        work = 0;
-        if (rs->register_size == 2)
-            work = mt.u16[k * division + k];
-        else
-            work = mt.u32[k * division + k];
+        MATRIX_get(work, mt, k * division + k);
 
         if (work == 0) {
-            swap = 0;
+            need_swap = 0;
             for (j=k+1;j<division;j++) {
-                if (rs->register_size == 2)
-                    work = mt.u16[j * division + k];
-                else
-                    work = mt.u32[j * division + k];
+                MATRIX_get(work, mt, j * division + k);
 
                 if (work) {
-                    swap = 1;
+                    need_swap = 1;
                     _DEBUG(
                            "matrix[%d], matrix[%d] = matrix[%d], matrix[%d]\n",
                             k, j, j, k);
-                    /*
-                    matrix[k], matrix[j] = matrix[j], matrix[k]
-                    im[k], im[j] = im[j], im[k]
-                    */
+
                     index_j = j * division * rs->register_size;
                     index_k = k * division * rs->register_size;
-                    memcpy(rsd->_row.ptr, mt.ptr + index_j,
-                           rsd->_row_size);
-                    memcpy(mt.ptr + index_j, mt.ptr + index_k,
-                           rsd->_row_size);
-                    memcpy(mt.ptr + index_k, rsd->_row.ptr,
-                           rsd->_row_size);
-                    memcpy(rsd->_row.ptr, im.ptr + index_j, rsd->_row_size);
-                    memcpy(im.ptr+ index_j, im.ptr + index_k,
-                           rsd->_row_size);
-                    memcpy(im.ptr+ index_k, rsd->_row.ptr,
-                           rsd->_row_size);
+                    /*
+                    do swap, via buffer
+                    matrix[k], matrix[j] = matrix[j], matrix[k]
+                    */
+                    ;
+                    memcpy(VECTOR_ptr(buffer),
+                           MATRIX_ptr(mt) + index_j,
+                           VECTOR_vector_size(buffer));
+                    memcpy(MATRIX_ptr(mt) + index_j,
+                           MATRIX_ptr(mt) + index_k,
+                           VECTOR_vector_size(buffer));
+                    memcpy(MATRIX_ptr(mt) + index_k,
+                           VECTOR_ptr(buffer),
+                           VECTOR_vector_size(buffer));
+
+                    /*
+                    do swap, via buffer
+                    im[k], im[j] = im[j], im[k]
+                    */
+                    memcpy(VECTOR_ptr(buffer),
+                           MATRIX_ptr(im) + index_j,
+                           VECTOR_vector_size(buffer));
+                    memcpy(MATRIX_ptr(im) + index_j,
+                           MATRIX_ptr(im) + index_k,
+                           VECTOR_vector_size(buffer));
+                    memcpy(MATRIX_ptr(im) + index_k,
+                           VECTOR_ptr(buffer),
+                           VECTOR_vector_size(buffer));
                     break;
                 }
             }
 
-            if (swap == 0) {
+            if (need_swap == 0) {
                 /*
                 message =
                     ('cannot make inverse. division = {}, ',
@@ -526,31 +526,35 @@ static int _rs_solve_inverse(matrix_t *inverse,
             }
         }
 
-        tmp = 0;
-        if (rs->register_size == 2)
-            tmp = mt.u16[k * division + k];
-        else
-            tmp = mt.u32[k * division + k];
-
+        MATRIX_get(tmp, mt, k * division + k);
         if (tmp != 1) {
             for (i=0;i<division;i++){
                 index = k * division + i;
                 if (rs->register_size == 2) {
+                    MATRIX_get(tmp1, mt, index);
+                    MATRIX_set(mt, index, _rs_div16(rs, tmp1, tmp));
+                    MATRIX_get(tmp2, im, index);
+                    MATRIX_set(im, index, _rs_div16(rs, tmp2, tmp));
+                    /*
                     mt.u16[index] = _rs_div16(rs, mt.u16[index], tmp);
                     im.u16[index] = _rs_div16(rs, im.u16[index], tmp);
+                    */
                 }
                 else {
+                    MATRIX_get(tmp1, mt, index);
+                    MATRIX_set(mt, index, _rs_div32(rs, tmp1, tmp));
+                    MATRIX_get(tmp2, im, index);
+                    MATRIX_set(im, index, _rs_div32(rs, tmp2, tmp));
+                    /*
                     mt.u32[index] = _rs_div32(rs, mt.u32[index], tmp);
                     im.u32[index] = _rs_div32(rs, im.u32[index], tmp);
+                    */
                 }
             }
         }
 
         for (j=k+1;j<division;j++){
-            if (rs->register_size == 2)
-                tmp = mt.u16[j * division + k];
-            else
-                tmp = mt.u32[j * division + k];
+            MATRIX_get(tmp, mt, j * division + k);
             if (tmp == 0)
                 continue;
 
@@ -560,17 +564,31 @@ static int _rs_solve_inverse(matrix_t *inverse,
 /*
 */
                 if (rs->register_size == 2) {
+                    /*
                     tmp1 = mt.u16[index_k];
-                    tmp2 = _rs_mul16(rs, tmp, tmp1);
                     tmp3 = mt.u16[index_j];
-                    mt.u16[index_j] = _rs_ADD(tmp3, tmp2);
-
-                    tmp1 = im.u16[index_k];
+                    */
+                    MATRIX_get(tmp1, mt, index_k);
                     tmp2 = _rs_mul16(rs, tmp, tmp1);
-                    tmp3 = im.u16[index_j];
-                    im.u16[index_j] = _rs_ADD(tmp3, tmp2);
+                    MATRIX_get(tmp3, mt, index_j);
+                    MATRIX_u(16, mt)[index_j] = _rs_ADD(tmp3, tmp2);
+
+                    MATRIX_get(tmp1, im, index_k);
+                    tmp2 = _rs_mul16(rs, tmp, tmp1);
+                    MATRIX_get(tmp3, im, index_j);
+                    MATRIX_u(16, im)[index_j] = _rs_ADD(tmp3, tmp2);
                 }
                 else {
+                    MATRIX_get(tmp1, mt, index_k);
+                    tmp2 = _rs_mul32(rs, tmp, tmp1);
+                    MATRIX_get(tmp3, mt, index_j);
+                    MATRIX_u(32, mt)[index_j] = _rs_ADD(tmp3, tmp2);
+
+                    MATRIX_get(tmp1, im, index_k);
+                    tmp2 = _rs_mul32(rs, tmp, tmp1);
+                    MATRIX_get(tmp3, im, index_j);
+                    MATRIX_u(32, im)[index_j] = _rs_ADD(tmp3, tmp2);
+                /*
                     tmp1 = mt.u32[index_k];
                     tmp2 = _rs_mul32(rs, tmp, tmp1);
                     tmp3 = mt.u32[index_j];
@@ -580,6 +598,7 @@ static int _rs_solve_inverse(matrix_t *inverse,
                     tmp2 = _rs_mul32(rs, tmp, tmp1);
                     tmp3 = im.u32[index_j];
                     im.u32[index_j] = _rs_ADD(tmp3, tmp2);
+                */
                 }
             }
         }
@@ -593,10 +612,7 @@ static int _rs_solve_inverse(matrix_t *inverse,
             index_x = division - 1 - k;
             index_y = division - 1 - k - j - 1;
 
-            if (rs->register_size == 2)
-                tmp = mt.u16[index_y * division + index_x];
-            else
-                tmp = mt.u32[index_y * division + index_x];
+            MATRIX_get(tmp, mt, index_y * division + index_x);
 
             for (i=0;i<division;i++) {
 /*
@@ -605,6 +621,19 @@ static int _rs_solve_inverse(matrix_t *inverse,
                 tmp3 = mt[index_y * division + i];
                 mt[index_y * division + i] = _add(tmp3, tmp2);
 */
+                if (rs->register_size == 2) {
+                    tmp1 = MATRIX_u(16, im)[index_z * division + i];
+                    tmp2 = _rs_mul16(rs, tmp, tmp1);
+                    tmp3 = MATRIX_u(16, im)[index_y * division + i];
+                    MATRIX_u(16, im)[index_y * division + i] = _rs_ADD(tmp3, tmp2);
+                }
+                else {
+                    tmp1 = MATRIX_u(32, im)[index_z * division + i];
+                    tmp2 = _rs_mul32(rs, tmp, tmp1);
+                    tmp3 = MATRIX_u(32, im)[index_y * division + i];
+                    MATRIX_u(32, im)[index_y * division + i] = _rs_ADD(tmp3, tmp2);
+                }
+                /*
                 if (rs->register_size == 2) {
                     tmp1 = im.u16[index_z * division + i];
                     tmp2 = _rs_mul16(rs, tmp, tmp1);
@@ -617,6 +646,7 @@ static int _rs_solve_inverse(matrix_t *inverse,
                     tmp3 = im.u32[index_y * division + i];
                     im.u32[index_y * division + i] = _rs_ADD(tmp3, tmp2);
                 }
+                */
             }
         }
     }
@@ -628,7 +658,6 @@ static int _rs_solve_inverse(matrix_t *inverse,
 
     return RS_SUCCESS;
 }
-#endif
 
 size_t aligned_size(size_t size)
 {
@@ -879,6 +908,33 @@ static size_t _rs_init_rsd(rs_decode_t *rsd,
     rsd->_row2.ptr = (void *)mem;       mem += rsd->_row_size;
     rsd->_column.ptr = (void *)mem;     mem += rsd->_column_size;
     return (size_t )(mem - mem_);
+}
+
+static void _rs_make_vandermonde_matrix(matrix_t *vandermonde,
+    reed_solomon_t *rs,
+    uint division)
+{
+    uint i, j;
+    matrix_t *vm = vandermonde;
+
+    for(i=0;i<division;i++)
+    if (rs->register_size == 2)
+        MATRIX_u(16, vm)[i] = 1;
+    else
+        MATRIX_u(32, vm)[i] = 1;
+
+    if (rs->register_size == 2) {
+        for(j=1;j<division;j++)
+            for(i=0;i<division;i++)
+                MATRIX_u(16, vm)[j * division + i] = \
+                  _rs_mul16(rs, MATRIX_u(16, vm)[(j-1) * division + i], i + 1);
+    }
+    else {
+        for(j=1;j<division;j++)
+            for(i=0;i<division;i++)
+                MATRIX_u(32, vm)[j * division + i] = \
+                  _rs_mul32(rs, MATRIX_u(32, vm)[(j-1) * division + i], i + 1);
+    }
 }
 
 static void _rs_make_vandermonde(rs_encode_t *rse)

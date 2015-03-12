@@ -286,9 +286,9 @@ typedef struct {
 #define MATRIX_mem_size(mtrx) (MATRIX(mtrx)->mem_size)
 #define MATRIX_ptr(mtrx) (MATRIX_mem(mtrx).ptr)
 #define MATRIX_u(XX, mtrx) (MATRIX_mem(mtrx).u ## XX)
-#define MATRIX_get(mtrx, XX, INDEX, VALUE) \
+#define MATRIX_get(VALUE, mtrx, INDEX)           \
     for(;;) { \
-    if (MATRIX_register_size(mtrx) == 2) { \
+    if (MATRIX_element_size(mtrx) == 2) { \
         VALUE = MATRIX_u(16, mtrx)[INDEX]; \
     } \
     else { \
@@ -297,15 +297,14 @@ typedef struct {
     break; \
     }
 #define MATRIX_set(mtrx, INDEX, VALUE) \
-    for(;;) { \
-    if (MATRIX_register_size(mtrx) == 2) { \
+    do { \
+    if (MATRIX_element_size(mtrx) == 2) { \
         MATRIX_u(16, mtrx)[INDEX] = VALUE; \
     } \
     else { \
         MATRIX_u(32, mtrx)[INDEX] = VALUE; \
     } \
-    break; \
-    }
+    } while(0);
 
 #define RS_ptr(r) ((reed_solomon_t *)r)
 #define RS_bits(r) (RS_ptr(r)->bits)
@@ -319,6 +318,9 @@ typedef struct {
 #define RS_gf16(r) (RS_gf(r).u16)
 #define RS_gfi16(r) (RS_gfi(r).u16)
 #define RS_allocate_size(r) (RS_ptr(r)->allocate_size)
+
+#define RS_MUL(XX, TYPE, RS, a, b)                                   \
+_rs_mul ## XX(reed_solomon_t RS, a, b)
 
 #define RS_division(r) (RS_ptr(r)->division)
 
