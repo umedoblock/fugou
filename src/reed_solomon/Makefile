@@ -1,5 +1,5 @@
 CC		= cc
-OBJS	= test_rs.o rs.o
+OBJS	= test_rs.o rs.o expected_vm_of_rsx.o
 OBJS_UPPER =../libfugou.o ../assert_xxx.o
 CFLAGS	= -Wall -g
 #CFLAGS	= -Wall -g -O3

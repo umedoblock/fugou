@@ -258,6 +258,9 @@ void test_invalid_rank_matrix(void)
 void test_matrix_make_vandermonde(void)
 {
     uint bits, division = 0, expected_value;
+    extern ushort expected_vm_of_rs4[][10], expected_vm_of_rs8[][100];
+    extern ushort expected_vm_of_rs16[][300];
+           /*
     ushort expected_vm16[][10] = {
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
                 {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
@@ -270,6 +273,7 @@ void test_matrix_make_vandermonde(void)
                 {1, 5, 4, 2, 3, 7, 6, 10, 11, 15},
                 {1, 10, 12, 8, 15, 1, 1, 15, 12, 12}
            };
+           */
     matrix_t *vandermonde, *vm;
     reed_solomon_t *rs4 = NULL;
     int i, j, ret;
@@ -285,8 +289,8 @@ void test_matrix_make_vandermonde(void)
 
     for (j=0;j<division;j++) {
     for (i=0;i<division;i++) {
-        sprintf(msg, "test_rs_make_vandermonde() expected=0x%04x, vm[%d][%d]=0x%04x", expected_vm16[j][i], j, i, MATRIX_u(16, vm)[j * division + i]);
-        assert_by_uint(expected_vm16[j][i], MATRIX_u(16, vm)[j * division + i], msg);
+        sprintf(msg, "test_rs_make_vandermonde() expected=0x%04x, vm[%d][%d]=0x%04x", expected_vm_of_rs4[j][i], j, i, MATRIX_u(16, vm)[j * division + i]);
+        assert_by_uint(expected_vm_of_rs4[j][i], MATRIX_u(16, vm)[j * division + i], msg);
     }
     }
 }
