@@ -159,14 +159,26 @@ void rs_decode_slots(slot_t *recover,
 static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
 {                                                                    \
     register TYPE c;                                                 \
+    uint ta, tb, tc, tgf_max;                                        \
+                                                                     \
                                                                      \
     if (a == 0 || b == 0)                                            \
         return 0;                                                    \
                                                                      \
-    c = MATRIX_u(XX, rs->gf)[a] + MATRIX_u(XX, rs->gf)[b];           \
+    ta = VECTOR_u(XX, rs->gf)[a];                                    \
+    tb = VECTOR_u(XX, rs->gf)[b];                                    \
+    tc = ta + tb;                                                    \
+    tgf_max = rs->gf_max;                                            \
+    if (tc < tgf_max)                                                \
+        return VECTOR_u(XX, rs->gfi)[tc];                            \
+    return VECTOR_u(XX, rs->gfi)[tc - tgf_max];                      \
+                                                                     \
+    /* 以下は思いっきり bug ってくれていたのデス。*/                 \
+    /* 記念に残しちゃいましょうネッ！             */                 \
+    c = VECTOR_u(XX, rs->gf)[a] + VECTOR_u(XX, rs->gf)[b];           \
     if (c < rs->gf_max)                                              \
-        return MATRIX_u(XX, rs->gfi)[c];                             \
-    return MATRIX_u(XX, rs->gfi)[c - rs->gf_max];                    \
+        return VECTOR_u(XX, rs->gfi)[c];                             \
+    return VECTOR_u(XX, rs->gfi)[c - rs->gf_max];                    \
 }
 
 _rs_mul(16, ushort)
@@ -175,6 +187,7 @@ _rs_mul(32, uint)
 static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
 {
     int c;
+    uint ta, tb, tc, tgf_max;
 
     if (a == 0)
         return 0;
@@ -185,10 +198,19 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
      * 不安でしょうがないので cast するように修正。
      * c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
      */
-    c = (int )MATRIX_u(16, rs->gf)[a] - (int )MATRIX_u(16, rs->gf)[b];
+    c = (int )VECTOR_u(16, rs->gf)[a] - (int )VECTOR_u(16, rs->gf)[b];
     if (c >= 0)
-        return MATRIX_u(16, rs->gfi)[c];
-    return MATRIX_u(16, rs->gfi)[c + RS_gf_max(rs)];
+        return VECTOR_u(16, rs->gfi)[c];
+    return VECTOR_u(16, rs->gfi)[c + RS_gf_max(rs)];
+
+    #if 0
+    ta = VECTOR_u(16, rs->gf)[a];
+    tb = VECTOR_u(16, rs->gf)[b];
+    tc = ta - tb;
+    if (ta >= tb)
+        return VECTOR_u(16, rs->gfi)[ta - tb];
+    return VECTOR_u(16, rs->gfi)[(RS_gf_max(rs) + ta) - tb];
+    #endif
 }
 
 static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
@@ -199,12 +221,12 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
     if (a == 0U)
         return 0U;
 
-    a32 = MATRIX_u(32, rs->gf)[a];
-    b32 = MATRIX_u(32, rs->gf)[b];
+    a32 = VECTOR_u(32, rs->gf)[a];
+    b32 = VECTOR_u(32, rs->gf)[b];
     if (a32 >= b32)
-        return MATRIX_u(32, rs->gfi)[a32 - b32];
+        return VECTOR_u(32, rs->gfi)[a32 - b32];
     /* a32 < b32 */
-    return MATRIX_u(32, rs->gfi)[RS_gf_max(rs) + a32 - b32];
+    return VECTOR_u(32, rs->gfi)[RS_gf_max(rs) + a32 - b32];
 }
 
 #if 0
@@ -255,12 +277,12 @@ static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
         if (bit_pattern & RS_w(rs))
             bit_pattern ^= RS_poly(rs);
     if (RS_register_size(rs) == 2) {
-        MATRIX_u(16, RS_gf(rs))[bit_pattern] = i;
-        MATRIX_u(16, RS_gfi(rs))[i] = bit_pattern;
+        VECTOR_u(16, RS_gf(rs))[bit_pattern] = i;
+        VECTOR_u(16, RS_gfi(rs))[i] = bit_pattern;
     }
     else {
-        MATRIX_u(32, RS_gf(rs))[bit_pattern] = i;
-        MATRIX_u(32, RS_gfi(rs))[i] = bit_pattern;
+        VECTOR_u(32, RS_gf(rs))[bit_pattern] = i;
+        VECTOR_u(32, RS_gfi(rs))[i] = bit_pattern;
     }
         bit_pattern <<= 1;
     }
@@ -1144,6 +1166,11 @@ static void _rs_decode32_slots(slot_t *recover,
 /* for test functions ********************************************************/
 /*****************************************************************************/
 
+void _rs_make_gfgfi_wrap(reed_solomon_t *rs)
+{
+    return _rs_make_gf_and_gfi(rs);
+}
+
 ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b)
 {
     return _rs_mul16(rs, a, b);
@@ -1195,8 +1222,8 @@ void _matrix_make_vandermonde_wrap(
     uint division)
 {
     matrix_make_vandermonde_matrix(vandermonde, rs, division);
-    #ifdef DEBUG
     _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
+    #ifdef DEBUG
     #endif
 }
 

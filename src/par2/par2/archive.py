@@ -11,6 +11,7 @@ class Par2ArchiveError(BaseException):
     pass
 
 class Par2Archive:
+    DATA_SIZE_MAX = (1 << 64) - 1
     def __init__(self, bits, division=0, data=None, data_size=None):
         '''
         [part, part, .., parity, parity, ...]
@@ -22,11 +23,12 @@ class Par2Archive:
             self.take_data(data, data_size)
 
     def take_data(self, data, data_size=None):
+        TAIL_SIZE = 8
         if not isinstance(data, bytes):
             raise ValueError('data must be bytes.')
         if not data_size:
             data_size = len(data)
-        if not 1 <= data_size <= DATA_SIZE_MAX:
+        if not 1 <= data_size <= self.DATA_SIZE_MAX:
             msg = 'data_size must be 1 <= data_size <= 2 ** {} - 1'
             raise ValueError(msg.format(TAIL_SIZE * 8))
         self.data_size = data_size

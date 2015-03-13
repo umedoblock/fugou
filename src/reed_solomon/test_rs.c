@@ -10,6 +10,7 @@
 static char *temporary = NULL;
 static char msg[SS_SIZE];
 
+void _rs_make_gfgfi_wrap(reed_solomon_t *rs);
 ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b);
 big_bang_t *_rs_get_universe_wrap(void);
@@ -262,7 +263,7 @@ void test_invalid_rank_matrix(void)
 void test_matrix_make_vandermonde(void)
 {
     uint bits, bits_[3] = {4, 8, 16};
-    uint division = 0, division_[3] = {10, 100, 300};
+    uint division = 0, division_[3] = {10, 100, 30};
     uint index, count_success;
     extern ushort expected_vm_of_rs4[], expected_vm_of_rs8[];
     extern ushort expected_vm_of_rs16[];
@@ -277,6 +278,7 @@ void test_matrix_make_vandermonde(void)
     vm = vandermonde = (matrix_t *)temporary;
 
     for (k=0;k<3;k++) {
+    k = 2;
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
     division = division_[k];
@@ -286,7 +288,7 @@ void test_matrix_make_vandermonde(void)
     ret = rs_take_rs(&rs, bits, division);
     _DEBUG("ret=%d, bits=%u, division=%u\n", ret, bits, division);
 
-    matrix_init(vm, rs->w, rs->w, rs->register_size);
+    matrix_init(vm, division, division, rs->register_size);
 
     _matrix_make_vandermonde_wrap(vm, rs, division);
 
@@ -297,13 +299,22 @@ void test_matrix_make_vandermonde(void)
         if (expected[index] == MATRIX_u(16, vm)[index]) {
             count_success++;
         }
+        else {
+            /*
+            fprintf(stderr, "(j,i)=(%d, %d)\n", j, i);
+            fflush(NULL);
+            *(char *)NULL = 0;
+            */
+        }
     }
     }
     sprintf(msg, "test_rs_make_vandermonde() "
                  "poly=%u, w=%u, bits=%u, division=%u, register_size=%zu",
                   rs->poly, rs->w, bits, division, rs->register_size);
     fprintf(stderr, "%s\n", msg);
+    fprintf(stderr, "matrix_mem_size=%zu\n", MATRIX_mem_size(vm));
     assert_by_uint(division * division, count_success, msg);
+    break;
     }
 }
 
@@ -581,6 +592,19 @@ void test_rs(void)
 
     test_rs_take_rs();
     test_rs_take_rs_failed();
+
+    /*
+    ここは、作らなくて良い。
+    test_rs_make_gfgfi();
+    ushort expected_vm_of_rs16[] = {...};
+    とせずに、以下のように "ushort" が抜けていたため、
+    expected_vm_of_rs16[] = {...};
+    ずっと苦しんでいたのです。
+    実は複合 bug で、
+    rs.c 内の、
+    static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b)
+    にも bug があった。。。
+    */
 
     test_rs_add();
     test_rs_mul();

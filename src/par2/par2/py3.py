@@ -323,8 +323,15 @@ class Par2_:
                 vm[j][i] = self.rds._mul(vm[j-1][i], i + 1)
         self.vandermonde_matrix = vm
       # self.view_matrix(vm)
+#       count = 0
+#       for x in vm:
+#           count += len(x)
+#       print("len(vm) =", len(vm))
+#       print("self.division =", self.division)
+#       print("count =", count)
 
 class Par2MixIn:
+    DATA_SIZE_MAX = (1 << 64) - 1
 
     def _init_self(self, bits, division):
       # refs #22 and galois_{4,8,16,24}bits.log
@@ -386,7 +393,7 @@ class Par2MixIn:
             raise ValueError('data must be bytes.')
         if not data_size:
             data_size = len(data)
-        if not 1 <= data_size <= DATA_SIZE_MAX:
+        if not 1 <= data_size <= self.DATA_SIZE_MAX:
             msg = 'data_size must be 1 <= data_size <= 2 ** {} - 1'
             raise ValueError(msg.format(TAIL_SIZE * 8))
         self.data_size = data_size
@@ -418,6 +425,7 @@ class Par2MixIn:
         return decode_data
 
     def cat(self, decode_data):
+        TAIL_SIZE = 8
         semi_raw_data = b''.join(decode_data)
         tail_bytes = semi_raw_data[-TAIL_SIZE:]
         data_size = int.from_bytes(tail_bytes, 'big')
@@ -441,7 +449,7 @@ class Par2MixIn:
         print()
 
     def _calculate_size(self, data_size):
-        if not 1 <= data_size <= DATA_SIZE_MAX:
+        if not 1 <= data_size <= self.DATA_SIZE_MAX:
             ValueError('data_size must be 1 <= data_size <= 2 ** 64 - 1')
         snip_size = data_size % self.vertical_size
         if not snip_size:
