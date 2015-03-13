@@ -1154,15 +1154,6 @@ void matrix_make_elementary_wrap(matrix_t *elementary, uint n)
     matrix_make_elementary(elementary, n);
 }
 
-void matrix_make_vandermonde_wrap(
-    matrix_t *vandermonde,
-    reed_solomon_t *rs,
-    uint division)
-{
-    matrix_make_vandermonde_matrix(vandermonde, rs, division);
-    _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
-}
-
 ushort _rs_div16_wrap(reed_solomon_t *rs, ushort a, ushort b)
 {
     return _rs_div16(rs, a, b);
@@ -1197,4 +1188,16 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
 {
     return _rs_mul_matrixes16(rs, answer, mat1, mat2);
 }
+
+void _matrix_make_vandermonde_wrap(
+    matrix_t *vandermonde,
+    reed_solomon_t *rs,
+    uint division)
+{
+    matrix_make_vandermonde_matrix(vandermonde, rs, division);
+    #ifdef DEBUG
+    _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
+    #endif
+}
+
 #endif
