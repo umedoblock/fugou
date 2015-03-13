@@ -263,7 +263,7 @@ void test_invalid_rank_matrix(void)
 void test_matrix_make_vandermonde(void)
 {
     uint bits, bits_[3] = {4, 8, 16};
-    uint division = 0, division_[3] = {10, 100, 30};
+    uint division = 0, division_[3] = {10, 100, 300};
     uint index, count_success;
     extern ushort expected_vm_of_rs4[], expected_vm_of_rs8[];
     extern ushort expected_vm_of_rs16[];

@@ -187,7 +187,6 @@ _rs_mul(32, uint)
 static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
 {
     int c;
-    uint ta, tb, tc, tgf_max;
 
     if (a == 0)
         return 0;
@@ -204,6 +203,10 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
     return VECTOR_u(16, rs->gfi)[c + RS_gf_max(rs)];
 
     #if 0
+    う〜ん。どうしようかな？
+    _rs_mulXX() のようなことがあると怖いけど、
+    bug っていないようだ。
+    uint ta, tb, tc, tgf_max;
     ta = VECTOR_u(16, rs->gf)[a];
     tb = VECTOR_u(16, rs->gf)[b];
     tc = ta - tb;
@@ -1222,8 +1225,8 @@ void _matrix_make_vandermonde_wrap(
     uint division)
 {
     matrix_make_vandermonde_matrix(vandermonde, rs, division);
-    _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
     #ifdef DEBUG
+    _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
     #endif
 }
 
