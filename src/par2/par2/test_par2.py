@@ -267,6 +267,7 @@ class _TestPar2(unittest.TestCase):
         redundancies = {24: 50}
         redundancies = {4: 15, 8: 50, 16: 50}
         redundancies = {4: 15, 8: 50, 16: 50, 24: 50}
+        redundancies = {4: 10}
         for bits, division in redundancies.items():
             par2 = Par2(bits, division)
 
@@ -287,11 +288,18 @@ class _TestPar2(unittest.TestCase):
             inverse_matrix = par2._solve_inverse_matrix(matrix)
             if Par2.C_EXTENSION:
                 matrix = par2._get_vandermonde_matrix()
+            print('inverse_matrix =')
+            for row in inverse_matrix:
+                fmt = ", ".join(["{:2x}"] * len(row))
+                print(fmt.format(*row), end=",\n")
+#           pp.pprint(inverse_matrix)
             maybe_e_matrix = par2._mul_matrixes(matrix, inverse_matrix)
 
             e_matrix = par2._make_e_matrix()
           # print('e_matrix =')
           # pp.pprint(e_matrix)
+            print('maybe_e_matrix =')
+            pp.pprint(maybe_e_matrix)
 
             self.assertEqual(e_matrix, maybe_e_matrix)
 
