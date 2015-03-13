@@ -264,8 +264,8 @@ void test_matrix_make_vandermonde(void)
     uint bits, bits_[3] = {4, 8, 16};
     uint division = 0, division_[3] = {10, 100, 300};
     uint index, count_success;
-    extern ushort expected_vm_of_rs4[][10], expected_vm_of_rs8[][100];
-    extern ushort expected_vm_of_rs16[][300];
+    extern ushort expected_vm_of_rs4[], expected_vm_of_rs8[];
+    extern ushort expected_vm_of_rs16[];
     ushort *expected, *expected_[3] = {
         /* expected_vm_of_rsx.c */
         expected_vm_of_rs4, expected_vm_of_rs8, expected_vm_of_rs16
@@ -276,7 +276,7 @@ void test_matrix_make_vandermonde(void)
 
     vm = vandermonde = (matrix_t *)temporary;
 
-    for (k=0;k<2;k++) {
+    for (k=0;k<3;k++) {
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
     division = division_[k];
@@ -300,9 +300,10 @@ void test_matrix_make_vandermonde(void)
     }
     }
     sprintf(msg, "test_rs_make_vandermonde() "
-                 "poly=%u, w=%u, bits=%u, division=%u\n",
-                  rs->poly, rs->w, bits, division);
-    assert_by_uint(count_success, division * division, msg);
+                 "poly=%u, w=%u, bits=%u, division=%u, register_size=%zu",
+                  rs->poly, rs->w, bits, division, rs->register_size);
+    fprintf(stderr, "%s\n", msg);
+    assert_by_uint(division * division, count_success, msg);
     }
 }
 
@@ -459,7 +460,7 @@ void test_rs_mul_matrix_vectorXX(void)
 
 void test_rs_mul_matrixes(void)
 {
-    int ret, i;
+    int ret;
     uint bits, division;
     matrix_t *elementary1, *elementary2, *elementary3, *result;
     char *mem;
@@ -585,6 +586,7 @@ void test_rs(void)
     test_rs_mul();
 
     test_rs_mul_matrix_vectorXX();
+    test_rs_div();
 
     test_rs_make_elementary();
     test_matrix_make_vandermonde();
