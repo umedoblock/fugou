@@ -31,6 +31,12 @@ void _matrix_make_vandermonde_wrap(
     matrix_t *vandermonde,
     reed_solomon_t *rs,
     uint division);
+int _rs_solve_inverse_wrap(matrix_t *inverse,
+                           matrix_t *matrix,
+                           reed_solomon_t *rs,
+                           uint division,
+                           vector_t *buffer);
+void _rs_view_matrix16_wrap(ushort *matrix, uint division);
 
 void assert_by_vector(vector_t *expected,
                       vector_t *result,
@@ -567,12 +573,78 @@ void test_rs_mul_matrixes(void)
 }
 
 /* 逆行列を求めるための行列を用意するのは大変なので、
- * vandermonde matrix の逆行列を計算する。
+ * vandermonde matrix の逆行列(=inverse)を計算する。
+ * vm と inverse をかけて、maybe_e と呼ぶ。
+ * maybe_e が 単位行列(=e)になっていれば良しとする。
  */
 void test_rs_solve_inverse(void)
 {
     memset(temporary, 0xff, TEMPORARY_SIZE);
+    uint bits, bits_[3] = {4, 8, 16};
+    uint division = 0, division_[3] = {10, 100, 300};
+    matrix_t *vm, *e, *maybe_e, *inverse;
+    vector_t *buffer;
+    reed_solomon_t *rs = NULL;
+    char *mem;
+    int k, ret;
 
+    mem = (char *)temporary;
+
+    for (k=0;k<1;k++) {
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+
+    bits = bits_[k];
+    division = division_[k];
+
+    rs_take_rs(&rs, bits, division);
+    sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    fprintf(stderr, "%s\n", msg);
+
+    vm = (matrix_t *)mem;
+    matrix_init(vm, division, division, rs->register_size);
+    mem += MATRIX_mem_size(mem);
+
+    e = (matrix_t *)mem;
+    matrix_init(e, division, division, rs->register_size);
+    mem += MATRIX_mem_size(e);
+    matrix_make_elementary(e, division);
+
+    maybe_e = (matrix_t *)mem;
+    matrix_init(maybe_e, division, division, rs->register_size);
+    mem += MATRIX_mem_size(maybe_e);
+
+    inverse = (matrix_t *)mem;
+    matrix_init(inverse, division, division, rs->register_size);
+    mem += MATRIX_mem_size(inverse);
+
+    buffer = (vector_t *)mem;
+    vector_init(buffer, division, rs->register_size);
+    mem += VECTOR_mem_size(buffer);
+
+    fprintf(stderr, "mem(=%p) - temporary(=%p) = %lu\n", mem, temporary, mem - temporary);
+    if (mem - temporary > TEMPORARY_SIZE)
+        *((char *)NULL) = 0;
+
+    _matrix_make_vandermonde_wrap(vm, rs, division);
+    ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
+    sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    assert_true(ret == RS_SUCCESS, msg);
+
+    if (ret)
+        continue;
+
+    _rs_mul_matrixes_wrap(rs, maybe_e, vm, inverse);
+    sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    fprintf(stderr, "maybe_e =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e), division);
+    fprintf(stderr, "vm =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, vm), division);
+    fprintf(stderr, "e =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, e), division);
+    /*
+    assert_by_matrix(e, maybe_e, msg);
+    */
+    }
 }
 
 void test_rs(void)
@@ -583,8 +655,10 @@ void test_rs(void)
 
     rs_big_bang();
 
+    /*
     test_rs_take_rs();
     test_rs_take_rs_failed();
+    */
 
     /*
     ここは、作らなくて良い。
@@ -599,6 +673,7 @@ void test_rs(void)
     にも bug があった。。。
     */
 
+    /*
     test_rs_add();
     test_rs_mul();
 
@@ -608,7 +683,9 @@ void test_rs(void)
     test_rs_make_elementary();
     test_matrix_make_vandermonde();
     test_rs_mul_matrixes();
+    */
     test_rs_solve_inverse();
+
     /*
     test_rs_invalid_rank_matrix();
     */

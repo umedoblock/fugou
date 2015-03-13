@@ -197,15 +197,16 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
      * 不安でしょうがないので cast するように修正。
      * c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
      */
+    #if 0
     c = (int )VECTOR_u(16, rs->gf)[a] - (int )VECTOR_u(16, rs->gf)[b];
     if (c >= 0)
         return VECTOR_u(16, rs->gfi)[c];
     return VECTOR_u(16, rs->gfi)[c + RS_gf_max(rs)];
 
-    #if 0
     う〜ん。どうしようかな？
     _rs_mulXX() のようなことがあると怖いけど、
     bug っていないようだ。
+    #endif
     uint ta, tb, tc, tgf_max;
     ta = VECTOR_u(16, rs->gf)[a];
     tb = VECTOR_u(16, rs->gf)[b];
@@ -213,7 +214,6 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
     if (ta >= tb)
         return VECTOR_u(16, rs->gfi)[ta - tb];
     return VECTOR_u(16, rs->gfi)[(RS_gf_max(rs) + ta) - tb];
-    #endif
 }
 
 static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
@@ -471,7 +471,7 @@ void matrix_make_elementary(matrix_t *elementary, uint n)
     uint i;
 
     memset(MATRIX_ptr(elementary), '\0', \
-           MATRIX_element_size(elementary));
+           MATRIX_matrix_size(elementary));
 
     for (i=0;i<n;i++) {
         MATRIX_set(elementary, i * n + i, 1);
@@ -1219,15 +1219,34 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
     return _rs_mul_matrixes16(rs, answer, mat1, mat2);
 }
 
+void _rs_view_matrix16_wrap(ushort *matrix, uint division)
+{
+    _rs_view_matrix16(matrix, division);
+}
+
 void _matrix_make_vandermonde_wrap(
     matrix_t *vandermonde,
     reed_solomon_t *rs,
     uint division)
 {
     matrix_make_vandermonde_matrix(vandermonde, rs, division);
+    fprintf(stderr, "_matrix_make_vandermonde_wrap()\n");
+    _rs_view_matrix16(MATRIX_u(16, vandermonde), division);
     #ifdef DEBUG
-    _rs_view_matrix16(MATRIX_ptr(vandermonde), division);
     #endif
+}
+
+int _rs_solve_inverse_wrap(matrix_t *inverse,
+                           matrix_t *matrix,
+                           reed_solomon_t *rs,
+                           uint division,
+                           vector_t *buffer)
+{
+    int ret;
+    ret = _rs_solve_inverse(inverse, matrix, rs, division, buffer);
+    fprintf(stderr, "_rs_solve_inverse_wrap()=%d\n", ret);
+    _rs_view_matrix16(MATRIX_u(16, inverse), division);
+    return ret;
 }
 
 #endif
