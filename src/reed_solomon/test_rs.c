@@ -278,7 +278,6 @@ void test_matrix_make_vandermonde(void)
     vm = vandermonde = (matrix_t *)temporary;
 
     for (k=0;k<3;k++) {
-    k = 2;
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
     division = division_[k];
@@ -300,21 +299,16 @@ void test_matrix_make_vandermonde(void)
             count_success++;
         }
         else {
-            /*
             fprintf(stderr, "(j,i)=(%d, %d)\n", j, i);
             fflush(NULL);
             *(char *)NULL = 0;
-            */
         }
     }
     }
     sprintf(msg, "test_rs_make_vandermonde() "
                  "poly=%u, w=%u, bits=%u, division=%u, register_size=%zu",
                   rs->poly, rs->w, bits, division, rs->register_size);
-    fprintf(stderr, "%s\n", msg);
-    fprintf(stderr, "matrix_mem_size=%zu\n", MATRIX_mem_size(vm));
     assert_by_uint(division * division, count_success, msg);
-    break;
     }
 }
 
