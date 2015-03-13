@@ -1,6 +1,6 @@
 typedef unsigned short ushort;
 
-/* bits=4, division=10) */
+/* bits=4, division=10 */
 ushort expected_vm_of_rs4[][10] = {
   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
   {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
