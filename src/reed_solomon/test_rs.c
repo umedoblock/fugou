@@ -321,7 +321,6 @@ void test_rs_make_elementary(void)
     memset(temporary, 0xff, TEMPORARY_SIZE);
     elementary = (matrix_t *)temporary;
 
-    matrix_calc_mem_size(division, division, 2); /*******/
     matrix_init(elementary, division, division, 2);
     matrix_make_elementary(elementary, division);
     for (j=0;j<division;j++) {
