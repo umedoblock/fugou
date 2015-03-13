@@ -37,7 +37,7 @@ if __name__ == "__main__":
 #   print("")
 # # pprint.pprint(rs8.vandermonde_matrix, indent=2)
 
-    rs16 = par2.py3.Par2(16, 30)
+    rs16 = par2.py3.Par2(16, 300)
 #   print("/* bits=16, division=300 */")
 #   print("expected_vm_of_rs16[] = ", end="")
   # pprint.pprint(rs16.vandermonde_matrix, indent=2)
@@ -46,5 +46,5 @@ if __name__ == "__main__":
     for row in rs16.vandermonde_matrix:
       # print("row =")
       # print(row)
-        fmt = " ".join(["{:4x}"] * len(row))
-        print(fmt.format(*row))
+        fmt = ", ".join(["0x{:04x}"] * len(row))
+        print(fmt.format(*row), end=",\n")
