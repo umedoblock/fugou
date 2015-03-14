@@ -351,8 +351,30 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs,                 \
     }                                                                       \
 }
 
-_rs_mul_matrixes(16)
 _rs_mul_matrixes(32)
+
+static inline void _rs_mul_matrixes16(reed_solomon_t *rs,
+                                      matrix_t *answer,
+                                      matrix_t *mat1,
+                                      matrix_t *mat2)
+{
+    register uint i, j, k;
+    register uint ans, tmp;
+
+    for (k=0;k<MATRIX_rows(mat1);k++){
+        for (j=0;j<MATRIX_columns(mat2);j++){
+            ans = 0;
+            for (i=0;i<MATRIX_rows(mat2);i++){
+                tmp = _rs_mul16(
+                            rs,
+                            MATRIX_u(16, mat1)[k * MATRIX_rows(mat1) + i],
+                            MATRIX_u(16, mat2)[i * MATRIX_rows(mat2) + j]);
+                ans = _rs_ADD(ans, tmp);
+            }
+            MATRIX_u(16, answer)[k * MATRIX_columns(mat2) + j] = ans;
+        }
+    }
+}
 
 #define _rs_mul_matrix_vector(XX)                                        \
 static inline void                                                       \

@@ -660,15 +660,16 @@ void test_rs_mul_matrixes(void)
  */
 void test_rs_solve_inverse(void)
 {
-    memset(temporary, 0xff, TEMPORARY_SIZE);
     uint bits, bits_[3] = {4, 8, 16};
     uint division = 0, division_[3] = {10, 100, 300};
     matrix_t *vm, *e, *maybe_e_matrix, *inverse;
     vector_t *buffer;
     reed_solomon_t *rs = NULL;
+    size_t matrix_mem_size, vector_mem_size;
     char *mem;
     int k, ret;
 
+    memset(temporary, 0xff, TEMPORARY_SIZE);
     mem = (char *)temporary;
 
     for (k=0;k<1;k++) {
@@ -680,34 +681,35 @@ void test_rs_solve_inverse(void)
     rs_take_rs(&rs, bits, division);
     sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
     fprintf(stderr, "%s\n", msg);
+    matrix_mem_size =
+        matrix_calc_matrix_size(division, division, rs->register_size);
+    vector_mem_size = vector_calc_vector_size(division, rs->register_size);
 
-    vm = (matrix_t *)mem;
+    vm = (matrix_t *)mem; mem += matrix_mem_size;
+    e = (matrix_t *)mem; mem += matrix_mem_size;
+    maybe_e_matrix = (matrix_t *)mem; mem += matrix_mem_size;
+    inverse = (matrix_t *)mem; mem += matrix_mem_size;
+    buffer = (vector_t *)mem; mem += vector_mem_size;
+    if (mem - temporary > TEMPORARY_SIZE) {
+        fprintf(stderr, "mem(=%p) - temporary(=%p), %zu > TEMPORARY_SIZE(%u)\n",
+                         mem, temporary, mem - temporary, TEMPORARY_SIZE);
+        *((char *)NULL) = 0;
+    }
+
     matrix_init(vm, division, division, rs->register_size);
-    mem += MATRIX_mem_size(mem);
-
-    e = (matrix_t *)mem;
     matrix_init(e, division, division, rs->register_size);
-    mem += MATRIX_mem_size(e);
-    matrix_make_elementary(e, division);
-
-    maybe_e_matrix = (matrix_t *)mem;
     matrix_init(maybe_e_matrix, division, division, rs->register_size);
-    mem += MATRIX_mem_size(maybe_e_matrix);
-
-    inverse = (matrix_t *)mem;
     matrix_init(inverse, division, division, rs->register_size);
-    mem += MATRIX_mem_size(inverse);
-
-    buffer = (vector_t *)mem;
     vector_init(buffer, division, rs->register_size);
-    mem += VECTOR_mem_size(buffer);
+    fprintf(stderr, "before 0: maybe_e_matrix =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
+
+    matrix_make_elementary(e, division);
 
     fprintf(stderr, "vm=%p, e=%p, maybe_e_matrix=%p, inverse=%p, buffer=%p\n",
                      vm, e, maybe_e_matrix, inverse, buffer);
 
     fprintf(stderr, "mem(=%p) - temporary(=%p) = %lu\n", mem, temporary, mem - temporary);
-    if (mem - temporary > TEMPORARY_SIZE)
-        *((char *)NULL) = 0;
 
     _matrix_make_vandermonde_wrap(vm, rs, division);
     /*
@@ -727,6 +729,8 @@ void test_rs_solve_inverse(void)
         continue;
 
     _rs_mul_matrixes_wrap(rs, maybe_e_matrix, vm, inverse);
+    fprintf(stderr, " after: maybe_e_matrix =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 100", bits, division, rs->poly);
     /*
     fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
