@@ -62,20 +62,19 @@ void assert_by_matrix(matrix_t *expected,
                       char *test_name)
 {
     int cmp;
-    sprintf(msg, "assert_by_matrix(expected=%p, result=%p) in %s", expected, result, test_name);
-    assert_by_uint(MATRIX_rows(expected), MATRIX_rows(result), msg);
-    assert_by_uint(MATRIX_columns(expected), MATRIX_columns(result), msg);
-    assert_by_size(MATRIX_element_size(expected), MATRIX_element_size(result), msg);
-    assert_by_size(MATRIX_matrix_size(expected), MATRIX_matrix_size(result), msg);
-    assert_by_size(MATRIX_mem_size(expected), MATRIX_mem_size(result), msg);
-    /*
-    assert_by_mem((void *)MATRIX_ptr(expected), (void *)MATRIX_ptr(result), MATRIX_matrix_size(expected), msg);
-    */
+    char msg2[SS_SIZE];
+
+    sprintf(msg2, "assert_by_matrix(expected=%p, result=%p) in %s", expected, result, test_name);
+    assert_by_uint(MATRIX_rows(expected), MATRIX_rows(result), msg2);
+    assert_by_uint(MATRIX_columns(expected), MATRIX_columns(result), msg2);
+    assert_by_size(MATRIX_element_size(expected), MATRIX_element_size(result), msg2);
+    assert_by_size(MATRIX_matrix_size(expected), MATRIX_matrix_size(result), msg2);
+    assert_by_size(MATRIX_mem_size(expected), MATRIX_mem_size(result), msg2);
     cmp = memcmp(MATRIX_ptr(expected),
                  MATRIX_ptr(result),
                  MATRIX_matrix_size(expected));
     if (cmp) {
-        failed(0, test_name);
+        failed(0, msg2);
         if (MATRIX_element_size(expected) == 2) {
             fprintf(_f, "expected=\n");
             _rs_view_matrix16_wrap(MATRIX_u(16, expected), MATRIX_rows(expected));
@@ -530,7 +529,7 @@ void test_rs_mul_matrixes(void)
 {
     int ret;
     uint bits, division;
-    matrix_t *elementary1, *elementary2, *elementary3, *result, *matrix1;
+    matrix_t *elementary1, *elementary2, *elementary3, *result, *matrix1, *vm;
     char *mem;
     reed_solomon_t *rs16, *rs32;
     size_t matrix_mem_size;
@@ -547,6 +546,7 @@ void test_rs_mul_matrixes(void)
     elementary3 = (matrix_t *)mem; mem += matrix_mem_size;
     result = (matrix_t *)mem; mem += matrix_mem_size;
     matrix1 = (matrix_t *)mem; mem += matrix_mem_size;
+    vm = (matrix_t *)mem; mem += matrix_mem_size;
     if (mem - temporary > TEMPORARY_SIZE) {
         fprintf(stderr, "mem(=%p) - temporary(=%p), %zu > TEMPORARY_SIZE(%u)\n",
                          mem, temporary, mem - temporary, TEMPORARY_SIZE);
@@ -556,6 +556,7 @@ void test_rs_mul_matrixes(void)
     matrix_init(elementary1, division, division, 2);
     matrix_init(elementary2, division, division, 2);
     matrix_init(elementary3, division, division, 2);
+    matrix_init(vm, division, division, 2);
 
     matrix_init(result, division, division, 2);
     matrix_init(matrix1, division, division, 2);
@@ -576,6 +577,19 @@ void test_rs_mul_matrixes(void)
     _rs_mul_matrixes_wrap(rs16, result, elementary1, elementary2);
     /* result が 単位行列と一致する事を確認 */
     assert_by_matrix(elementary3, result, "in test_rs_mul_matrixes(), 1");
+
+    _matrix_make_vandermonde_wrap(vm, rs16, division);
+
+    matrix_init(result, division, division, 2);
+    /* 単位行列に対して vm 行列を掛ける */
+    _rs_mul_matrixes_wrap(rs16, result, elementary1, vm);
+    /* result が vm 行列と一致する事を確認 */
+    assert_by_matrix(vm, result, "in test_rs_mul_matrixes(), 1");
+
+    /* vm 行列に対して 単位行列を掛ける */
+    _rs_mul_matrixes_wrap(rs16, result, vm, elementary1);
+    /* result が vm 行列と一致する事を確認 */
+    assert_by_matrix(vm, result, "in test_rs_mul_matrixes(), 1");
 
     /* [0][0] = 231, [1][1] = 39, [2][2] = 111, [3][3] = 88 を設定 */
     MATRIX_set(matrix1, 0 * division + 0, 231);
@@ -688,6 +702,9 @@ void test_rs_solve_inverse(void)
     vector_init(buffer, division, rs->register_size);
     mem += VECTOR_mem_size(buffer);
 
+    fprintf(stderr, "vm=%p, e=%p, maybe_e_matrix=%p, inverse=%p, buffer=%p\n",
+                     vm, e, maybe_e_matrix, inverse, buffer);
+
     fprintf(stderr, "mem(=%p) - temporary(=%p) = %lu\n", mem, temporary, mem - temporary);
     if (mem - temporary > TEMPORARY_SIZE)
         *((char *)NULL) = 0;
@@ -698,29 +715,27 @@ void test_rs_solve_inverse(void)
     _rs_view_matrix16_wrap(MATRIX_u(16, vm), division);
     */
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
-    fprintf(stderr, "do _rs_solve_inverse_wrap()\n");
     /*
+    fprintf(stderr, "do _rs_solve_inverse_wrap()\n");
     fprintf(stderr, "inverse_matrix =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, inverse), division);
     */
-    sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 200", bits, division, rs->poly);
     assert_true(ret == RS_SUCCESS, msg);
 
     if (ret)
         continue;
 
     _rs_mul_matrixes_wrap(rs, maybe_e_matrix, vm, inverse);
-    fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
-    sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 100", bits, division, rs->poly);
     /*
-    */
+    fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
     fprintf(stderr, "maybe_e_matrix =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
     fprintf(stderr, "e =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, e), division);
-    assert_by_matrix(e, maybe_e_matrix, msg);
-    /*
     */
+    assert_by_matrix(e, maybe_e_matrix, msg);
     }
 }
 
