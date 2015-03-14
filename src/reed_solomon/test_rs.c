@@ -40,9 +40,9 @@ int _rs_solve_inverse_wrap(matrix_t *inverse,
                            reed_solomon_t *rs,
                            uint division,
                            vector_t *buffer);
-void _rs_view_matrix16_wrap(ushort *matrix, uint division);
+void _rs_view_matrix16_wrap(matrix_t *matrix);
 void _rs_view_vector16_wrap(ushort *vector, uint division);
-void _rs_view_matrix32_wrap(uint *matrix, uint division);
+void _rs_view_matrix32_wrap(matrix_t *matrix);
 void _rs_view_vector32_wrap(uint *vector, uint division);
 
 void assert_by_vector(vector_t *expected,
@@ -77,15 +77,15 @@ void assert_by_matrix(matrix_t *expected,
         failed(0, msg2);
         if (MATRIX_element_size(expected) == 2) {
             fprintf(_f, "expected=\n");
-            _rs_view_matrix16_wrap(MATRIX_u(16, expected), MATRIX_rows(expected));
+            _rs_view_matrix16_wrap(expected);
             fprintf(_f, "result=\n");
-            _rs_view_matrix16_wrap(MATRIX_u(16, result), MATRIX_rows(result));
+            _rs_view_matrix16_wrap(result);
         }
         else {
             fprintf(_f, "expected=\n");
-            _rs_view_matrix32_wrap(MATRIX_u(32, expected), MATRIX_rows(expected));
+            _rs_view_matrix32_wrap(expected);
             fprintf(_f, "result=\n");
-            _rs_view_matrix32_wrap(MATRIX_u(32, result), MATRIX_rows(result));
+            _rs_view_matrix32_wrap(result);
         }
     }
 }
@@ -713,14 +713,14 @@ void test_rs_solve_inverse(void)
     _matrix_make_vandermonde_wrap(vm, rs, division);
 
     fprintf(stderr, "vm =\n");
-    _rs_view_matrix16_wrap(MATRIX_u(16, vm), division);
+    _rs_view_matrix16_wrap(vm);
 
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
 
     fprintf(stderr, " 6: maybe_e_matrix =\n");
-    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
+    _rs_view_matrix16_wrap(maybe_e_matrix);
     fprintf(stderr, "inverse_matrix =\n");
-    _rs_view_matrix16_wrap(MATRIX_u(16, inverse), division);
+    _rs_view_matrix16_wrap(inverse);
 
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 200", bits, division, rs->poly);
     assert_true(ret == RS_SUCCESS, msg);
@@ -730,7 +730,7 @@ void test_rs_solve_inverse(void)
 
     _rs_mul_matrixes_wrap(rs, maybe_e_matrix, vm, inverse);
     fprintf(stderr, " after: maybe_e_matrix =\n");
-    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
+    _rs_view_matrix16_wrap(maybe_e_matrix);
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 100", bits, division, rs->poly);
     /*
     fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");

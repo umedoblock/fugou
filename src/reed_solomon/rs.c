@@ -1012,23 +1012,23 @@ static void _rs_make_vandermonde(rs_encode_t *rse)
     }
 }
 
-static void _rs_view_matrix16(ushort *matrix, uint division)
+static void _rs_view_matrix16(matrix_t *mat)
 {
     uint i, j;
     extern FILE *_log;
     extern int _log_level;
 
     if (_log != NULL && DEBUG_ >= _log_level) {
-        LOGGER(DEBUG_, "_rs_view_matrix16(matrix=%p, division=%u)\n",
-                                     matrix, division);
+        fprintf(_log, "_rs_view_matrix16(matrix=%p, columns=%u, rows=%u))\n",
+                                   mat, MATRIX_columns(mat), MATRIX_rows(mat));
         fprintf(_log, "     ");
-        for (i=0;i<division;i++)
+        for (i=0;i<MATRIX_columns(mat);i++)
             fprintf(_log, "%4x ", i);
         fprintf(_log, "\n");
-        for (j=0;j<division;j++) {
+        for (j=0;j<MATRIX_rows(mat);j++) {
             fprintf(_log, "%4x ", j);
-            for (i=0;i<division;i++) {
-                fprintf(_log, "%4x ", matrix[j * division + i]);
+            for (i=0;i<MATRIX_columns(mat);i++) {
+                fprintf(_log, "%4x ", MATRIX_u(16, mat)[j * MATRIX_rows(mat) + i]);
             }
             fprintf(_log, "\n");
         }
@@ -1298,9 +1298,9 @@ void _rs_view_matrix32_wrap(uint *matrix, uint division)
     _rs_view_matrix32(matrix, division);
 }
 
-void _rs_view_matrix16_wrap(ushort *matrix, uint division)
+void _rs_view_matrix16_wrap(matrix_t *matrix)
 {
-    _rs_view_matrix16(matrix, division);
+    _rs_view_matrix16(matrix);
 }
 
 void _rs_view_vector16_wrap(ushort *vector, uint division)
