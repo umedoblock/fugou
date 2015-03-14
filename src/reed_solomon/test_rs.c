@@ -682,8 +682,8 @@ void test_rs_solve_inverse(void)
     sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
     fprintf(stderr, "%s\n", msg);
     matrix_mem_size =
-        matrix_calc_matrix_size(division, division, rs->register_size);
-    vector_mem_size = vector_calc_vector_size(division, rs->register_size);
+        matrix_calc_mem_size(division, division, rs->register_size);
+    vector_mem_size = vector_calc_mem_size(division, rs->register_size);
 
     vm = (matrix_t *)mem; mem += matrix_mem_size;
     e = (matrix_t *)mem; mem += matrix_mem_size;
@@ -700,9 +700,8 @@ void test_rs_solve_inverse(void)
     matrix_init(e, division, division, rs->register_size);
     matrix_init(maybe_e_matrix, division, division, rs->register_size);
     matrix_init(inverse, division, division, rs->register_size);
+
     vector_init(buffer, division, rs->register_size);
-    fprintf(stderr, "before 0: maybe_e_matrix =\n");
-    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
 
     matrix_make_elementary(e, division);
 
@@ -712,16 +711,17 @@ void test_rs_solve_inverse(void)
     fprintf(stderr, "mem(=%p) - temporary(=%p) = %lu\n", mem, temporary, mem - temporary);
 
     _matrix_make_vandermonde_wrap(vm, rs, division);
-    /*
+
     fprintf(stderr, "vm =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, vm), division);
-    */
+
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
-    /*
-    fprintf(stderr, "do _rs_solve_inverse_wrap()\n");
+
+    fprintf(stderr, " 6: maybe_e_matrix =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
     fprintf(stderr, "inverse_matrix =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, inverse), division);
-    */
+
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 200", bits, division, rs->poly);
     assert_true(ret == RS_SUCCESS, msg);
 
