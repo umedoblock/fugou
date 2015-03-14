@@ -27,6 +27,10 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
                            matrix_t *answer,
                            matrix_t *mat1,
                            matrix_t *mat2);
+void _rs_mul_matrixes32_wrap(reed_solomon_t *rs,
+                           matrix_t *answer,
+                           matrix_t *mat1,
+                           matrix_t *mat2);
 void _matrix_make_vandermonde_wrap(
     matrix_t *vandermonde,
     reed_solomon_t *rs,
@@ -38,6 +42,8 @@ int _rs_solve_inverse_wrap(matrix_t *inverse,
                            vector_t *buffer);
 void _rs_view_matrix16_wrap(ushort *matrix, uint division);
 void _rs_view_vector16_wrap(ushort *vector, uint division);
+void _rs_view_matrix32_wrap(uint *matrix, uint division);
+void _rs_view_vector32_wrap(uint *vector, uint division);
 
 void assert_by_vector(vector_t *expected,
                       vector_t *result,
@@ -471,6 +477,28 @@ void test_rs_mul_matrix_vectorXX(void)
     VECTOR_set(vector1, 3, 88);
     _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
     assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+#if 0
+    /* 単位行列に対して zero vector を掛ける */
+    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
+    /* result と vector1 が一致する事を確認 */
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    /* [0][0] = 1, [1][1] = 2, [2][2] = 3, [3][3] = 4 を設定 */
+    for (i=0;i<VECTOR_elements(vector1);i++) {
+        VECTOR_set(vector1, i * VECTOR_elements(vector1) + i, i + 1);
+    }
+    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    /* [0][0] = 231, [1][1] = 39, [2][2] = 111, [3][3] = 88 を設定 */
+    VECTOR_set(vector1, 0 * VECTOR_elements(vector1) + 0, 231);
+    VECTOR_set(vector1, 1 * VECTOR_elements(vector1) + 1, 39);
+    VECTOR_set(vector1, 2 * VECTOR_elements(vector1) + 2, 111);
+    VECTOR_set(vector1, 3 * VECTOR_elements(vector1) + 3, 88);
+    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+#endif
 }
 
 void test_rs_mul_matrixes(void)
@@ -479,7 +507,7 @@ void test_rs_mul_matrixes(void)
     uint bits, division;
     matrix_t *elementary1, *elementary2, *elementary3, *result, *matrix1;
     char *mem;
-    reed_solomon_t *rs16;
+    reed_solomon_t *rs16, *rs32;
     size_t matrix_mem_size;
 
     memset(temporary, 0xff, TEMPORARY_SIZE);
@@ -519,12 +547,11 @@ void test_rs_mul_matrixes(void)
     _rs_view_matrix16_wrap(MATRIX_u(16, elementary3), division);
     fprintf(stderr, "result =");
     _rs_view_matrix16_wrap(MATRIX_u(16, elementary3), division);
-    assert_by_matrix(elementary3, result, "in test_rs_mul_matrixes(), 0");
 
     /* 単位行列に対して単位行列を掛ける */
     _rs_mul_matrixes_wrap(rs16, result, elementary1, elementary2);
     /* result が 単位行列と一致する事を確認 */
-    assert_by_matrix(elementary3, result, "test_rs_mul_matrixes(), 1");
+    assert_by_matrix(elementary3, result, "in test_rs_mul_matrixes(), 1");
 
     /* [0][0] = 231, [1][1] = 39, [2][2] = 111, [3][3] = 88 を設定 */
     MATRIX_set(matrix1, 0 * division + 0, 231);
@@ -539,12 +566,10 @@ void test_rs_mul_matrixes(void)
     _rs_mul_matrixes_wrap(rs16, result, matrix1, elementary1);
     assert_by_matrix(matrix1, result, "test_rs_mul_matrixex(), 3");
 
-#if 0
     /* element_size = 3 */
     bits = 24, division = (1 << bits) - 1;
     division = 14;
     matrix_mem_size = matrix_calc_mem_size(division, division, 4);
-    matrix_mem_size = matrix_calc_mem_size(division, 4);
 
     mem = (char *)temporary;
     elementary1 = (matrix_t *)mem; mem += matrix_mem_size;
@@ -556,11 +581,18 @@ void test_rs_mul_matrixes(void)
     matrix_init(elementary1, division, division, 4);
     matrix_init(elementary2, division, division, 4);
     matrix_init(elementary3, division, division, 4);
-    matrix_init(result, division, 4);
-    matrix_init(matrix1, division, 4);
+    matrix_init(result, division, division, 4);
+    matrix_init(matrix1, division, division, 4);
     matrix_make_elementary(elementary1, division);
     matrix_make_elementary(elementary2, division);
     matrix_make_elementary(elementary3, division);
+
+    fprintf(stderr, "elementary1 by rs32 =");
+    _rs_view_matrix32_wrap(MATRIX_u(32, elementary1), division);
+    fprintf(stderr, "elementary2 by rs32 =");
+    _rs_view_matrix32_wrap(MATRIX_u(32, elementary2), division);
+    fprintf(stderr, "elementary3 by rs32 =");
+    _rs_view_matrix32_wrap(MATRIX_u(32, elementary3), division);
 
     ret = rs_take_rs(&rs32, bits, division);
     assert_success(ret, "rs_take_rs() in test_rs_mul_matrix_vectorXX");
@@ -569,26 +601,14 @@ void test_rs_mul_matrixes(void)
         return;
     }
 
-    /* 単位行列に対して zero vector を掛ける */
-    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
-    /* result と vector1 が一致する事を確認 */
-    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
-
-    /* [0][0] = 1, [1][1] = 2, [2][2] = 3, [3][3] = 4 を設定 */
-    for (i=0;i<VECTOR_elements(vector1);i++) {
-        VECTOR_set(vector1, i * VECTOR_elements(vector1) + i, i + 1);
-    }
-    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
-    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
-
-    /* [0][0] = 231, [1][1] = 39, [2][2] = 111, [3][3] = 88 を設定 */
-    VECTOR_set(vector1, 0 * VECTOR_elements(vector1) + 0, 231);
-    VECTOR_set(vector1, 1 * VECTOR_elements(vector1) + 1, 39);
-    VECTOR_set(vector1, 2 * VECTOR_elements(vector1) + 2, 111);
-    VECTOR_set(vector1, 3 * VECTOR_elements(vector1) + 3, 88);
-    _rs_mul_matrix_vector32_wrap(rs32, result, elementary1, vector1);
-    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
-#endif
+    /* 単位行列に対して単位行列を掛ける */
+    _rs_mul_matrixes32_wrap(rs32, result, elementary1, elementary2);
+    fprintf(stderr, "elementary3 by rs32 =");
+    _rs_view_matrix32_wrap(MATRIX_u(32, elementary3), division);
+    fprintf(stderr, "result by rs32 =");
+    _rs_view_matrix32_wrap(MATRIX_u(32, result), division);
+    /* result が 単位行列と一致する事を確認 */
+    assert_by_matrix(elementary3, result, "test_rs_mul_matrixes(r32), 1");
 }
 
 /* 逆行列を求めるための行列を用意するのは大変なので、
@@ -704,10 +724,10 @@ void test_rs(void)
 
     */
     test_rs_mul_matrix_vectorXX();
-    /*
     test_rs_div();
 
     test_rs_make_elementary();
+    /*
     test_matrix_make_vandermonde();
     */
     test_rs_mul_matrixes();

@@ -1021,6 +1021,29 @@ static void _rs_view_matrix16(ushort *matrix, uint division)
     }
 }
 
+static void _rs_view_matrix32(uint *matrix, uint division)
+{
+    uint i, j;
+    extern FILE *_log;
+    extern int _log_level;
+
+    if (_log != NULL && DEBUG_ >= _log_level) {
+        LOGGER(DEBUG_, "_rs_view_matrix32(matrix=%p, division=%u)\n",
+                                     matrix, division);
+        fprintf(_log, "         ");
+        for (i=0;i<division;i++)
+            fprintf(_log, "%8x ", i);
+        fprintf(_log, "\n");
+        for (j=0;j<division;j++) {
+            fprintf(_log, "%8x ", j);
+            for (i=0;i<division;i++) {
+                fprintf(_log, "%8x ", matrix[j * division + i]);
+            }
+            fprintf(_log, "\n");
+        }
+    }
+}
+
 static void _rs_view_vector16(ushort *vector, uint division)
 {
     uint i, j;
@@ -1240,12 +1263,25 @@ void _rs_mul_matrix_vector32_wrap(reed_solomon_t *rs,
     return _rs_mul_matrix_vector32(rs, answer, mat, vec);
 }
 
+void _rs_mul_matrixes32_wrap(reed_solomon_t *rs,
+                           matrix_t *answer,
+                           matrix_t *mat1,
+                           matrix_t *mat2)
+{
+    return _rs_mul_matrixes32(rs, answer, mat1, mat2);
+}
+
 void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
                            matrix_t *answer,
                            matrix_t *mat1,
                            matrix_t *mat2)
 {
     return _rs_mul_matrixes16(rs, answer, mat1, mat2);
+}
+
+void _rs_view_matrix32_wrap(uint *matrix, uint division)
+{
+    _rs_view_matrix32(matrix, division);
 }
 
 void _rs_view_matrix16_wrap(ushort *matrix, uint division)
