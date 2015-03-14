@@ -61,13 +61,34 @@ void assert_by_matrix(matrix_t *expected,
                       matrix_t *result,
                       char *test_name)
 {
+    int cmp;
     sprintf(msg, "assert_by_matrix(expected=%p, result=%p) in %s", expected, result, test_name);
     assert_by_uint(MATRIX_rows(expected), MATRIX_rows(result), msg);
     assert_by_uint(MATRIX_columns(expected), MATRIX_columns(result), msg);
     assert_by_size(MATRIX_element_size(expected), MATRIX_element_size(result), msg);
     assert_by_size(MATRIX_matrix_size(expected), MATRIX_matrix_size(result), msg);
     assert_by_size(MATRIX_mem_size(expected), MATRIX_mem_size(result), msg);
+    /*
     assert_by_mem((void *)MATRIX_ptr(expected), (void *)MATRIX_ptr(result), MATRIX_matrix_size(expected), msg);
+    */
+    cmp = memcmp(MATRIX_ptr(expected),
+                 MATRIX_ptr(result),
+                 MATRIX_matrix_size(expected));
+    if (cmp) {
+        failed(0, test_name);
+        if (MATRIX_element_size(expected) == 2) {
+            fprintf(_f, "expected=\n");
+            _rs_view_matrix16_wrap(MATRIX_u(16, expected), MATRIX_rows(expected));
+            fprintf(_f, "result=\n");
+            _rs_view_matrix16_wrap(MATRIX_u(16, result), MATRIX_rows(result));
+        }
+        else {
+            fprintf(_f, "expected=\n");
+            _rs_view_matrix32_wrap(MATRIX_u(32, expected), MATRIX_rows(expected));
+            fprintf(_f, "result=\n");
+            _rs_view_matrix32_wrap(MATRIX_u(32, result), MATRIX_rows(result));
+        }
+    }
 }
 
 void test_rs_add(void)
@@ -692,13 +713,13 @@ void test_rs_solve_inverse(void)
     fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
     sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
     /*
+    */
     fprintf(stderr, "maybe_e_matrix =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
     fprintf(stderr, "e =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, e), division);
-    */
-    /*
     assert_by_matrix(e, maybe_e_matrix, msg);
+    /*
     */
     }
 }
