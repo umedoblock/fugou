@@ -692,18 +692,14 @@ void test_rs_solve_inverse(void)
 
 void test_rs(void)
 {
-    /*
     test_aligned_size();
 
     test_rs_big_bang_and_rs_ultimate_fate_of_the_universe();
-    */
 
     rs_big_bang();
 
-    /*
     test_rs_take_rs();
     test_rs_take_rs_failed();
-    */
 
     /*
     ここは、作らなくて良い。
@@ -718,22 +714,16 @@ void test_rs(void)
     にも bug があった。。。
     */
 
-    /*
     test_rs_add();
     test_rs_mul();
 
-    */
     test_rs_mul_matrix_vectorXX();
     test_rs_div();
 
     test_rs_make_elementary();
-    /*
     test_matrix_make_vandermonde();
-    */
     test_rs_mul_matrixes();
-    /*
     test_rs_solve_inverse();
-    */
 
     /*
     test_rs_invalid_rank_matrix();
