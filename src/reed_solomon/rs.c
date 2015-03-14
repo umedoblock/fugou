@@ -172,13 +172,6 @@ static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
     if (tc < tgf_max)                                                \
         return VECTOR_u(XX, rs->gfi)[tc];                            \
     return VECTOR_u(XX, rs->gfi)[tc - tgf_max];                      \
-                                                                     \
-    /* 以下は思いっきり bug ってくれていたのデス。*/                 \
-    /* 記念に残しちゃいましょうネッ！             */                 \
-    c = VECTOR_u(XX, rs->gf)[a] + VECTOR_u(XX, rs->gf)[b];           \
-    if (c < rs->gf_max)                                              \
-        return VECTOR_u(XX, rs->gfi)[c];                             \
-    return VECTOR_u(XX, rs->gfi)[c - rs->gf_max];                    \
 }
 
 _rs_mul(16, ushort)
@@ -207,13 +200,13 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
     _rs_mulXX() のようなことがあると怖いけど、
     bug っていないようだ。
     #endif
-    uint ta, tb, tc, tgf_max;
+    uint ta, tb, tgf_max;
     ta = VECTOR_u(16, rs->gf)[a];
     tb = VECTOR_u(16, rs->gf)[b];
-    tc = ta - tb;
+    tgf_max = rs->gf_max;                                            \
     if (ta >= tb)
         return VECTOR_u(16, rs->gfi)[ta - tb];
-    return VECTOR_u(16, rs->gfi)[(RS_gf_max(rs) + ta) - tb];
+    return VECTOR_u(16, rs->gfi)[(tgf_max + ta) - tb];
 }
 
 static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
@@ -315,6 +308,19 @@ for debug.
     }
 }
 
+#if 0
+def _mul_matrixes(self, a, b):
+    answer = self._make_square_matrix()
+    for j in range(self.division):
+        for i in range(self.division):
+            tmp = 0
+            for k in range(self.division):
+                muled = self.rds._mul(a[j][k], b[k][i])
+                tmp = self.rds._add(tmp, muled)
+            answer[j][i] = tmp
+    return answer
+#endif
+
 #define _rs_mul_matrixes(XX)                                                \
 static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs,                 \
                                         matrix_t *answer,                   \
@@ -334,6 +340,10 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs,                 \
                 sum += mat1[k][i] * mat2[i][j]                              \
             mat3[k][j] = sum                                                \
 */                                                                          \
+    fprintf(stderr, "MATRIX_rows(mat1) = %u\n", MATRIX_rows(mat1));         \
+    fprintf(stderr, "MATRIX_rows(mat2) = %u\n", MATRIX_rows(mat2));         \
+    fprintf(stderr, "MATRIX_columns(mat1) = %u\n", MATRIX_columns(mat1));   \
+    fprintf(stderr, "MATRIX_columns(mat2) = %u\n", MATRIX_columns(mat2));   \
     for (k=0;k<MATRIX_rows(mat1);k++){                                      \
         for (j=0;j<MATRIX_columns(mat2);j++){                               \
             ans = 0;                                                        \
@@ -1011,6 +1021,25 @@ static void _rs_view_matrix16(ushort *matrix, uint division)
     }
 }
 
+static void _rs_view_vector16(ushort *vector, uint division)
+{
+    uint i, j;
+    extern FILE *_log;
+    extern int _log_level;
+
+    if (_log != NULL && DEBUG_ >= _log_level) {
+        LOGGER(DEBUG_, "_rs_view_vector16(vector=%p, division=%u)\n",
+                                     vector, division);
+        for (i=0;i<division;i++)
+            fprintf(_log, "%4x ", i);
+        fprintf(_log, "\n");
+        for (i=0;i<division;i++) {
+            fprintf(_log, "%4x ", vector[i]);
+        }
+        fprintf(_log, "\n");
+    }
+}
+
 #if 0
 static void _rs_encode16_slots(slot_t *parity,
                                slot_t *norm,
@@ -1222,6 +1251,11 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
 void _rs_view_matrix16_wrap(ushort *matrix, uint division)
 {
     _rs_view_matrix16(matrix, division);
+}
+
+void _rs_view_vector16_wrap(ushort *vector, uint division)
+{
+    _rs_view_vector16(vector, division);
 }
 
 void _matrix_make_vandermonde_wrap(
