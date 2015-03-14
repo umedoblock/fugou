@@ -158,9 +158,7 @@ void rs_decode_slots(slot_t *recover,
 #define _rs_mul(XX, TYPE)                                            \
 static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
 {                                                                    \
-    register TYPE c;                                                 \
     uint ta, tb, tc, tgf_max;                                        \
-                                                                     \
                                                                      \
     if (a == 0 || b == 0)                                            \
         return 0;                                                    \
@@ -179,8 +177,6 @@ _rs_mul(32, uint)
 
 static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
 {
-    int c;
-
     if (a == 0)
         return 0;
 
@@ -340,10 +336,6 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs,                 \
                 sum += mat1[k][i] * mat2[i][j]                              \
             mat3[k][j] = sum                                                \
 */                                                                          \
-    fprintf(stderr, "MATRIX_rows(mat1) = %u\n", MATRIX_rows(mat1));         \
-    fprintf(stderr, "MATRIX_rows(mat2) = %u\n", MATRIX_rows(mat2));         \
-    fprintf(stderr, "MATRIX_columns(mat1) = %u\n", MATRIX_columns(mat1));   \
-    fprintf(stderr, "MATRIX_columns(mat2) = %u\n", MATRIX_columns(mat2));   \
     for (k=0;k<MATRIX_rows(mat1);k++){                                      \
         for (j=0;j<MATRIX_columns(mat2);j++){                               \
             ans = 0;                                                        \
@@ -1046,7 +1038,7 @@ static void _rs_view_matrix32(uint *matrix, uint division)
 
 static void _rs_view_vector16(ushort *vector, uint division)
 {
-    uint i, j;
+    uint i;
     extern FILE *_log;
     extern int _log_level;
 
@@ -1300,9 +1292,9 @@ void _matrix_make_vandermonde_wrap(
     uint division)
 {
     matrix_make_vandermonde_matrix(vandermonde, rs, division);
+    #if 0
     fprintf(stderr, "_matrix_make_vandermonde_wrap()\n");
     _rs_view_matrix16(MATRIX_u(16, vandermonde), division);
-    #ifdef DEBUG
     #endif
 }
 
@@ -1314,8 +1306,10 @@ int _rs_solve_inverse_wrap(matrix_t *inverse,
 {
     int ret;
     ret = _rs_solve_inverse(inverse, matrix, rs, division, buffer);
+    #if 0
     fprintf(stderr, "_rs_solve_inverse_wrap()=%d\n", ret);
     _rs_view_matrix16(MATRIX_u(16, inverse), division);
+    #endif
     return ret;
 }
 

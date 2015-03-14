@@ -414,12 +414,16 @@ void test_rs_mul_matrix_vectorXX(void)
     for (i=0;i<VECTOR_elements(vector1);i++) {
         VECTOR_set(vector1, i, i + 1);
     }
+
+    _rs_mul_matrix_vector16_wrap(rs16, result, elementary1, vector1);
+    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+
+    #if 0
     fprintf(stderr, "vector1 =\n");
     _rs_view_vector16_wrap(VECTOR_u(16, vector1), division);
-    _rs_mul_matrix_vector16_wrap(rs16, result, elementary1, vector1);
     fprintf(stderr, "result =\n");
     _rs_view_vector16_wrap(VECTOR_u(16, result), division);
-    assert_by_vector(vector1, result, "test_rs_mul_matrix_vectorXX()");
+    #endif
 
     /* [0] = 231, [1] = 39, [2] = 111, [3] = 88 を設定 */
     VECTOR_set(vector1, 0, 231);
@@ -531,22 +535,21 @@ void test_rs_mul_matrixes(void)
     matrix_init(elementary1, division, division, 2);
     matrix_init(elementary2, division, division, 2);
     matrix_init(elementary3, division, division, 2);
-    fprintf(stderr, "matrix_init(elementary3) =");
-    _rs_view_matrix16_wrap(MATRIX_u(16, elementary3), division);
+
     matrix_init(result, division, division, 2);
     matrix_init(matrix1, division, division, 2);
     matrix_make_elementary(elementary1, division);
     matrix_make_elementary(elementary2, division);
     matrix_make_elementary(elementary3, division);
-    fprintf(stderr, "matrix_make_elementary(elementary3) =");
-    _rs_view_matrix16_wrap(MATRIX_u(16, elementary3), division);
 
     ret = rs_take_rs(&rs16, bits, division);
     assert_success(ret, "rs_take_rs() in test_rs_mul_matrixes(), -1");
+    #if 0
     fprintf(stderr, "elementary3 =");
     _rs_view_matrix16_wrap(MATRIX_u(16, elementary3), division);
     fprintf(stderr, "result =");
     _rs_view_matrix16_wrap(MATRIX_u(16, elementary3), division);
+    #endif
 
     /* 単位行列に対して単位行列を掛ける */
     _rs_mul_matrixes_wrap(rs16, result, elementary1, elementary2);
@@ -587,12 +590,14 @@ void test_rs_mul_matrixes(void)
     matrix_make_elementary(elementary2, division);
     matrix_make_elementary(elementary3, division);
 
+    #if 0
     fprintf(stderr, "elementary1 by rs32 =");
     _rs_view_matrix32_wrap(MATRIX_u(32, elementary1), division);
     fprintf(stderr, "elementary2 by rs32 =");
     _rs_view_matrix32_wrap(MATRIX_u(32, elementary2), division);
     fprintf(stderr, "elementary3 by rs32 =");
     _rs_view_matrix32_wrap(MATRIX_u(32, elementary3), division);
+    #endif
 
     ret = rs_take_rs(&rs32, bits, division);
     assert_success(ret, "rs_take_rs() in test_rs_mul_matrix_vectorXX");
@@ -603,10 +608,12 @@ void test_rs_mul_matrixes(void)
 
     /* 単位行列に対して単位行列を掛ける */
     _rs_mul_matrixes32_wrap(rs32, result, elementary1, elementary2);
+    #if 0
     fprintf(stderr, "elementary3 by rs32 =");
     _rs_view_matrix32_wrap(MATRIX_u(32, elementary3), division);
     fprintf(stderr, "result by rs32 =");
     _rs_view_matrix32_wrap(MATRIX_u(32, result), division);
+    #endif
     /* result が 単位行列と一致する事を確認 */
     assert_by_matrix(elementary3, result, "test_rs_mul_matrixes(r32), 1");
 }
@@ -665,12 +672,16 @@ void test_rs_solve_inverse(void)
         *((char *)NULL) = 0;
 
     _matrix_make_vandermonde_wrap(vm, rs, division);
+    /*
     fprintf(stderr, "vm =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, vm), division);
+    */
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
     fprintf(stderr, "do _rs_solve_inverse_wrap()\n");
+    /*
     fprintf(stderr, "inverse_matrix =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, inverse), division);
+    */
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
     assert_true(ret == RS_SUCCESS, msg);
 
@@ -680,10 +691,12 @@ void test_rs_solve_inverse(void)
     _rs_mul_matrixes_wrap(rs, maybe_e_matrix, vm, inverse);
     fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
     sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    /*
     fprintf(stderr, "maybe_e_matrix =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
     fprintf(stderr, "e =\n");
     _rs_view_matrix16_wrap(MATRIX_u(16, e), division);
+    */
     /*
     assert_by_matrix(e, maybe_e_matrix, msg);
     */
