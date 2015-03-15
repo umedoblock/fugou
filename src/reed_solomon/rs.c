@@ -1290,7 +1290,30 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
                            matrix_t *mat1,
                            matrix_t *mat2)
 {
-    return _rs_mul_matrixes16(rs, answer, mat1, mat2);
+    #define _DEBUG_ 1
+    #if _DEBUG_
+    fprintf(stderr, "in _rs_mul_matrixes_wrap()\n");
+    fprintf(stderr, "answer:\n");
+    _rs_view_matrix16(answer);
+    fprintf(stderr, "mat1:\n");
+    _rs_view_matrix16(mat1);
+    fprintf(stderr, "mat2:\n");
+    _rs_view_matrix16(mat2);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "do _rs_mul_matrixes_wrap()\n");
+    fprintf(stderr, "\n");
+    #endif
+    _rs_mul_matrixes16(rs, answer, mat1, mat2);
+    #if _DEBUG_
+    fprintf(stderr, "answer:\n");
+    _rs_view_matrix16(answer);
+    fprintf(stderr, "mat1:\n");
+    _rs_view_matrix16(mat1);
+    fprintf(stderr, "mat2:\n");
+    _rs_view_matrix16(mat2);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "\n");
+    #endif
 }
 
 void _rs_view_matrix32_wrap(uint *matrix, uint division)

@@ -712,15 +712,19 @@ void test_rs_solve_inverse(void)
 
     _matrix_make_vandermonde_wrap(vm, rs, division);
 
+    #if 0
     fprintf(stderr, "vm =\n");
     _rs_view_matrix16_wrap(vm);
+    #endif
 
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
 
+    #if 0
     fprintf(stderr, " 6: maybe_e_matrix =\n");
     _rs_view_matrix16_wrap(maybe_e_matrix);
     fprintf(stderr, "inverse_matrix =\n");
     _rs_view_matrix16_wrap(inverse);
+    #endif
 
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 200", bits, division, rs->poly);
     assert_true(ret == RS_SUCCESS, msg);
@@ -729,8 +733,10 @@ void test_rs_solve_inverse(void)
         continue;
 
     _rs_mul_matrixes_wrap(rs, maybe_e_matrix, vm, inverse);
+    #if 0
     fprintf(stderr, " after: maybe_e_matrix =\n");
     _rs_view_matrix16_wrap(maybe_e_matrix);
+    #endif
     sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 100", bits, division, rs->poly);
     /*
     fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
