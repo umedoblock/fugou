@@ -672,7 +672,7 @@ void test_rs_solve_inverse(void)
     memset(temporary, 0xff, TEMPORARY_SIZE);
     mem = (char *)temporary;
 
-    for (k=0;k<1;k++) {
+    for (k=0;k<3;k++) {
     memset(temporary, 0xff, TEMPORARY_SIZE);
 
     bits = bits_[k];
