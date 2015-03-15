@@ -927,7 +927,7 @@ int main(void)
     fp = fopen(random_path, "rb");
     if (fp == NULL || mem == NULL) {
         if (fp == NULL)
-            fprintf(stderr, "cannot find \"%s\"\n", random_1048576_bin);
+            fprintf(stderr, "cannot find random_path=\"%s\"\n", random_path);
         if (mem == NULL)
             fprintf(stderr, "cannot allocate 1048576 octets\n");
         exit(1);
