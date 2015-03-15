@@ -717,7 +717,15 @@ void test_rs_solve_inverse(void)
     _rs_view_matrix16_wrap(vm);
     #endif
 
+    /* おい、気をつけろ。
+     * matrix は破壊されてしまうぞ。
+     * 気をつけろ。
+     * こんなんで、何日もかかったとか。。。
+     * 詳しくは、#260:  gaussian elimination の見直し。
+     * を見るんだな。私の苦闘が記されている。
+     */
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
+    _matrix_make_vandermonde_wrap(vm, rs, division);
 
     #if 0
     fprintf(stderr, " 6: maybe_e_matrix =\n");

@@ -514,6 +514,14 @@ static int _rs_solve_inverse(matrix_t *inverse,
     uint tmp, tmp1, tmp2, tmp3;
     uint work;
 
+    /* おい、気をつけろ。
+     * matrix は破壊されてしまうぞ。
+     * 気をつけろ。
+     * こんなんで、何日もかかったとか。。。
+     * 詳しくは、#260:  gaussian elimination の見直し。
+     * を見るんだな。私の苦闘が記されている。
+     */
+
     matrix_make_elementary(inverse, division);
 
     for (k=0;k<division;k++) {
