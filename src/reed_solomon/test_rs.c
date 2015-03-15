@@ -679,8 +679,10 @@ void test_rs_solve_inverse(void)
     division = division_[k];
 
     rs_take_rs(&rs, bits, division);
+    /*
     sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
     fprintf(stderr, "%s\n", msg);
+    */
     matrix_mem_size =
         matrix_calc_mem_size(division, division, rs->register_size);
     vector_mem_size = vector_calc_mem_size(division, rs->register_size);
@@ -705,10 +707,12 @@ void test_rs_solve_inverse(void)
 
     matrix_make_elementary(e, division);
 
+    /*
     fprintf(stderr, "vm=%p, e=%p, maybe_e_matrix=%p, inverse=%p, buffer=%p\n",
                      vm, e, maybe_e_matrix, inverse, buffer);
 
     fprintf(stderr, "mem(=%p) - temporary(=%p) = %lu\n", mem, temporary, mem - temporary);
+    */
 
     _matrix_make_vandermonde_wrap(vm, rs, division);
 
