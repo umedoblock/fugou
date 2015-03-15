@@ -922,6 +922,135 @@ void test_rs_invalid_rank_matrix(void)
     }
 }
 
+void test_rs_recover(void)
+{
+    char *mem = get_initilized_temporary();
+    /* data を division 個に等分分割し、division 個の symbol を作成する。
+     * そして、symbol の先頭から最後尾に向けて、
+     * 0, 1, 2, ..., division - 1
+     * と、番号をつける。
+
+     * 各 symbol を以下の番号の通り集め、
+
+     * even_part=0, 2, 4, ...
+     *  odd_part=1, 3, 5, ...
+     * head_part=0, 1, 2, 3,... division / 2 - 1
+     * tail_part=
+         division / 2, division / 2 + 1, division / 2 + 2, ... division - 1
+     * even_part, odd_part, head_part, tail_part
+
+     * を作成する。
+     * そして、各 part 毎に recover を実行し、recover した値と元の data の値が
+     * 一致することを確認する。
+
+     * plain = division * symbol_size
+     */
+
+    uint bits, bits_[3] = {4, 8, 16};
+    uint division = 0, division_[3] = {10, 100, 300};
+    matrix_t *vm, *e, *maybe_e_matrix, *inverse;
+    vector_t *buffer;
+    reed_solomon_t *rs = NULL;
+    size_t matrix_mem_size, vector_mem_size;
+    char *mem;
+    int k, ret;
+
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+    mem = (char *)temporary;
+
+    for (k=0;k<3;k++) {
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+
+    bits = bits_[k];
+    division = division_[k];
+
+    rs_take_rs(&rs, bits, division);
+    /*
+    sprintf(msg, "(bits,division,poly)=(%u,%u,%u)", bits, division, rs->poly);
+    fprintf(stderr, "%s\n", msg);
+    */
+    matrix_mem_size =
+        matrix_calc_mem_size(division, division, rs->register_size);
+    vector_mem_size = vector_calc_mem_size(division, rs->register_size);
+
+    vm = (matrix_t *)mem; mem += matrix_mem_size;
+    e = (matrix_t *)mem; mem += matrix_mem_size;
+    maybe_e_matrix = (matrix_t *)mem; mem += matrix_mem_size;
+    inverse = (matrix_t *)mem; mem += matrix_mem_size;
+    buffer = (vector_t *)mem; mem += vector_mem_size;
+    if (mem - temporary > TEMPORARY_SIZE) {
+        fprintf(stderr, "mem(=%p) - temporary(=%p), %zu > TEMPORARY_SIZE(%u)\n",
+                         mem, temporary, mem - temporary, TEMPORARY_SIZE);
+        *((char *)NULL) = 0;
+    }
+
+    matrix_init(vm, division, division, rs->register_size);
+    matrix_init(e, division, division, rs->register_size);
+    matrix_init(maybe_e_matrix, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+
+    vector_init(buffer, division, rs->register_size);
+
+    matrix_make_elementary(e, division);
+
+    /*
+    fprintf(stderr, "vm=%p, e=%p, maybe_e_matrix=%p, inverse=%p, buffer=%p\n",
+                     vm, e, maybe_e_matrix, inverse, buffer);
+
+    fprintf(stderr, "mem(=%p) - temporary(=%p) = %lu\n", mem, temporary, mem - temporary);
+    */
+
+    _matrix_make_vandermonde_wrap(vm, rs, division);
+
+    #if 0
+    fprintf(stderr, "vm =\n");
+    _rs_view_matrix16_wrap(vm);
+    #endif
+
+    /* おい、気をつけろ。
+     * matrix は破壊されてしまうぞ。
+     * 気をつけろ。
+     * こんなんで、何日もかかったとか。。。
+     * 詳しくは、#260:  gaussian elimination の見直し。
+     * を見るんだな。私の苦闘が記されている。
+     */
+    ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
+    /* _rs_solve_inverse_wrap() に入れた vm は破壊されてしまうので、
+     * 再利用できない。
+     * こうやって、vm を復活させる必要があった。
+     */
+    _matrix_make_vandermonde_wrap(vm, rs, division);
+
+    #if 0
+    fprintf(stderr, " 6: maybe_e_matrix =\n");
+    _rs_view_matrix16_wrap(maybe_e_matrix);
+    fprintf(stderr, "inverse_matrix =\n");
+    _rs_view_matrix16_wrap(inverse);
+    #endif
+
+    sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 200", bits, division, rs->poly);
+    assert_true(ret == RS_SUCCESS, msg);
+
+    if (ret)
+        continue;
+
+    _rs_mul_matrixes_wrap(rs, maybe_e_matrix, vm, inverse);
+    #if 0
+    fprintf(stderr, " after: maybe_e_matrix =\n");
+    _rs_view_matrix16_wrap(maybe_e_matrix);
+    #endif
+    sprintf(msg, "_rs_solve_inverse_wrap(bits,division,poly)=(%u,%u,%u), 100", bits, division, rs->poly);
+    /*
+    fprintf(stderr, "do _rs_mul_matrixes_wrap()\n\n");
+    fprintf(stderr, "maybe_e_matrix =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, maybe_e_matrix), division);
+    fprintf(stderr, "e =\n");
+    _rs_view_matrix16_wrap(MATRIX_u(16, e), division);
+    */
+    assert_by_matrix(e, maybe_e_matrix, msg);
+    }
+}
+
 void test_rs(void)
 {
     test_aligned_size();
@@ -956,6 +1085,8 @@ void test_rs(void)
     test_matrix_make_vandermonde();
     test_rs_mul_matrixes();
     test_rs_solve_inverse();
+
+    test_rs_recover();
 
     test_rs_invalid_rank_matrix();
 
