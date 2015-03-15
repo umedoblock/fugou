@@ -1298,7 +1298,7 @@ void _rs_mul_matrixes_wrap(reed_solomon_t *rs,
                            matrix_t *mat1,
                            matrix_t *mat2)
 {
-    #define _DEBUG_ 1
+    #define _DEBUG_ 0
     #if _DEBUG_
     fprintf(stderr, "in _rs_mul_matrixes_wrap()\n");
     fprintf(stderr, "answer:\n");
