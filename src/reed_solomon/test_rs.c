@@ -775,7 +775,7 @@ char *get_initilized_temporary(void)
 
 void test_rs_invalid_rank_matrix(void)
 {
-    int i, j, ret;
+    int i, j, k, ret;
     uint bits, bits_[3] = {4, 8, 16};
     uint division = 0;
     matrix_t *mt0, *inverse;
@@ -820,24 +820,105 @@ void test_rs_invalid_rank_matrix(void)
             [0, 1, 0, 0],
             [0, 0, 1, 0],
             [0, 0, 0, 0] ]
+            */
+    matrix_init(mt0, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+    vector_init(buffer, division, rs->register_size);
+
+    for (j=0;j<division-1;j++) {
+    MATRIX_set(mt0, j * division + j, 1);
+    }
+
+    ret = _rs_solve_inverse_wrap(inverse, mt0, rs, division, buffer);
+    sprintf(msg, "test_rs_invalid_rank_matrix() "
+                 "bits=%u,poly=%u,division=%u",
+                  RS_bits(rs), RS_poly(rs),division);
+    assert_true(ret == RS_RANK_ERROR, msg);
+
+            /*
     mt2 = [ [1, 0, 0, 0],
             [0, 1, 0, 0],
             [0, 0, 1, 1],
             [0, 0, 1, 1] ]
+    */
+    matrix_init(mt0, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+    vector_init(buffer, division, rs->register_size);
+
+    for (j=0;j<division;j++) {
+    MATRIX_set(mt0, j * division + j, 1);
+    }
+    for (j=2;j<=3;j++) {
+    MATRIX_set(mt0, j * division + (5 - j), 1);
+    }
+
+    ret = _rs_solve_inverse_wrap(inverse, mt0, rs, division, buffer);
+    sprintf(msg, "test_rs_invalid_rank_matrix() "
+                 "bits=%u,poly=%u,division=%u",
+                  RS_bits(rs), RS_poly(rs),division);
+    assert_true(ret == RS_RANK_ERROR, msg);
+
+    /*
     mt3 = [ [1, 0, 0, 1],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
             [1, 0, 1, 1] ]
+            */
+    matrix_init(mt0, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+    vector_init(buffer, division, rs->register_size);
+
+    for (j=0;j<division;j++) {
+    MATRIX_set(mt0, j * division + j, 1);
+    }
+    for (j=0;j<division;j++) {
+    MATRIX_set(mt0, j * division + (3 - j), 1);
+    }
+
+    ret = _rs_solve_inverse_wrap(inverse, mt0, rs, division, buffer);
+    sprintf(msg, "test_rs_invalid_rank_matrix() "
+                 "bits=%u,poly=%u,division=%u",
+                  RS_bits(rs), RS_poly(rs),division);
+    assert_true(ret == RS_RANK_ERROR, msg);
+
+            /*
     mt4 = [ [1, 1, 1, 1],
             [1, 1, 1, 1],
             [1, 1, 1, 1],
             [1, 1, 1, 1] ]
+            */
+    matrix_init(mt0, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+    vector_init(buffer, division, rs->register_size);
+
+    for (k=0;k<division;k++) {
+    for (j=0;j<division;j++) {
+    MATRIX_set(mt0, k * division + j, 1);
+    }
+    }
+
+    ret = _rs_solve_inverse_wrap(inverse, mt0, rs, division, buffer);
+    sprintf(msg, "test_rs_invalid_rank_matrix() "
+                 "bits=%u,poly=%u,division=%u",
+                  RS_bits(rs), RS_poly(rs),division);
+    assert_true(ret == RS_RANK_ERROR, msg);
+
+            /*
     mt5 = [ [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0] ]
-    mts = [mt0, mt1, mt2, mt3, mt4, mt5]
             */
+    matrix_init(mt0, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+    vector_init(buffer, division, rs->register_size);
+
+    ret = _rs_solve_inverse_wrap(inverse, mt0, rs, division, buffer);
+    sprintf(msg, "test_rs_invalid_rank_matrix() "
+                 "bits=%u,poly=%u,division=%u",
+                  RS_bits(rs), RS_poly(rs),division);
+    assert_true(ret == RS_RANK_ERROR, msg);
+
     }
 }
 
