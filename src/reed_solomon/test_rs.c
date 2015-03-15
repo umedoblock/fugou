@@ -9,6 +9,7 @@
 #define TEMPORARY_SIZE (1024 * 1024)
 static char *temporary = NULL;
 static char msg[SS_SIZE];
+static char *mem_ = NULL;
 
 void _rs_make_gfgfi_wrap(reed_solomon_t *rs);
 ushort _rs_mul16_wrap(reed_solomon_t *rs, ushort a, ushort b);
@@ -765,6 +766,81 @@ void test_rs_solve_inverse(void)
     }
 }
 
+char *get_initilized_temporary(void)
+{
+    memset(temporary, 0xff, TEMPORARY_SIZE);
+    mem_ = (char *)temporary;
+    return mem_;
+}
+
+void test_rs_invalid_rank_matrix(void)
+{
+    int i, j, ret;
+    uint bits, bits_[3] = {4, 8, 16};
+    uint division = 0;
+    matrix_t *mt0, *inverse;
+    vector_t *buffer;
+    char *mem = get_initilized_temporary();
+    size_t matrix_mem_size, vector_mem_size;
+    reed_solomon_t *rs;
+
+    for(i=0;i<1;i++) {
+    division = 4;
+    bits = bits_[i];
+    rs_take_rs(&rs, bits, division);
+
+    matrix_mem_size =
+        matrix_calc_mem_size(division, division, rs->register_size);
+    vector_mem_size = vector_calc_mem_size(division, rs->register_size);
+
+    mt0 = (matrix_t *)mem; mem += matrix_mem_size;
+    inverse = (matrix_t *)mem; mem += matrix_mem_size;
+    buffer = (vector_t *)mem; mem += vector_mem_size;
+
+    /* mt0 = [0, 0, 0, 0]
+             [0, 1, 0, 0]
+             [0, 0, 1, 0]
+             [0, 0, 0, 1]
+    */
+    matrix_init(mt0, division, division, rs->register_size);
+    matrix_init(inverse, division, division, rs->register_size);
+    vector_init(buffer, division, rs->register_size);
+
+    for (j=1;j<division;j++) {
+    MATRIX_set(mt0, j * division + j, 1);
+    }
+
+    ret = _rs_solve_inverse_wrap(inverse, mt0, rs, division, buffer);
+    sprintf(msg, "test_rs_invalid_rank_matrix() "
+                 "bits=%u,poly=%u,division=%u",
+                  RS_bits(rs), RS_poly(rs),division);
+    assert_true(ret == RS_RANK_ERROR, msg);
+            /*
+    mt1 = [ [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 0] ]
+    mt2 = [ [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 1],
+            [0, 0, 1, 1] ]
+    mt3 = [ [1, 0, 0, 1],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [1, 0, 1, 1] ]
+    mt4 = [ [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1] ]
+    mt5 = [ [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0] ]
+    mts = [mt0, mt1, mt2, mt3, mt4, mt5]
+            */
+    }
+}
+
 void test_rs(void)
 {
     test_aligned_size();
@@ -800,9 +876,7 @@ void test_rs(void)
     test_rs_mul_matrixes();
     test_rs_solve_inverse();
 
-    /*
     test_rs_invalid_rank_matrix();
-    */
 
     rs_ultimate_fate_of_the_universe();
 }
