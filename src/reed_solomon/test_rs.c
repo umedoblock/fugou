@@ -725,6 +725,10 @@ void test_rs_solve_inverse(void)
      * を見るんだな。私の苦闘が記されている。
      */
     ret = _rs_solve_inverse_wrap(inverse, vm, rs, division, buffer);
+    /* _rs_solve_inverse_wrap() に入れた vm は破壊されてしまうので、
+     * 再利用できない。
+     * こうやって、vm を復活させる必要があった。
+     */
     _matrix_make_vandermonde_wrap(vm, rs, division);
 
     #if 0
