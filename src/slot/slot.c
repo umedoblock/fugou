@@ -1069,7 +1069,7 @@ size_t slot_read(slot_t *read_, void *buf, size_t read_size)
     int errnum;
 
     while (total < read_size) {
-        r = read((int )SLOT_target(read_), buf, read_size - total);
+        r = read(SLOT_target_fd(read_), buf, read_size - total);
         if (r == -1) {
             LOGGED_ERRORNO();
             break;
@@ -1086,7 +1086,7 @@ size_t slot_recv(slot_t *read_, void *buf, size_t read_size)
     int errnum;
 
     while (total < read_size) {
-        r = recv((int )SLOT_target(read_), buf, read_size - total, 0);
+        r = recv(SLOT_target_fd(read_), buf, read_size - total, 0);
         if (r == -1) {
             LOGGED_ERRORNO();
             break;
@@ -1103,7 +1103,7 @@ size_t slot_write(slot_t *writ, void *buf, size_t writ_size)
     int errnum;
 
     while (total < writ_size) {
-        w = write((int )SLOT_target(writ), buf, writ_size - total);
+        w = write(SLOT_target_fd(writ), buf, writ_size - total);
         if (w == -1) {
             LOGGED_ERRORNO();
             break;
@@ -1134,7 +1134,7 @@ size_t slot_send(slot_t *writ, void *buf, size_t writ_size)
     int errnum;
 
     while (total < writ_size) {
-        w = send((int )SLOT_target(writ), buf, writ_size - total, 0);
+        w = send(SLOT_target_fd(writ), buf, writ_size - total, 0);
         if (w == -1) {
             LOGGED_ERRORNO();
             break;

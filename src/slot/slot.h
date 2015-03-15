@@ -79,6 +79,7 @@ File size:                3808 bytes
 #define SLOT_target(s) (SLOT_ptr(s)->target)
 */
 #define SLOT_target(s) ((SLOT_ptr(s)->target[0].ptr))
+#define SLOT_target_fd(s) ((SLOT_ptr(s)->target[0].fd))
 #define SLOT_target_f(s) ((SLOT_ptr(s)->target + 0)->f)
 #define SLOT_pos(s) (SLOT_slt(s).pos)
 #define SLOT_pos_f(s) (SLOT_slt(s).pos.f)
@@ -121,6 +122,7 @@ typedef union {
     void *ptr;
     FILE *f;
     int s[1];
+    int fd;
     uint m[1];
     /* sock_t s[1]; */
     uchar *u;
