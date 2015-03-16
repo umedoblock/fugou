@@ -253,6 +253,9 @@ typedef struct {
 #define VECTOR_element_size(vctr) (VECTOR(vctr)->element_size)
 #define VECTOR_mem(vctr) (VECTOR(vctr)->mem)
 #define VECTOR_mem_size(vctr) (VECTOR(vctr)->mem_size)
+#define VECTOR_row_size(vctr) (VECTOR_elements(vctr) * \
+                               VECTOR_element_size(vctr))
+#define VECTOR_column_size(vctr) (VECTOR_row_size(vctr))
 #define VECTOR_ptr(vctr) (VECTOR_mem(vctr).ptr)
 #define VECTOR_u(XX, vctr) (VECTOR_mem(vctr).u ## XX)
 #define VECTOR_get(vctr, XX, INDEX, VALUE) \
@@ -280,7 +283,10 @@ typedef struct {
 #define MATRIX(mtrx) ((matrix_t *)mtrx)
 #define MATRIX_matrix_size(mtrx) (MATRIX(mtrx)->matrix_size)
 #define MATRIX_rows(mtrx) (MATRIX(mtrx)->rows)
+#define MATRIX_row_size(mtrx) (MATRIX(mtrx)->rows * MATRIX_element_size(mtrx))
 #define MATRIX_columns(mtrx) (MATRIX(mtrx)->columns)
+#define MATRIX_column_size(mtrx) (MATRIX(mtrx)->columns * \
+                                  MATRIX_element_size(mtrx))
 #define MATRIX_element_size(mtrx) (MATRIX(mtrx)->element_size)
 #define MATRIX_mem(mtrx) MATRIX(mtrx)->mem
 #define MATRIX_mem_size(mtrx) (MATRIX(mtrx)->mem_size)

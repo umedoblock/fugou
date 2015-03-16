@@ -547,13 +547,13 @@ static int _rs_solve_inverse(matrix_t *inverse,
                     ;
                     memcpy(VECTOR_ptr(buffer),
                            MATRIX_ptr(mt) + index_j,
-                           VECTOR_vector_size(buffer));
+                           VECTOR_row_size(buffer));
                     memcpy(MATRIX_ptr(mt) + index_j,
                            MATRIX_ptr(mt) + index_k,
-                           VECTOR_vector_size(buffer));
+                           MATRIX_row_size(mt));
                     memcpy(MATRIX_ptr(mt) + index_k,
                            VECTOR_ptr(buffer),
-                           VECTOR_vector_size(buffer));
+                           MATRIX_row_size(mt));
 
                     /*
                     do swap, via buffer
@@ -561,13 +561,13 @@ static int _rs_solve_inverse(matrix_t *inverse,
                     */
                     memcpy(VECTOR_ptr(buffer),
                            MATRIX_ptr(im) + index_j,
-                           VECTOR_vector_size(buffer));
+                           VECTOR_row_size(buffer));
                     memcpy(MATRIX_ptr(im) + index_j,
                            MATRIX_ptr(im) + index_k,
-                           VECTOR_vector_size(buffer));
+                           MATRIX_row_size(mt));
                     memcpy(MATRIX_ptr(im) + index_k,
                            VECTOR_ptr(buffer),
-                           VECTOR_vector_size(buffer));
+                           MATRIX_row_size(mt));
                     break;
                 }
             }
@@ -1050,7 +1050,7 @@ static void _rs_view_matrix32(uint *matrix, uint division)
     extern int _log_level;
 
     if (_log != NULL && DEBUG_ >= _log_level) {
-        LOGGER(DEBUG_, "_rs_view_matrix32(matrix=%p, division=%u)\n",
+        fprintf(_log, "_rs_view_matrix32(matrix=%p, division=%u)\n",
                                      matrix, division);
         fprintf(_log, "         ");
         for (i=0;i<division;i++)
@@ -1066,21 +1066,50 @@ static void _rs_view_matrix32(uint *matrix, uint division)
     }
 }
 
-static void _rs_view_vector16(ushort *vector, uint division)
+static void _rs_view_vector16(vector_t *vector)
 {
     uint i;
     extern FILE *_log;
     extern int _log_level;
 
     if (_log != NULL && DEBUG_ >= _log_level) {
-        LOGGER(DEBUG_, "_rs_view_vector16(vector=%p, division=%u)\n",
-                                     vector, division);
-        for (i=0;i<division;i++)
+        fprintf(_log, "_rs_view_vector16(vector=%p)\n", vector);
+        fprintf(_log, "sizeof(vector_t)=%lu\n", sizeof(vector_t));
+        fprintf(_log, "elements=%u\n", VECTOR_elements(vector));
+        fprintf(_log, "element_size=%lu\n", VECTOR_element_size(vector));
+        fprintf(_log, "vector_size=%lu\n", VECTOR_vector_size(vector));
+        fprintf(_log, "mem_size=%lu\n", VECTOR_mem_size(vector));
+        fprintf(_log, "mem=%p\n", VECTOR(vector));
+
+        for (i=0;i<VECTOR_elements(vector);i++)
             fprintf(_log, "%4x ", i);
         fprintf(_log, "\n");
-        for (i=0;i<division;i++) {
-            fprintf(_log, "%4x ", vector[i]);
-        }
+        for (i=0;i<VECTOR_elements(vector);i++)
+            fprintf(_log, "%4x ", VECTOR_u(16, vector)[i]);
+        fprintf(_log, "\n");
+    }
+}
+
+static void _rs_view_vector32(vector_t *vector)
+{
+    uint i;
+    extern FILE *_log;
+    extern int _log_level;
+
+    if (_log != NULL && DEBUG_ >= _log_level) {
+        fprintf(_log, "_rs_view_vector32(vector=%p)\n", vector);
+        fprintf(_log, "sizeof(vector_t)=%lu\n", sizeof(vector_t));
+        fprintf(_log, "elements=%u\n", VECTOR_elements(vector));
+        fprintf(_log, "element_size=%lu\n", VECTOR_element_size(vector));
+        fprintf(_log, "vector_size=%lu\n", VECTOR_vector_size(vector));
+        fprintf(_log, "mem_size=%lu\n", VECTOR_mem_size(vector));
+        fprintf(_log, "mem=%p\n", VECTOR(vector));
+
+        for (i=0;i<VECTOR_elements(vector);i++)
+            fprintf(_log, "%4x ", i);
+        fprintf(_log, "\n");
+        for (i=0;i<VECTOR_elements(vector);i++)
+            fprintf(_log, "%4x ", VECTOR_u(32, vector)[i]);
         fprintf(_log, "\n");
     }
 }
@@ -1334,9 +1363,14 @@ void _rs_view_matrix16_wrap(matrix_t *matrix)
     _rs_view_matrix16(matrix);
 }
 
-void _rs_view_vector16_wrap(ushort *vector, uint division)
+void _rs_view_vector16_wrap(vector_t *vector)
 {
-    _rs_view_vector16(vector, division);
+    _rs_view_vector16(vector);
+}
+
+void _rs_view_vector32_wrap(vector_t *vector)
+{
+    _rs_view_vector32(vector);
 }
 
 void _matrix_make_vandermonde_wrap(
