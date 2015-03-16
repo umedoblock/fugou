@@ -258,6 +258,8 @@ typedef struct {
 #define VECTOR_column_size(vctr) (VECTOR_row_size(vctr))
 #define VECTOR_ptr(vctr) (VECTOR_mem(vctr).ptr)
 #define VECTOR_u(XX, vctr) (VECTOR_mem(vctr).u ## XX)
+#define VECTOR16(vctr) (VECTOR_u(16, vctr))
+#define VECTOR32(vctr) (VECTOR_u(32, vctr))
 #define VECTOR_get(vctr, XX, INDEX, VALUE) \
     for(;;) { \
     if (VECTOR_element_size(vctr) == 2) { \
@@ -340,37 +342,34 @@ _rs_mul ## XX(reed_solomon_t RS, a, b)
 
 typedef struct {
     reed_solomon_t *rs;
-    /* ssb->target_size -= ssb->padding_size when last slot, slots[division-1].
-     * division must be 2 or more.
-     */
     uint division;
     uint redundancy;
 
     uint *redundancy_map;
 
-    _ptr_t vandermonde;
-    _ptr_t _row; /* horizontal vector */
-    _ptr_t _row2; /* horizontal vector */
+    matrix_t *vandermonde;
+    vector_t *_row; /* horizontal vector */
+    vector_t *_row2; /* horizontal vector */
 
-    size_t allocate_size; /* no need ? */
+    size_t mem_size;
     size_t matrix_size;
-    size_t _row_size;
+    size_t row_size;
 } rs_encode_t;
 
 typedef struct {
     reed_solomon_t *rs;
     uint division;
 
-    _ptr_t merged;
-    _ptr_t inverse;
+    matrix_t merged;
+    matrix_t inverse;
     _ptr_t _row; /* horizontal vector */
     _ptr_t _row2; /* horizontal vector */
     _ptr_t _column; /* vertical vector */
 
-    size_t allocate_size; /* no need ? */
+    size_t mem_size;
     size_t matrix_size;
-    size_t _row_size;
-    size_t _column_size;
+    size_t row_size;
+    size_t column_size;
 } rs_decode_t;
 
 #define RS_GF_NUM (4)
