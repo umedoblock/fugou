@@ -131,7 +131,7 @@ typedef union {
 typedef struct _slot_t _slot_t;
 typedef struct slot_t slot_t;
 
-typedef size_t (*compute_function)(slot_t *, slot_t *, uint, size_t);
+typedef size_t (*compute_function)(slot_t *, slot_t *, void *);
 typedef size_t (*io_function)(slot_t *, void *, size_t );
 typedef size_t (*pos_function)(slot_t *, void * );
 
