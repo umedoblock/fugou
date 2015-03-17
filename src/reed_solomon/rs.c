@@ -94,6 +94,7 @@ int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
     return RS_SUCCESS;
 }
 
+#if 0
 void _rs_view_rse(rs_encode_t *rse)
 {
     LOGGER(INFO, "rse = %p\n", rse);
@@ -124,6 +125,7 @@ void _rs_view_rsd(rs_decode_t *rsd)
     LOGGER(INFO, "           _column = %p\n", rsd->_column.ptr);
     LOGGER(INFO, "\n");
 }
+#endif
 
 /* for slots *****************************************************************/
 
@@ -376,9 +378,9 @@ static inline void _rs_mul_matrixes16(reed_solomon_t *rs,
     }
 }
 
-#define _rs_mul_matrix_vector(XX)                                        \
+#define rs_mul_matrix_vector(XX)                                        \
 static inline void                                                       \
-_rs_mul_matrix_vector##XX(reed_solomon_t *rs,                            \
+rs_mul_matrix_vector##XX(reed_solomon_t *rs,                            \
                           vector_t *answer,                              \
                           matrix_t *mat,                                 \
                           vector_t *vec)                                 \
@@ -398,8 +400,8 @@ _rs_mul_matrix_vector##XX(reed_solomon_t *rs,                            \
     }                                                                    \
 }
 
-_rs_mul_matrix_vector(16)
-_rs_mul_matrix_vector(32)
+rs_mul_matrix_vector(16)
+rs_mul_matrix_vector(32)
 
 size_t vector_calc_vector_size(uint elements, size_t element_size)
 {
@@ -893,6 +895,7 @@ static int _rs_init_gf_gfi(big_bang_t *universe)
     return RS_SUCCESS;
 }
 
+#if 0
 static size_t _rs_calc_rse_memory_size(rs_encode_t *rse,
                                          reed_solomon_t *rs, uint division)
 {
@@ -966,6 +969,7 @@ static size_t _rs_init_rsd(rs_decode_t *rsd,
     rsd->_column.ptr = (void *)mem;     mem += rsd->_column_size;
     return (size_t )(mem - mem_);
 }
+#endif
 
 static void matrix_make_vandermonde_matrix(matrix_t *vandermonde,
     reed_solomon_t *rs,
@@ -994,6 +998,7 @@ static void matrix_make_vandermonde_matrix(matrix_t *vandermonde,
     }
 }
 
+#if 0
 static void _rs_make_vandermonde(rs_encode_t *rse)
 {
     _ptr_t vm = rse->vandermonde;
@@ -1019,6 +1024,7 @@ static void _rs_make_vandermonde(rs_encode_t *rse)
                     _rs_mul32(rs, vm.u32[(j-1) * division + i], i + 1);
     }
 }
+#endif
 
 static void _rs_view_matrix16(matrix_t *mat)
 {
@@ -1303,7 +1309,7 @@ void _rs_mul_matrix_vector16_wrap(reed_solomon_t *rs,
                                   matrix_t *mat,
                                   vector_t *vec)
 {
-    return _rs_mul_matrix_vector16(rs, answer, mat, vec);
+    return rs_mul_matrix_vector16(rs, answer, mat, vec);
 }
 
 void _rs_mul_matrix_vector32_wrap(reed_solomon_t *rs,
@@ -1311,7 +1317,7 @@ void _rs_mul_matrix_vector32_wrap(reed_solomon_t *rs,
                                   matrix_t *mat,
                                   vector_t *vec)
 {
-    return _rs_mul_matrix_vector32(rs, answer, mat, vec);
+    return rs_mul_matrix_vector32(rs, answer, mat, vec);
 }
 
 void _rs_mul_matrixes32_wrap(reed_solomon_t *rs,
