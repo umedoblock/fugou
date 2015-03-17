@@ -416,6 +416,10 @@ void rs_decode_slots(slot_t *recover,
 size_t aligned_size(size_t size);
 int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
 
+inline void rs_mul_matrix_vector16(reed_solomon_t *rs,                 \
+                                   vector_t *answer,                   \
+                                   matrix_t *mat,                      \
+                                   vector_t *vec);
 /*****************************************************************************/
 /* prototype *****************************************************************/
 /*****************************************************************************/
