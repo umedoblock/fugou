@@ -324,7 +324,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     }
 
     /* parent => children の分割を行う。*/
-    ret = _slot_divide(children, parent, division);
+    ret = _slot_divide(children, parent, division, NULL);
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
@@ -394,7 +394,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     }
 
     /* children => parent の統合 */
-    ret = _slot_integrate(parent, children, division);
+    ret = _slot_integrate(parent, children, division, NULL);
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
@@ -539,7 +539,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     }
 
     /* parent => children の分割を行う。*/
-    ret = _slot_divide(children, parent, division);
+    ret = _slot_divide(children, parent, division, NULL);
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
@@ -620,7 +620,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     */
 
     /* children => parent の統合 */
-    ret = _slot_integrate(parent, children, division);
+    ret = _slot_integrate(parent, children, division, NULL);
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
