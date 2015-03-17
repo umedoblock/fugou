@@ -14,6 +14,8 @@ test_slot: $(OBJS) $(OBJS_UPPER)
 	$(CC) $(CFLAGS) $(TEST_OPTIONS) -o $(TARGET) $(OBJS) $(OBJS_UPPER)
 gdb:
 	gdb ./$(TARGET) ./core
+sample: slot.o ../reed_solomon/rs.c ../libfugou.o sample_slot_of_rs.o
+	gcc -g sample_slot_of_rs.c slot.c ../reed_solomon/rs.c ../libfugou.c -o sample_slot_of_rs
 
 .c.o:
 	$(CC) $(OPTIONS) $(CFLAGS) -c $<

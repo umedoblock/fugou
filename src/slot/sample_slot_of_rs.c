@@ -2,21 +2,46 @@
 #include "../reed_solomon/rs.h"
 
 #define SS_SIZE (1024)
+#define TEST_MAX_SLOTS (257)
 
 char *tmp_dir = ".";
 const char *random_1048576_bin = "random_1048576.bin";
 char msg[SS_SIZE];
 char ss[SS_SIZE];
+
+uchar *dump_1048576;
 uchar *tmp;
+char random_path[SS_SIZE]; /* tmp_dir/random_1048576.bin */
 
 typedef struct {
     reed_solomon_t *rs;
+    uint division;
     matrix_t *vandermonde;
     vector_t *parity_vector;
     vector_t *data_vector;
-    uint division;
+    size_t matrix_mem_size;
+    size_t vector_mem_size;
     uint symbol_num;
 } reed_solomon_encode_t;
+
+void set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
+{
+    size_t matrix_mem_size, vector_mem_size;
+
+    rse->division = division;
+    rs_take_rs(&rse->rs, bits, division);
+    rse->symbol_num = 0;
+
+    matrix_mem_size = \
+        matrix_calc_mem_size(division, division, rse->rs->register_size);
+    rse->matrix_mem_size = matrix_mem_size;
+    vector_mem_size = vector_calc_mem_size(division, rse->rs->register_size);
+    rse->vector_mem_size = vector_mem_size;
+
+    rse->vandermonde = (matrix_t *)mem; mem += matrix_mem_size;
+    rse->parity_vector = (vector_t *)mem; mem += vector_mem_size;
+    rse->data_vector = (vector_t *)mem; mem += vector_mem_size;
+}
 
 static size_t _rs_encode16_slots(slot_t *parity,
                                  slot_t *data,
@@ -42,8 +67,7 @@ static size_t _rs_encode16_slots(slot_t *parity,
             VECTOR16(data_vector)[j] = num;
         }
 
-        _rs_mul_matrix_vector16(rs, parity_vector, vandermonde, data_vector,
-                                division);
+        rs_mul_matrix_vector16(rs, parity_vector, vandermonde, data_vector);
 
         for (j=0;j<division;j++) {
             num = VECTOR16(parity_vector)[j];
@@ -60,6 +84,7 @@ static size_t _rs_encode16_slots(slot_t *parity,
 
 static size_t slot_reed_solomon_encode(slot_t *parity,
                                      slot_t *data,
+                                     uint division,
                                      void *args)
 {
     reed_solomon_encode_t *rse = args;
@@ -70,30 +95,18 @@ static size_t slot_reed_solomon_encode(slot_t *parity,
                               rse->division, rse->symbol_num);
 }
 
-void sample__slot_divide_and_computing_and_integrate(slot_t *parent, slot_t *children)
+void sample__slot_divide_and_computing_and_integrate(
+    slot_t *parent, slot_t *children, uchar *mem)
 {
     /*
     1048576 % 41 =  1
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
-    uint i, division = 41, symbol_size = 3;
+    uint i, division = 41, symbol_size = 3, bits = 8;
     size_t parent_target_size = 0, child_slot_size, child_target_size;
-    size_t zero_size;
-    size_t integrate_target_size;
+    size_t integrate_target_size, mem_size;
     int ret;
-    uchar *expected_mem, *result_mem;
-    FILE *fp;
-    uchar *mem;
-    uchar *dump_1048576;
-
-    mem = (uchar *)malloc(1048576 * 2);
-
-    tmp = mem; mem += 1048576;
-    dump_1048576 = mem; mem += 1048576;
-
-    _test_clean_parent_children(parent, children);
-    parent = slot_set_memory((uchar *)parent, 1);
-    children = slot_set_memory((uchar *)children, division);
+    reed_solomon_encode_t *rse = NULL;
 
     /* file to file で試してみる。
      * parent file を children file に分割。
@@ -119,51 +132,31 @@ void sample__slot_divide_and_computing_and_integrate(slot_t *parent, slot_t *chi
                              division,
                              symbol_size, 0);
 
-    for (i=0;i<division;i++) {
-        SLOT_name(children_i)[0] = '\0';
-        /* slot_children_named() を実行する前に、
-         * children->name が空文字列になるようにする。
-         */
-    }
-
-    /* さあ親の名を取って、子に名付けてみよう。*/
     slot_children_named(SLF(children), parent, division);
-
-    for (i=0;i<division;i++) {
-        sprintf(ss, "%s%s%s.0x%08x", tmp_dir, SLOT_SEP, random_1048576_bin, i);
-        sprintf(msg, "slot_children_named(children + %u)", i);
-        /* 名前を空文字列にしておいたにも関わらず、
-         * ssに表示した値と名前が一致する。
-         * 名前付けすると、SLOT_type() も自動的に設定される。
-         */
-       assert_by_str(ss, SLOT_name(children_i), msg);
-        sprintf(msg, "slot_children_named(), SLOT_type(children + %u)", i);
-       assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
-    }
-
     slot_children_fopen(SLF(children), "wb+", division);
-    for (i=0;i<division;i++) {
-        sprintf(msg, "test__slot_divide_and_integrate() with "
-                     "SLOT_target(children+%u)", i);
-       assert_by_not_null(SLOT_target(children_i), msg);
-    }
-
     slot_children_set_first_pos(parent, children, division);
-    for (i=0;i<division;i++) {
-        sprintf(msg, "slot_children_set_first_pos(parent=%p, children=%p, "
-                     "division=%u) i=%u",
-                      parent, children, division, i);
-        assert_by_size(0, SLOT_index(children_i), msg);
-    }
+
+/*
+typedef struct {
+    reed_solomon_t *rs;
+    matrix_t *vandermonde;
+    vector_t *parity_vector;
+    vector_t *data_vector;
+    uint division;
+    uint symbol_num;
+} reed_solomon_encode_t;
+*/
+
+    /* reed solomon の設定 */
+    set_rse(rse, bits, division, mem);
+    child_slot_size = SLOT_slot_size(children);
+    rse->symbol_num = child_slot_size / rse->rs->symbol_size;
 
     /* parent => children の分割を行う。*/
-    ret = _slot_divide(children, parent, division);
-    sprintf(msg, "_slot_divide(children=%p, parent=%p, "
-                 "division=%u, slot_fread, slot_fwrite)",
-                  children, parent, division);
-   assert_success(ret, msg);
+    /* sample の目玉 */
+    ret = _slot_divide(children, parent, division, (void *)rse);
 
-    child_slot_size = SLOT_slot_size(children);
+    #if 0
     for (i=0;i<division;i++) {
         rewind(SLOT_target_f(children_i));
         fread(tmp, 1, child_slot_size,
@@ -203,6 +196,7 @@ void sample__slot_divide_and_computing_and_integrate(slot_t *parent, slot_t *chi
            assert_by_00(result_mem + child_target_size, zero_size, msg);
         }
     }
+    #endif
 
 #if 0
     /* children は使い回すので、file pointer を先頭に戻しておく。*/
@@ -228,7 +222,7 @@ void sample__slot_divide_and_computing_and_integrate(slot_t *parent, slot_t *chi
     }
 
     /* children => parent の統合 */
-    ret = _slot_integrate(parent, children, division);
+    ret = _slot_integrate(parent, children, args);
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
@@ -266,7 +260,39 @@ void sample__slot_divide_and_computing_and_integrate(slot_t *parent, slot_t *chi
 
 int main(int argc, char *argv[])
 {
-    sample__slot_divide_and_computing_and_integrate(parent, children);
+    size_t mem_size = 0;
+    uint division = 41;
+    FILE *fp;
+    uchar *dump_1048576;
+    uchar *mem;
+    slot_t *parent, *children;
+    size_t matrix_mem_size, vector_mem_size;
+
+    mem_size += 1048576 * 2;
+    mem_size += (1 + TEST_MAX_SLOTS) * slot_get_memory_size();
+
+    mem = (uchar *)malloc(mem_size);
+    if (mem == NULL) {
+        fprintf(stderr, "faild malloc(mem_size=%lu)\n", mem_size);
+        return -1;
+    }
+    memset(mem, '\0', mem_size);
+
+    dump_1048576 = mem; mem += 1048576;
+    tmp = mem; mem += 1048576;
+
+    parent = SLT(mem);
+    parent = slot_set_memory((uchar *)parent, 1);
+    mem += slot_get_memory_size();
+    children = SLT(mem);
+    children = slot_set_memory((uchar *)children, TEST_MAX_SLOTS);
+    mem += slot_get_memory_size() * TEST_MAX_SLOTS;
+
+    rs_big_bang();
+    sample__slot_divide_and_computing_and_integrate(parent, children, tmp);
+    rs_ultimate_fate_of_the_universe();
+
+    free(mem);
 
     return 0;
 }
