@@ -1,0 +1,38 @@
+完成していないです。
+お遊びみたいなものですが、私の気の赴くままに開発を試していました。
+
+reed solomon code を実現するための rs.c、
+binary を効率よく扱うための slot.c を同梱しています。
+
+展開後に 作成される、reed_solomon directory ,slot  directory に移動し、
+make test
+を実行してください。
+
+reed_solomon で頑張った点は、
+reed solomon code の定義にあう galois_field を、galois.c で
+発見出来るようにしたこと。
+
+その galois_field を rs.c 内の big_bang_t _dokkaan 内で、
+reed_solomon_t 構造体に適切に設定し、
+rs_big_bang(), rs_ultimate_fate_of_the_universe()
+の組み合わせによってreed solomon code library
+使用に必要な memory 資源確保・解放を行うようにした点です。
+
+slot.c で頑張った点は、
+slot_calc_sb_by_child_slot_size()
+slot_calc_sb_by_division()
+によって、大きな file を分割するときの 各 file の大きさを適切に計算
+出来るようにした点です。
+
+ecc で頑張った点は、ecdh, ecdsa を実装してみた点、
+拡張ユークリッドの互除法を C 拡張で python3 から使えるようにした点です。
+ecc directory 以下で、
+python3 setup.py build
+を実行した後に、
+test_ecc.py  test_speed.py
+を python3 から実行してください。
+
+私がある程度完成させたと思えるのは上記の、rs.c, slot.c, ecc.py
+程度です。
+他にも未整理・未完成の code があります。
+もし興味を持っていただけるのでしたら、送らせていただきます。
