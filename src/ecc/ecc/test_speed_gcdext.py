@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, 'build/lib.linux-i686-3.2')
-from _debug_gcdext import gcdext
+from _gcdext import gcdext
 import cProfile
 
 def run():
