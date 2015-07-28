@@ -7,7 +7,6 @@ extern "C" {
 
 #include <unistd.h>
 #include "../libfugou_base.h"
-#include "../sha/sha.h"
 
 #define LOGGED_ERRORNO() do { \
         errnum = errno; \

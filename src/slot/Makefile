@@ -11,7 +11,7 @@ test: test_slot $(OBJS)
 	rm -f ./core
 	./test_slot
 test_slot: $(OBJS) $(OBJS_UPPER)
-	$(CC) $(CFLAGS) $(TEST_OPTIONS) -o $(TARGET) $(OBJS) $(OBJS_UPPER)
+	$(CC) $(CFLAGS) $(TEST_OPTIONS) -o $(TARGET) $(OBJS) ./libfugou.o ./assert_xxx.o
 gdb:
 	gdb ./$(TARGET) ./core
 sample: slot.o ../reed_solomon/rs.c ../libfugou.o sample_slot_of_rs.o

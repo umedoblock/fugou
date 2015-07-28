@@ -8,7 +8,7 @@ char msg[1024];
 char ss[SS_SIZE];
 uchar *dump_1048576;
 uchar *tmp;
-const char *tmp_dir = "./reed_solomon";
+const char *tmp_dir = "../reed_solomon";
 const char *random_1048576_bin = "random_1048576.bin";
 char random_path[SS_SIZE]; /* tmp_dir/random_1048576.bin */
 
