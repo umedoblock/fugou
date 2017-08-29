@@ -379,7 +379,7 @@ static inline void _rs_mul_matrixes16(reed_solomon_t *rs,
 }
 
 #define rs_mul_matrix_vector(XX)                                        \
-inline void                                                             \
+static inline void                                                             \
 rs_mul_matrix_vector##XX(reed_solomon_t *rs,                            \
                           vector_t *answer,                              \
                           matrix_t *mat,                                 \
