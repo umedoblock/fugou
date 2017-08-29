@@ -36,3 +36,10 @@ test_ecc.py  test_speed.py
 程度です。
 他にも未整理・未完成の code があります。
 もし興味を持っていただけるのでしたら、送らせていただきます。
+
+ autoheader \
+    && aclocal \
+    && libtoolize --ltdl --copy --force \
+    && automake --add-missing --copy \
+    && autoconf \
+    && ./configure
