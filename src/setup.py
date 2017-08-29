@@ -57,22 +57,8 @@ module_montgomery = \
 ext_name = '_camellia' + suffix
 module_camellia = \
     Extension(ext_name, sources = ['camellia/pycamellia.c',
-    'camellia/camellia_keygen.c',
-    'camellia/camellia_cbc.c',
-    'camellia/camellia_debug.c',
-    'camellia/camellia_padding.c',
-    'camellia/camellia_decrypt.c',
-    'camellia/camellia_putx.c',
-    'camellia/camellia_destroy.c',
-    'camellia/camellia_subkey_generate.c',
-    'camellia/camellia_F.c',
-    'camellia/camellia_FL.c',
-    'camellia/camellia_hash.c',
-    'camellia/camellia_FL_1.c',
-    'camellia/camellia_hkaiten.c',
-    'camellia/camellia_cBytes.c',
-    'camellia/camellia_keycopy.c',
-    'camellia/camellia_encrypt.c'])
+    'camellia/camellia.c',
+    'libfugou.c'])
 
 setup(  name = 'fugou',
         version = '8.0',
@@ -81,5 +67,5 @@ setup(  name = 'fugou',
         url = 'empty',
         description = 'This is a gcdext() package',
         ext_modules = [
-            module_montgomery, module_gcdext, module_camellia, module_par2
+            module_montgomery, module_gcdext, module_camellia
         ])
