@@ -860,6 +860,8 @@ static void _rsf_files_close(rs_file_t *rsf, uint division)
         fclose(rsf->text);
     if (rsf->restored != NULL)
         fclose(rsf->restored);
+    if (p2f->header_file != NULL)
+        fclose(p2f->header_file);
 
     _DEBUG("\n\n");
 }

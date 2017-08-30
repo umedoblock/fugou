@@ -1070,6 +1070,8 @@ static void _rs_view_matrix32(uint *matrix, uint division)
             fprintf(_log, "\n");
         }
     }
+    if (p2f->header_file != NULL)
+        fclose(p2f->header_file);
 }
 
 static void _rs_view_vector16(vector_t *vector)
