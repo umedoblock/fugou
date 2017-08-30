@@ -20,6 +20,7 @@ static PyMemberDef Camellia_members[] = {
     {NULL}  // Sentinel
 };
 
+#if 0
 void dump(uchar *data, int length, int width)
 {
     int i;
@@ -31,6 +32,7 @@ void dump(uchar *data, int length, int width)
     if(i%width)
         fprintf(stderr, "\n");
 }
+#endif
 
 static PyObject *
 Camellia_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -156,7 +158,7 @@ encrypt_mode_cbc(
 }
 
 static PyObject *
-_encrypt_cbc(CamelliaObject *self, PyObject *args)
+_encrypt_cbc_(CamelliaObject *self, PyObject *args)
 {
     Py_buffer text, iv_;
     unt text_size;
@@ -217,7 +219,7 @@ decrypt_mode_cbc(
 }
 
 static PyObject *
-_decrypt_cbc(CamelliaObject *self, PyObject *args)
+_decrypt_cbc_(CamelliaObject *self, PyObject *args)
 {
     Py_buffer cipher;
     unt cipher_size, text_size;
@@ -265,10 +267,10 @@ Camellia_init(CamelliaObject *self, PyObject *args, PyObject *kwds)
 static PyMethodDef Camellia_methods[] = {
     {"_encrypt", (PyCFunction )_encrypt, METH_VARARGS, "_encrypt()"},
     {"_decrypt", (PyCFunction )_decrypt, METH_VARARGS, "_decrypt()"},
-    {"_encrypt_cbc", (PyCFunction )_encrypt_cbc,
-        METH_VARARGS, "_encrypt_cbc()"},
-    {"_decrypt_cbc", (PyCFunction )_decrypt_cbc,
-        METH_VARARGS, "_decrypt_cbc()"},
+    {"_encrypt_cbc_", (PyCFunction )_encrypt_cbc_,
+        METH_VARARGS, "_encrypt_cbc_()"},
+    {"_decrypt_cbc_", (PyCFunction )_decrypt_cbc_,
+        METH_VARARGS, "_decrypt_cbc_()"},
     {NULL, NULL, 0, NULL}   /* sentinel */
 };
 

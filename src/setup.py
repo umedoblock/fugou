@@ -58,7 +58,7 @@ ext_name = '_camellia' + suffix
 module_camellia = \
     Extension(ext_name, sources = ['camellia/pycamellia.c',
     'camellia/camellia.c',
-    ])
+    'libfugou.c'])
 
 setup(  name = 'fugou',
         version = '8.0',

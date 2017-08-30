@@ -51,7 +51,7 @@ class Camellia:
             iv = int.to_bytes(random_number, BLOCK_SIZE, 'big')
 
         # print('self.cm._encrypt_cbc(iv, text, text_size)')
-        return self.cm._encrypt_cbc(iv, text, text_size)
+        return self.cm._encrypt_cbc_(iv, text, text_size)
 
     def decrypt_cbc(self, cipher):
         cipher_size = len(cipher)
@@ -61,7 +61,7 @@ class Camellia:
             raise ValueError('len(cipher) must be multiply by BLOCK_SIZE')
 
         # print('self.cm._decrypt_cbc(iv, cipher, cipher_size)')
-        return self.cm._decrypt_cbc(cipher, cipher_size)
+        return self.cm._decrypt_cbc_(cipher, cipher_size)
 
 if __name__ == '__main__':
     key_size = 128
