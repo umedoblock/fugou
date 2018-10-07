@@ -7,7 +7,7 @@ list=(DH camellia utbi_sanjutsu base64 par2 sha)
 
 for l in ${list[@]} ; do
   echo ---------------------
-  cd $l/src
+  cd src/$l
   echo "$l=" $l
   echo pwd = $PWD
   make clean
