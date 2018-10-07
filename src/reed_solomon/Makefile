@@ -11,7 +11,7 @@ test: test_rs $(OBJS)
 	rm -f ./core
 	./test_rs
 test_rs: $(OBJS) $(OBJS_UPPER)
-	$(CC) $(CFLAGS) $(TEST_OPTIONS) -o $(TARGET) $(OBJS) ./libfugou.o ./assert_xxx.o
+	$(CC) $(CFLAGS) $(TEST_OPTIONS) -o $(TARGET) $(OBJS) $(OBJS_UPPER)
 # rs.o: reed_solomon/rs.c reed_solomon/rs.h
 # 	gcc -Wall -g -c reed_solomon/rs.c
 #rs_test.o: rs.c
