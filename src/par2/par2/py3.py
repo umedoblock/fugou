@@ -90,7 +90,7 @@ class ReedSolomon(object):
             with open(path, 'rb') as f:
                 data = f.read()
             if sha1sums[self.bits] != hashlib.sha1(data).hexdigest():
-                raise Par2Error('bits={}, sha1sum mismatched.', self.bits)
+                raise Par2Error('bits={}, sha1sum mismatched.'.format(self.bits))
 
             gf_gfi = pickle.loads(data)
             self.gf = gf_gfi['gf']
