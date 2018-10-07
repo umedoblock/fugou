@@ -32,7 +32,7 @@ void _sha1_load_text(
 void _sha1_normalize_endian(sha1sum_t *sha1sum);
 void _sha1_set_value(sha1sum_t *sha1sum);
 void _sha1_get_hex(char *hex, sha1sum_t *sha1sum);
-inline uint _sha1_for_portability_about_endian(uint n);
+uint _sha1_for_portability_about_endian(uint n);
 int _bin2hex(int bin);
 
 /*****************************************************************************/
@@ -348,7 +348,7 @@ void _sha1_normalize_endian(sha1sum_t *sha1sum)
     }
 }
 
-inline uint _sha1_for_portability_about_endian(uint n)
+uint _sha1_for_portability_about_endian(uint n)
 {
     uint i;
     uchar *p = (uchar *)(&n);
