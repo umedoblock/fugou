@@ -4,8 +4,6 @@
 #include "Python.h"
 #include "structmember.h"
 
-#include "libpar2.h"
-
 #define PYPAR2_MAX_REDUNDANCY (1 << 13)
 /* MO means Mega Octets(Bytes) */
 /* ((2 ^ 13) ^ 2) * 4 = 64(= 2 ^ 26) * 4 = 256 Mega Octets */
