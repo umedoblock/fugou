@@ -1,6 +1,6 @@
-#include "../libfugou.h"
+#include "libfugou.h"
 #include "rs.h"
-#include "../assert_xxx.h"
+#include "assert_xxx.h"
 
 /*
 #define _rs_ADD(a, b) (a ^ b)

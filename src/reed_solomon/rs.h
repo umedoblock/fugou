@@ -155,7 +155,7 @@
 #define __RS_H__
 
 #include "../slot/slot.h"
-#include "../libfugou_base.h"
+#include "../libfugou/libfugou_base.h"
 
 #ifdef __cplusplus
 extern "C" {
