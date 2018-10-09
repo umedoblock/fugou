@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
     uint division = 41;
     FILE *fp;
     uchar *dump_1048576;
-    uchar *mem;
+    uchar *mem, *_mem;
     slot_t *parent, *children;
     size_t matrix_mem_size, vector_mem_size;
 
@@ -277,6 +277,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     memset(mem, '\0', mem_size);
+    _mem = mem;
 
     dump_1048576 = mem; mem += 1048576;
     tmp = mem; mem += 1048576;
@@ -292,7 +293,7 @@ int main(int argc, char *argv[])
     sample__slot_divide_and_computing_and_integrate(parent, children, tmp);
     rs_ultimate_fate_of_the_universe();
 
-    free(mem);
+    free(_mem);
 
     return 0;
 }
