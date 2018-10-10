@@ -673,7 +673,7 @@ _DEBUG("start _slot_divide_now_computing(children=%p, parent=%p, "
                            "parent=%p, args=%p).\n",
                            children, parent, args);
         #endif
-        compute_size = 0;
+        compute_size = 0; /* BUG? compute_size should be ... */
     }
 
 _DEBUG(" done _slot_divide_now_computing(), compute_size=%u\n",
