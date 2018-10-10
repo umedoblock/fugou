@@ -303,16 +303,16 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
          * ssに表示した値と名前が一致する。
          * 名前付けすると、SLOT_type() も自動的に設定される。
          */
-       assert_by_str(ss, SLOT_name(children_i), msg);
+        assert_by_str(ss, SLOT_name(children_i), msg);
         sprintf(msg, "slot_children_named(), SLOT_type(children + %u)", i);
-       assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
+        assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
     }
 
     slot_children_fopen(SLF(children), "wb+", division);
     for (i=0;i<division;i++) {
         sprintf(msg, "test__slot_divide_and_integrate() with "
                      "SLOT_target(children+%u)", i);
-       assert_by_not_null(SLOT_target(children_i), msg);
+        assert_by_not_null(SLOT_target(children_i), msg);
     }
 
     slot_children_set_first_pos(parent, children, division);
@@ -342,7 +342,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
                      "dump_1048576 + i(=%u) * child_slot_size(=%zu)",
                       i, i, child_slot_size);
         if (i != division - 1) {
-           assert_by_mem(expected_mem, result_mem,
+            assert_by_mem(expected_mem, result_mem,
                           child_slot_size, msg);
         }
         else {
@@ -351,23 +351,23 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
             zero_size = child_slot_size - child_target_size;
             sprintf(msg, "test__slot_divide_and_integrate() with "
                          "SLOT_padding_size(children_i), zero_size");
-           assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
+            assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
             sprintf(msg, "test__slot_divide_and_integrate() with "
                          "assert_by_mem(expected_mem, result_mem)");
-           assert_by_mem(expected_mem, result_mem,
+            assert_by_mem(expected_mem, result_mem,
                           child_target_size, msg);
            /* 簡易版 debug 関数
            sprintf(msg, "child_target_size=%u, zero_size=%u, "
                         "child_slot_size=%u, padding_size=%u\n",
                          child_target_size, zero_size,
                          child_slot_size, SLOT_padding_size(children_i));
-           assert_true(0, msg);
+            assert_true(0, msg);
            */
             sprintf(msg, "test__slot_divide_and_integrate() with "
                          "assert_by_00(result_mem=%p + child_target_size=%zu, "
                          "zero_size=%zu)",
                           result_mem, child_target_size, zero_size);
-           assert_by_00(result_mem + child_target_size, zero_size, msg);
+            assert_by_00(result_mem + child_target_size, zero_size, msg);
         }
     }
 
@@ -518,16 +518,16 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
          * ssに表示した値と名前が一致する。
          * 名前付けすると、SLOT_type() も自動的に設定される。
          */
-       assert_by_str(ss, SLOT_name(children_i), msg);
+        assert_by_str(ss, SLOT_name(children_i), msg);
         sprintf(msg, "slot_children_named(), SLOT_type(children + %u)", i);
-       assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
+        assert_by_uint(SLOT_FILE, SLOT_type(children_i), msg);
     }
 
     slot_children_fopen(SLF(children), "wb+", division);
     for (i=0;i<division;i++) {
         sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                      "with SLOT_target(children+%u)", i);
-       assert_by_not_null(SLOT_target(children_i), msg);
+        assert_by_not_null(SLOT_target(children_i), msg);
     }
 
     slot_children_set_first_pos(parent, children, division);
@@ -556,12 +556,12 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
                          "with SLOT_target(children+%u) == "
                          "dump_1048576 + i(=%u) * child_slot_size(=%zu)",
                           i, i, child_slot_size);
-           assert_by_mem(expected_mem, result_mem,
+            assert_by_mem(expected_mem, result_mem,
                           child_slot_size, msg);
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                          "with SLOT_target(children+%u), "
                          "SLOT_index(children+%u)", i, i);
-           assert_by_size(SLOT_target_size(children_i),
+            assert_by_size(SLOT_target_size(children_i),
                            SLOT_index(children_i),
                            msg);
         }
@@ -571,23 +571,23 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
             zero_size = child_slot_size - child_target_size;
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                          "with SLOT_padding_size(children_i), zero_size");
-           assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
+            assert_by_size(SLOT_padding_size(children_i), zero_size, msg);
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                          "with assert_by_mem(expected_mem, result_mem)");
-           assert_by_mem(expected_mem, result_mem,
+            assert_by_mem(expected_mem, result_mem,
                           child_target_size, msg);
            /* 簡易版 debug 関数
            sprintf(msg, "child_target_size=%u, zero_size=%u, "
                         "child_slot_size=%u, padding_size=%u\n",
                          child_target_size, zero_size,
                          child_slot_size, SLOT_padding_size(children_i));
-           assert_true(0, msg);
+            assert_true(0, msg);
            */
             sprintf(msg, "test__slot_divide_and_integrate_mini_by_slot_size() "
                          "with assert_by_00(result_mem=%p + "
                          "child_target_size=%zu, zero_size=%zu)",
                           result_mem, child_target_size, zero_size);
-           assert_by_00(result_mem + child_target_size, zero_size, msg);
+            assert_by_00(result_mem + child_target_size, zero_size, msg);
         }
     }
 
