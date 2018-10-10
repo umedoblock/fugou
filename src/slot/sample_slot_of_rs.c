@@ -103,11 +103,14 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
     1048576 % 41 =  1
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
-    uint i, division = 41, symbol_size = 3, bits = 8;
+    uint i, division = 41, bits = 16;
     size_t parent_target_size = 0, child_slot_size, child_target_size;
     size_t integrate_target_size, mem_size;
     int ret;
     reed_solomon_encode_t _rse, *rse = &_rse;
+
+    /* reed solomon の設定 */
+    set_rse(rse, bits, division, mem);
 
     /* file to file で試してみる。
      * parent file を children file に分割。
@@ -131,7 +134,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
     slot_calc_sb_by_division(parent, children,
                              parent_target_size,
                              division,
-                             symbol_size, 0);
+                             rse->rs->symbol_size, 0);
 
     slot_children_named(SLF(children), parent, division);
     slot_children_fopen(SLF(children), "wb+", division);
@@ -148,8 +151,6 @@ typedef struct {
 } reed_solomon_encode_t;
 */
 
-    /* reed solomon の設定 */
-    set_rse(rse, bits, division, mem);
     child_slot_size = SLOT_slot_size(children);
     rse->symbol_num = child_slot_size / rse->rs->symbol_size;
 
