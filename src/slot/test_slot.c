@@ -496,9 +496,11 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
 
     SLOT_writing(parent) = slot_fwrite;
     SLOT_reading(parent) = slot_fread;
+    SLOT_computing(parent) = NULL;
     for (i=0;i<division;i++) {
         SLOT_writing(children_i) = slot_fwrite;
         SLOT_reading(children_i) = slot_fread;
+        SLOT_computing(children_i) = NULL;
     }
 
     for (i=0;i<division;i++) {
