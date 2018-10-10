@@ -1,12 +1,7 @@
-CC		= cc
+include ../libfugou/Makefile.template
+
 OBJS	= test_slot.o slot.o
-AR_UPPER =../libfugou/libfugou.a
-CFLAGS	= -Wall -g
-#CFLAGS	= -Wall -g -O3
-TEST_OPTIONS	= -D__TEST__
-OPTIONS	= -D__TEST__ -I ../libfugou
 TARGET	= test_slot
-vpath %.h ../libfugou
 
 test: test_slot $(OBJS) libfugou.a
 	rm -f ./core

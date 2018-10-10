@@ -1,0 +1,7 @@
+CC		= cc
+AR_UPPER =../libfugou/libfugou.a
+CFLAGS	= -Wall -g
+#CFLAGS	= -Wall -g -O3
+TEST_OPTIONS	= -D__TEST__
+OPTIONS	= -D__TEST__ -I ../libfugou
+vpath %.h ../libfugou
