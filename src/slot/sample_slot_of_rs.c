@@ -202,17 +202,11 @@ typedef struct {
     }
     #endif
 
-#if 0
-    /* children は使い回すので、file pointer を先頭に戻しておく。*/
-    for (i=0;i<division;i++) {
-        rewind(SLOT_target_f(children_i));
-    }
+    slot_children_fclose(SLF(children), division);
 
-    /* parent の target を integrate で上書きする前に、
-     * parent の target を閉じておく。しかし、削除はしない。
-     */
     slot_file_fclose(SLF(parent));
 
+#if 0
     strcat(SLOT_name(parent), ".integrate");
     fp = fopen(SLOT_name(parent), "wb+");
     SLOT_target(parent) = fp;
@@ -249,13 +243,14 @@ typedef struct {
 #endif
 
     /* 後始末 */
+    /*
     slot_children_fclose(SLF(children), division);
     slot_children_remove(SLF(children), division);
 
-    /* _slot_divide_or_integrate(verb=SLOT_INTEGRATE)
+    _slot_divide_or_integrate(verb=SLOT_INTEGRATE)
      * の実行結果として integrate が作成されるから、integrate は毎回削除。
-     */
     slot_file_fclose(SLF(parent));
+     */
     /*
     slot_file_remove(SLF(parent));
      */
