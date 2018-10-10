@@ -156,7 +156,9 @@ typedef struct {
 
     /* parent => children の分割を行う。*/
     /* sample の目玉 */
+    /*
     ret = _slot_divide(children, parent, division, (void *)rse);
+    */
 
     #if 0
     for (i=0;i<division;i++) {
@@ -247,6 +249,7 @@ typedef struct {
 #endif
 
     /* 後始末 */
+    #if 0
     slot_children_fclose(SLF(children), division);
     slot_children_remove(SLF(children), division);
 
@@ -254,6 +257,7 @@ typedef struct {
      * の実行結果として integrate が作成されるから、integrate は毎回削除。
      */
     slot_file_fclose(SLF(parent));
+    #endif
     /*
     slot_file_remove(SLF(parent));
      */
