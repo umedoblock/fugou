@@ -108,7 +108,7 @@ void sample_slot_divide_and_computing_and_integrate(
     size_t parent_target_size = 0, child_slot_size, child_target_size;
     size_t integrate_target_size, mem_size;
     int ret;
-    reed_solomon_encode_t *rse = NULL;
+    reed_solomon_encode_t _rse, *rse = &_rse;
 
     /* file to file で試してみる。
      * parent file を children file に分割。
