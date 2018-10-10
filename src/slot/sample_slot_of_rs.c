@@ -249,15 +249,13 @@ typedef struct {
 #endif
 
     /* 後始末 */
-    #if 0
     slot_children_fclose(SLF(children), division);
     slot_children_remove(SLF(children), division);
 
-    /* test 実行の度に _slot_divide_or_integrate(verb=SLOT_INTEGRATE)
+    /* _slot_divide_or_integrate(verb=SLOT_INTEGRATE)
      * の実行結果として integrate が作成されるから、integrate は毎回削除。
      */
     slot_file_fclose(SLF(parent));
-    #endif
     /*
     slot_file_remove(SLF(parent));
      */
