@@ -113,16 +113,16 @@ void sample_slot_divide_and_computing_and_integrate(
     /* file to file で試してみる。
      * parent file を children file に分割。
      * children file を integrate file に統合。
-     */
     SLOT_writing(parent) = slot_fwrite;
+     */
     SLOT_computing(parent) = slot_reed_solomon_encode;
     SLOT_reading(parent) = slot_fread;
     for (i=0;i<division;i++) {
         SLOT_writing(children_i) = slot_fwrite;
         /*
         SLOT_computing(children_i) = slot_reed_solomon_recover;
-        */
         SLOT_reading(children_i) = slot_fread;
+        */
     }
 
     slot_file_named(SLF(parent), tmp_dir, random_1048576_bin);
