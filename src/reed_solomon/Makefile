@@ -8,7 +8,7 @@ OPTIONS	= -D__TEST__ -I ../libfugou
 TARGET	= test_rs
 vpath %.h ../libfugou
 
-test: test_rs
+test: test_rs libfugou.a
 	rm -f ./core
 	./test_rs
 test_rs: $(OBJS) libfugou.a
