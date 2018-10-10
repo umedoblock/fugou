@@ -204,7 +204,10 @@ typedef struct {
     slot_children_fclose(SLF(children), division);
 
     slot_file_fclose(SLF(parent));
+}
 
+void sample_slot_integrate(slot_t *parent, slot_t *children, uchar *mem)
+{
 #if 0
     strcat(SLOT_name(parent), ".integrate");
     fp = fopen(SLOT_name(parent), "wb+");
@@ -288,7 +291,8 @@ int main(int argc, char *argv[])
     mem += slot_get_memory_size() * TEST_MAX_SLOTS;
 
     rs_big_bang();
-    sample_slot_divide_and_computing_and_integrate(parent, children, tmp);
+    sample_slot_divide(parent, children, tmp);
+    sample_slot_integrate(parent, children, tmp);
     rs_ultimate_fate_of_the_universe();
 
     free(_mem);
