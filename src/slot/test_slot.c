@@ -328,7 +328,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
-   assert_success(ret, msg);
+    assert_success(ret, msg);
 
     child_slot_size = SLOT_slot_size(children);
     for (i=0;i<division;i++) {
@@ -398,20 +398,20 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
-   assert_success(ret, msg);
+    assert_success(ret, msg);
 
     integrate_target_size = slot_ask_target_size(parent, FROM_HEAD);
     sprintf(msg, "_slot_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite) "
                  "integrate_target_size=%zu",
                   parent, children, division, integrate_target_size);
-   assert_by_size(1048576, integrate_target_size, msg);
+    assert_by_size(1048576, integrate_target_size, msg);
 
     rewind(SLOT_target_f(parent));
     fread(tmp, 1, 1048576, SLOT_target_f(parent));
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "SLOT_INTEGRATE, ...", parent, children);
-   assert_by_mem(dump_1048576, tmp, 1048576, msg);
+    assert_by_mem(dump_1048576, tmp, 1048576, msg);
    /*
    */
 
@@ -543,7 +543,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
-   assert_success(ret, msg);
+    assert_success(ret, msg);
 
     for (i=0;i<division;i++) {
         rewind(SLOT_target(children_i));
@@ -624,20 +624,20 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
-   assert_success(ret, msg);
+    assert_success(ret, msg);
 
     integrate_target_size = slot_ask_target_size(parent, FROM_HEAD);
     sprintf(msg, "_slot_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite) "
                  "integrate_target_size=%zu",
                   parent, children, division, integrate_target_size);
-   assert_by_size(parent_target_size, integrate_target_size, msg);
+    assert_by_size(parent_target_size, integrate_target_size, msg);
 
     rewind(SLOT_target(parent));
     fread(tmp, 1, parent_target_size, SLOT_target_f(parent));
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "SLOT_INTEGRATE, ...", parent, children);
-   assert_by_mem(dump_1048576, tmp, parent_target_size, msg);
+    assert_by_mem(dump_1048576, tmp, parent_target_size, msg);
 
     /* 後始末 */
     slot_children_fclose(SLF(children), division);
