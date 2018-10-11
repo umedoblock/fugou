@@ -299,11 +299,62 @@ size_t slot_get_memory_size(void)
  * ということを，お迎えの時に思いついた。
  * 思い出して書いておいた。
 
- * 注意:
+ * 注意1:
  * 親が読み込める領域の大きさと，
  * target_size の大きさの比較結果によって，
  * 処理を変える必要が出てくる。
+ * 注意2:
+ * 以下のTODOによる高速化を用いる場合，
+ * 子のmemory領域のoffsetを調整する必要がある。
  */
+
+/* TODO: 最速の2bytes endian変換(rs16 で必要)
+ * 一度，test program を書いて，速度検証をする必要がある。
+
+ * xy0123456789abcdef....
+   separate each 2 bytes
+   xy 01 23 45 67 89 ab cd ef
+    . . . . . . . . .
+
+ * case ordinary
+ * swap 0 and 1, every step 2.
+ * 0123456789abcdef...
+ * 1032547698badcfe...
+   for (i=0;i<n;i+=2){
+     // 3 steps
+     tmp = buf[i];
+     buf[i] = buf[i+1]
+     buf[i+1] = tmp;
+   }
+
+ * case smart
+ * mv 0 to y and 1 to x, every step 2.
+ * xy0123456789abcdef...
+ * 1032547698badcfe...
+   10 32 54 76 98 ba dc fe
+   for (i=0;i<n;i+=2){
+     // 2 steps
+     buf[i] = buf[i+3];
+     buf[i+1] = buf[i+2];
+   }
+
+ * case excellent
+ * the fastest !!!
+ * but bad alignment...
+   対策としては，1回目は先頭1byteのみ読み込んで，
+   2回めで残り全て読み込むとか？
+   とにかく，一つ分ずらす必要がある。
+ * mv 1 to y, every step 2
+ * xy0123456789abcdef...
+     / / / / / / / /
+ * x1032547698badcfe...
+    10 32 54 76 98 ba dc fe
+   for (i=0;i<n;i+=2){
+     // 1 step !!!!!!! no prural [s] !!!
+     buf[i+1] = buf[i+3];
+   }
+ */
+
 slot_t *slot_set_memory(uchar *mem, int num)
 {
     slot_t *slt;
