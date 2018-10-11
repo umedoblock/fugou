@@ -241,7 +241,7 @@ void bury_memory(void *ptr, size_t length)
     uchar *mem = (uchar *)ptr;
 
     for(i=0;i<sizeof(void *);i++) {
-        mem[i] = (uint )ptr >> (8 * (sizeof(void *) - i - 1));
+        mem[i] = ((long_size_t )ptr) >> (8 * (sizeof(void *) - i - 1));
     }
     for(;i<length;i++) {
         mem[i] = (uchar )(index + i);
@@ -258,7 +258,7 @@ void dump(void *ptr, int length, int width)
         return;
     }
 
-    sprintf(fmt, "0x%%0%dx ", sizeof(void *) * 2);
+    sprintf(fmt, "0x%%0%ldx ", sizeof(void *) * 2);
     fprintf(_log, "dump(ptr=%p, length=%d, width=%d) start\n",
                           ptr, length, width);
 
