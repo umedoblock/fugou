@@ -156,9 +156,7 @@ typedef struct {
 
     /* parent => children の分割を行う。*/
     /* sample の目玉 */
-    /*
     ret = _slot_divide(children, parent, division, (void *)rse);
-    */
 
     #if 0
     for (i=0;i<division;i++) {
