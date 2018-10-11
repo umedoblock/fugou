@@ -41,6 +41,10 @@ void set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
     rse->vandermonde = (matrix_t *)mem; mem += matrix_mem_size;
     rse->parity_vector = (vector_t *)mem; mem += vector_mem_size;
     rse->data_vector = (vector_t *)mem; mem += vector_mem_size;
+
+    matrix_init(rse->vandermonde, division, division, rse->rs->register_size);
+    vector_init(rse->parity_vector, division, rse->rs->register_size);
+    vector_init(rse->data_vector, division, rse->rs->register_size);
 }
 
 static size_t _rs_encode16_slots(slot_t *parity,
