@@ -354,6 +354,31 @@ size_t slot_get_memory_size(void)
      buf[i+1] = buf[i+3];
    }
  */
+/* TODO: 4 bytes endian converter
+ * こちらも検証する必要がある。
+ * xyzw0123456789abcdef...
+   x32107654ba98fedc
+   for (i=0;i<n;i+=4){
+     buf[i+1] = buf[i+7];
+     buf[i+2] = buf[i+6];
+     buf[i+3] = buf[i+5];
+     // 3 steps, not smart
+   }
+
+ * xyzw0123456789abcdef...
+      1032547698badcfe
+   for (i=0;i<n;i+=2){
+     buf[i+3] = buf[i+5];
+   }
+      1032547698badcfe
+   x32107654ba98fedc
+   buf++;
+   buf16 = buf;
+   for (i=0;i<n/4;i+=2){
+     buf16[i] = buf16[i+2];
+   }
+   // 2 steps, so smart
+ */
 
 slot_t *slot_set_memory(uchar *mem, int num)
 {
