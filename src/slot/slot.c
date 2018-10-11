@@ -285,6 +285,25 @@ size_t slot_get_memory_size(void)
     return sizeof(slot_t) + SLOT_BUF_SIZE;
 }
 
+/* TODO: 親と子のmemory領域共有について
+ * 親が一度に全ての data を読み込んでしまいたい。
+ * 子は，親の読んだ data のaddressを使うようにしたい。
+
+ * なので，親から見た子のbufは一連である必要がある。
+
+ * そのため，memの先頭にはslot_t構造体のmemory領域が並ぶ。
+ * その後，子のbufが途切れることなく連続してnum個分並ぶ。
+ * 親から見れば，子のbufは一つの大きな領域(buf*num)に見える。
+ * 親と子は，memory領域を共有する。
+
+ * ということを，お迎えの時に思いついた。
+ * 思い出して書いておいた。
+
+ * 注意:
+ * 親が読み込める領域の大きさと，
+ * target_size の大きさの比較結果によって，
+ * 処理を変える必要が出てくる。
+ */
 slot_t *slot_set_memory(uchar *mem, int num)
 {
     slot_t *slt;
