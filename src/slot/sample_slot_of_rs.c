@@ -66,7 +66,7 @@ static size_t _rs_encode16_slots(slot_t *parity,
             num = 0;
             for (k=0;k<symbol_size;k++) {
                 num <<= 8;
-                num += SLOT_buf(data + j)[i * symbol_size + k];
+                num += SLOT_buf(data)[i * symbol_size + k];
             }
             VECTOR16(data_vector)[j] = num;
         }
