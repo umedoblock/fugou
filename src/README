@@ -34,8 +34,6 @@ test_ecc.py  test_speed.py
 
 私がある程度完成させたと思えるのは上記の、rs.c, slot.c, ecc.py
 程度です。
-他にも未整理・未完成の code があります。
-もし興味を持っていただけるのでしたら、送らせていただきます。
 
  autoheader \
     && aclocal \
