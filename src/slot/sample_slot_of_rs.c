@@ -66,7 +66,7 @@ static size_t _rs_encode16_slots(slot_t *parity,
             num = 0;
             for (k=0;k<symbol_size;k++) {
                 num <<= 8;
-                num += SLOT_buf(data)[i * symbol_size + k];
+                num += SLOT_buf(parity + j)[i * symbol_size + k];
             }
             VECTOR16(data_vector)[j] = num;
         }
@@ -74,6 +74,7 @@ static size_t _rs_encode16_slots(slot_t *parity,
         /*
         rs_mul_matrix_vector16(rs, parity_vector, vandermonde, data_vector);
         */
+        memcpy(VECTOR16(parity_vector), VECTOR16(data_vector), VECTOR_vector_size(parity_vector));
 
         for (j=0;j<division;j++) {
             num = VECTOR16(parity_vector)[j];
