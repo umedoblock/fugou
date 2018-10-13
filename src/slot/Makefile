@@ -4,7 +4,7 @@ OBJS	= test_slot.o slot.o
 TARGET	= test_slot
 
 sample: slot.o sample_slot_of_rs.o ../reed_solomon/rs.o libfugou.a random_1048576.bin
-	gcc -g sample_slot_of_rs.c slot.c ../reed_solomon/rs.c ../libfugou/libfugou.c -o sample_slot_of_rs
+	gcc -g sample_slot_of_rs.o slot.o ../reed_solomon/rs.o ../libfugou/libfugou.o -o sample_slot_of_rs
 random_1048576.bin:
 	dd if=/dev/urandom of=./random_1048576.bin bs=1024 count=1024
 test: test_slot $(OBJS) libfugou.a
