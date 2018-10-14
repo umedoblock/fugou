@@ -74,6 +74,22 @@ int rs_ultimate_fate_of_the_universe(void)
     return ret;
 }
 
+/* TODO:
+ * poly=>bits=8で，
+   for (j=0;j<256;j++) {
+       for (i=0;i<256;i++) {
+         gf65536 = (gf[j] << 8) + gf[i];
+       }
+   }
+
+   としてみて，gf65536, gfi65536 の
+   処理時間と実効速度を調べる。
+
+   単純には，２倍に実行速度になるはず。
+   他の処理もあったりするから，現実には1.5倍で満足しないといけないかな。
+   memory 参照に多くの時間を費やしているようだった。
+ */
+
 int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
 {
     reed_solomon_t *rs_;
