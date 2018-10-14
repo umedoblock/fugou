@@ -6,6 +6,8 @@ CFLAGS	= -Wall -g
 TEST_OPTIONS	= -D__TEST__
 OPTIONS	= -D__TEST__ -I ../libfugou
 TARGET	= test_rs
+RANDOM_BIN = random_1048576.bin
+RANDOM_BIN_INTEGRATE = random_1048576.bin.integrate
 vpath %.h ../libfugou
 
 test: test_rs libfugou.a
@@ -28,4 +30,4 @@ test_rs.o: rs.h libfugou.h libfugou_base.h ../slot/slot.h
 
 .PHONY: clean
 clean:
-	$(RM) core $(OBJS) $(OBJS_UPPER) $(TARGET) $(AR_UPPER)
+	$(RM) core $(OBJS) $(OBJS_UPPER) $(TARGET) $(AR_UPPER) $(RANDOM_BIN)
