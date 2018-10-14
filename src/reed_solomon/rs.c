@@ -88,6 +88,8 @@ int rs_ultimate_fate_of_the_universe(void)
    単純には，２倍に実行速度になるはず。
    他の処理もあったりするから，現実には1.5倍で満足しないといけないかな。
    memory 参照に多くの時間を費やしているようだった。
+
+   単なる table なら，endian 変換も必要ないような気がする。
  */
 
 int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
