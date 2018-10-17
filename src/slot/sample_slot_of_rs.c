@@ -13,40 +13,6 @@ uchar *dump_1048576;
 uchar *tmp;
 char random_path[SS_SIZE]; /* tmp_dir/random_1048576.bin */
 
-typedef struct {
-    reed_solomon_t *rs;
-    uint division;
-    matrix_t *vandermonde;
-    vector_t *parity_vector;
-    vector_t *data_vector;
-    size_t matrix_mem_size;
-    size_t vector_mem_size;
-    uint symbol_num;
-} reed_solomon_encode_t;
-
-void set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
-{
-    size_t matrix_mem_size, vector_mem_size;
-
-    rse->division = division;
-    rs_take_rs(&rse->rs, bits, division);
-    rse->symbol_num = 0;
-
-    matrix_mem_size = \
-        matrix_calc_mem_size(division, division, rse->rs->register_size);
-    rse->matrix_mem_size = matrix_mem_size;
-    vector_mem_size = vector_calc_mem_size(division, rse->rs->register_size);
-    rse->vector_mem_size = vector_mem_size;
-
-    rse->vandermonde = (matrix_t *)mem; mem += matrix_mem_size;
-    rse->parity_vector = (vector_t *)mem; mem += vector_mem_size;
-    rse->data_vector = (vector_t *)mem; mem += vector_mem_size;
-
-    matrix_init(rse->vandermonde, division, division, rse->rs->register_size);
-    vector_init(rse->parity_vector, division, rse->rs->register_size);
-    vector_init(rse->data_vector, division, rse->rs->register_size);
-}
-
 static size_t _rs_encode16_slots(slot_t *parity,
                                  slot_t *data,
                                  reed_solomon_t *rs,
@@ -72,12 +38,12 @@ static size_t _rs_encode16_slots(slot_t *parity,
             VECTOR16(data_vector)[j] = num;
         }
 
-        /*
         rs_mul_matrix_vector16(rs, parity_vector, vandermonde, data_vector);
-        */
+        /*
         elementary = vandermonde;
         matrix_make_elementary(elementary, division);
         _rs_mul_matrix_vector16_wrap(rs, parity_vector, elementary, data_vector);
+        */
         /*
         memcpy(VECTOR16(parity_vector), VECTOR16(data_vector), VECTOR_vector_size(parity_vector));
         */

@@ -299,6 +299,13 @@ size_t slot_get_memory_size(void)
  * ということを，お迎えの時に思いついた。
  * 思い出して書いておいた。
 
+  slot_t *slot_set_memory(uchar *mem, int num)
+  にて，既に対応済みでした。
+  SLOT_buf(slt + i) = mem; mem += SLOT_BUF_SIZE;
+  の行がそうだよ。。。
+
+  なので，親と子が memory を共有するようになればよろし。
+
  * 注意1:
  * 親が読み込める領域の大きさと，
  * target_size の大きさの比較結果によって，

@@ -205,6 +205,17 @@ typedef struct {
     size_t allocate_size;
 } reed_solomon_t;
 
+typedef struct {
+    reed_solomon_t *rs;
+    uint division;
+    matrix_t *vandermonde;
+    vector_t *parity_vector;
+    vector_t *data_vector;
+    size_t matrix_mem_size;
+    size_t vector_mem_size;
+    uint symbol_num;
+} reed_solomon_encode_t;
+
 /* row, 行
  * column, 列
  *        column0 column1 column2
@@ -416,10 +427,14 @@ void rs_decode_slots(slot_t *recover,
 size_t aligned_size(size_t size);
 int _rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
 
-inline void rs_mul_matrix_vector16(reed_solomon_t *rs,                 \
-                                   vector_t *answer,                   \
-                                   matrix_t *mat,                      \
-                                   vector_t *vec);
+void rs_mul_matrix_vector32(reed_solomon_t *rs,                 \
+                            vector_t *answer,                   \
+                            matrix_t *mat,                      \
+                            vector_t *vec);
+void rs_mul_matrix_vector16(reed_solomon_t *rs,                 \
+                            vector_t *answer,                   \
+                            matrix_t *mat,                      \
+                            vector_t *vec);
 /*****************************************************************************/
 /* prototype *****************************************************************/
 /*****************************************************************************/
@@ -431,6 +446,8 @@ size_t matrix_calc_matrix_size(uint rows, uint columns, size_t element_size);
 size_t matrix_calc_mem_size(uint rows, uint columns, size_t element_size);
 int matrix_init(matrix_t *matrix, uint rows, uint columns, size_t element_size);
 void matrix_make_elementary(matrix_t *elementary, uint n);
+void matrix_make_vandermonde_matrix(matrix_t *vandermonde,
+                                    reed_solomon_t *rs, uint division);
 
 #ifdef __cplusplus
 }

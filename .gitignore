@@ -1,0 +1,52 @@
+# binaries and debug
+*.o
+*.a
+*.so.*
+*.so
+core
+.gdbinit
+
+# TAGS
+tags
+*.tag
+
+# VIM
+*.swp
+
+# Python3
+venv/
+*.pyc
+
+# umatobi
+*/relay.*.db
+*/simulation.db
+umatobi-simulation/
+kdenlive
+OpenGL/tes[-0-9]+
+*.pickle
+
+# fugou
+sample_*
+src/reed_solomon/test_rs
+
+# temp files in fugou test
+random_1048576.bin.*
+
+# omoide
+omoide/tests/utbi_sanjutsu/test_utbi_sanjutsu
+omoide/tests/utbi_sanjutsu/test_utbi_sanjutsu_pg
+
+# autoconfig
+aclocal.m4
+autom4te.cache/
+autoscan.log
+compile
+config.h.in
+config.log
+config.status
+configure
+configure.ac
+depcomp
+install-sh
+missing
+

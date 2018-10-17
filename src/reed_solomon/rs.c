@@ -7,29 +7,12 @@
 /*****************************************************************************/
 /* static functions **********************************************************/
 /*****************************************************************************/
-
 static big_bang_t *_rs_bright(void);
-#if 0
-static void _rs_encode16_slots(slot_t *parity,
-                               slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num);
-static void _rs_encode32_slots(slot_t *parity,
-                               slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num);
-static void _rs_decode32_slots(slot_t *recover,
-                               slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num);
-static void _rs_decode16_slots(slot_t *recover,
-                               slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num);
-#endif
 static int _rs_init_gf_gfi(big_bang_t *universe);
 static int _rs_init_the_universe(big_bang_t *universe);
 static reed_solomon_t *_rs_get_rs(uint bits);
+static uint _rs_mul32(reed_solomon_t *rs, uint a, uint b);
+static ushort _rs_mul16(reed_solomon_t *rs, ushort a, ushort b);
 
 /*****************************************************************************/
 /* API ***********************************************************************/
@@ -92,6 +75,31 @@ int rs_ultimate_fate_of_the_universe(void)
    単なる table なら，endian 変換も必要ないような気がする。
  */
 
+#define rs_mul_matrix_vector(XX)                                         \
+void                                                                     \
+rs_mul_matrix_vector##XX(reed_solomon_t *rs,                             \
+                          vector_t *answer,                              \
+                          matrix_t *mat,                                 \
+                          vector_t *vec)                                 \
+{                                                                        \
+    register uint e, j;                                                  \
+    register uint ans, tmp;                                              \
+                                                                         \
+    for (j=0;j<MATRIX_columns(mat);j++){                                 \
+        ans = 0;                                                         \
+        for (e=0;e<VECTOR_elements(vec);e++){                            \
+            tmp = _rs_mul##XX(rs,                                        \
+                            MATRIX_u(XX, mat)[j * MATRIX_rows(mat) + e], \
+                            VECTOR_u(XX, vec)[e]);                       \
+            ans = _rs_ADD(ans, tmp);                                     \
+        }                                                                \
+        VECTOR_u(XX, answer)[j] = ans;                                   \
+    }                                                                    \
+}
+
+rs_mul_matrix_vector(16);
+rs_mul_matrix_vector(32);
+
 int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
 {
     reed_solomon_t *rs_;
@@ -112,71 +120,37 @@ int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
     return RS_SUCCESS;
 }
 
-#if 0
-void _rs_view_rse(rs_encode_t *rse)
+void set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
 {
-    LOGGER(INFO, "rse = %p\n", rse);
-    LOGGER(INFO, "                rs = %p\n", rse->rs);
-    LOGGER(INFO, "          division = %u\n", rse->division);
-    LOGGER(INFO, "       vandermonde = %p\n", rse->vandermonde.ptr);
-    LOGGER(INFO, "              _row = %p\n", rse->_row.ptr);
-    LOGGER(INFO, "             _row2 = %p\n", rse->_row2.ptr);
-    LOGGER(INFO, "     allocate_size = %zu\n", rse->allocate_size);
-    LOGGER(INFO, "         _row_size = %zu\n", rse->_row_size);
-    LOGGER(INFO, "       matrix_size = %zu\n", rse->matrix_size);
-    LOGGER(INFO, "\n");
-}
+    size_t matrix_mem_size, vector_mem_size;
 
-void _rs_view_rsd(rs_decode_t *rsd)
-{
-    LOGGER(INFO, "rsd = %p\n", rsd);
-    LOGGER(INFO, "                rs = %p\n", rsd->rs);
-    LOGGER(INFO, "          division = %u\n", rsd->division);
-    LOGGER(INFO, "     allocate_size = %zu\n", rsd->allocate_size);
-    LOGGER(INFO, "       matrix_size = %zu\n", rsd->matrix_size);
-    LOGGER(INFO, "         _row_size = %zu\n", rsd->_row_size);
-    LOGGER(INFO, "      _column_size = %zu\n", rsd->_column_size);
-    LOGGER(INFO, "            merged = %p\n", rsd->merged.ptr);
-    LOGGER(INFO, "           inverse = %p\n", rsd->inverse.ptr);
-    LOGGER(INFO, "              _row = %p\n", rsd->_row.ptr);
-    LOGGER(INFO, "             _row2 = %p\n", rsd->_row2.ptr);
-    LOGGER(INFO, "           _column = %p\n", rsd->_column.ptr);
-    LOGGER(INFO, "\n");
-}
-#endif
+    rse->division = division;
+    rs_take_rs(&rse->rs, bits, division);
+    rse->symbol_num = 0;
 
-/* for slots *****************************************************************/
+    matrix_mem_size = \
+        matrix_calc_mem_size(division, division, rse->rs->register_size);
+    rse->matrix_mem_size = matrix_mem_size;
+    vector_mem_size = vector_calc_mem_size(division, rse->rs->register_size);
+    rse->vector_mem_size = vector_mem_size;
 
-#if 0
-void rs_encode_slots(slot_t *parity,
-                     slot_t *norm,
-                     rs_encode_t *rse,
-                     uint symbol_num)
-{
-    if (rse->rs->register_size == 2)
-        _rs_encode16_slots(parity, norm, rse, symbol_num);
-    else
-        _rs_encode32_slots(parity, norm, rse, symbol_num);
-}
+    rse->vandermonde = (matrix_t *)mem; mem += matrix_mem_size;
+    rse->parity_vector = (vector_t *)mem; mem += vector_mem_size;
+    rse->data_vector = (vector_t *)mem; mem += vector_mem_size;
 
-void rs_decode_slots(slot_t *recover,
-                     slot_t *merged,
-                     rs_decode_t *rsd,
-                     uint symbol_num)
-{
-    if (rsd->rs->register_size == 2)
-        _rs_decode16_slots(recover, merged, rsd, symbol_num);
-    else
-        _rs_decode32_slots(recover, merged, rsd, symbol_num);
+    matrix_init(rse->vandermonde, division, division, rse->rs->register_size);
+    vector_init(rse->parity_vector, division, rse->rs->register_size);
+    vector_init(rse->data_vector, division, rse->rs->register_size);
+
+    matrix_make_vandermonde_matrix(rse->vandermonde, rse->rs, division);
 }
-#endif
 
 /*****************************************************************************/
 /* private functions *********************************************************/
 /*****************************************************************************/
 
 #define _rs_mul(XX, TYPE)                                            \
-static inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
+inline TYPE _rs_mul ## XX(reed_solomon_t *rs, TYPE a, TYPE b) \
 {                                                                    \
     uint ta, tb, tc, tgf_max;                                        \
                                                                      \
@@ -200,22 +174,6 @@ static ushort _rs_div16(reed_solomon_t *rs, ushort a, ushort b)
     if (a == 0)
         return 0;
 
-    /* u16 同士の差を求めて、その差が0以上かを調べている以下の箇所は
-     * bug臭いが cast がうまい具合に働いているんだろうか？
-     * c = rs->gf.u16[a] - rs->gf.u16[b];
-     * 不安でしょうがないので cast するように修正。
-     * c = (int )rs->gf.u16[a] - (int )rs->gf.u16[b];
-     */
-    #if 0
-    c = (int )VECTOR_u(16, rs->gf)[a] - (int )VECTOR_u(16, rs->gf)[b];
-    if (c >= 0)
-        return VECTOR_u(16, rs->gfi)[c];
-    return VECTOR_u(16, rs->gfi)[c + RS_gf_max(rs)];
-
-    う〜ん。どうしようかな？
-    _rs_mulXX() のようなことがあると怖いけど、
-    bug っていないようだ。
-    #endif
     uint ta, tb, tgf_max;
     ta = VECTOR_u(16, rs->gf)[a];
     tb = VECTOR_u(16, rs->gf)[b];
@@ -240,43 +198,6 @@ static uint _rs_div32(reed_solomon_t *rs, uint a, uint b)
     /* a32 < b32 */
     return VECTOR_u(32, rs->gfi)[RS_gf_max(rs) + a32 - b32];
 }
-
-#if 0
-static ushort _rs_pow16(reed_solomon_t *rs, ushort a, ushort x)
-{
-    int i;
-    ushort c;
-
-    if (a == 0)
-        return 0;
-
-    if (x == 0 || a == 1)
-        return 1;
-
-    c = a;
-    for (i=0;i<x-1;i++)
-        c = _rs_mul16(rs, c, a);
-    return c;
-}
-
-static uint _rs_pow32(reed_solomon_t *rs, uint a, uint x)
-{
-    /* no need to think about 32bit */
-    uint i;
-    uint c;
-
-    if (a == 0)
-        return 0;
-
-    if (x == 0 || a == 1)
-        return 1;
-
-    c = a;
-    for (i=0;i<x-1;i++)
-        c = _rs_mul32(rs, c, a);
-    return c;
-}
-#endif
 
 static void _rs_make_gf_and_gfi(reed_solomon_t *rs)
 {
@@ -324,19 +245,6 @@ for debug.
     }
 }
 
-#if 0
-def _mul_matrixes(self, a, b):
-    answer = self._make_square_matrix()
-    for j in range(self.division):
-        for i in range(self.division):
-            tmp = 0
-            for k in range(self.division):
-                muled = self.rds._mul(a[j][k], b[k][i])
-                tmp = self.rds._add(tmp, muled)
-            answer[j][i] = tmp
-    return answer
-#endif
-
 #define _rs_mul_matrixes(XX)                                                \
 static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs,                 \
                                         matrix_t *answer,                   \
@@ -372,54 +280,7 @@ static inline void _rs_mul_matrixes##XX(reed_solomon_t *rs,                 \
 }
 
 _rs_mul_matrixes(32)
-
-static inline void _rs_mul_matrixes16(reed_solomon_t *rs,
-                                      matrix_t *answer,
-                                      matrix_t *mat1,
-                                      matrix_t *mat2)
-{
-    register uint i, j, k;
-    register uint ans, tmp;
-
-    for (k=0;k<MATRIX_rows(mat1);k++){
-        for (j=0;j<MATRIX_columns(mat2);j++){
-            ans = 0;
-            for (i=0;i<MATRIX_rows(mat2);i++){
-                tmp = _rs_mul16(
-                            rs,
-                            MATRIX_u(16, mat1)[k * MATRIX_rows(mat1) + i],
-                            MATRIX_u(16, mat2)[i * MATRIX_rows(mat2) + j]);
-                ans = _rs_ADD(ans, tmp);
-            }
-            MATRIX_u(16, answer)[k * MATRIX_columns(mat2) + j] = ans;
-        }
-    }
-}
-
-#define rs_mul_matrix_vector(XX)                                        \
-static inline void                                                             \
-rs_mul_matrix_vector##XX(reed_solomon_t *rs,                            \
-                          vector_t *answer,                              \
-                          matrix_t *mat,                                 \
-                          vector_t *vec)                                 \
-{                                                                        \
-    register uint e, j;                                                  \
-    register uint ans, tmp;                                              \
-                                                                         \
-    for (j=0;j<MATRIX_columns(mat);j++){                                 \
-        ans = 0;                                                         \
-        for (e=0;e<VECTOR_elements(vec);e++){                            \
-            tmp = _rs_mul##XX(rs,                                        \
-                            MATRIX_u(XX, mat)[j * MATRIX_rows(mat) + e], \
-                            VECTOR_u(XX, vec)[e]);                       \
-            ans = _rs_ADD(ans, tmp);                                     \
-        }                                                                \
-        VECTOR_u(XX, answer)[j] = ans;                                   \
-    }                                                                    \
-}
-
-rs_mul_matrix_vector(16)
-rs_mul_matrix_vector(32)
+_rs_mul_matrixes(16)
 
 size_t vector_calc_vector_size(uint elements, size_t element_size)
 {
@@ -522,6 +383,46 @@ void matrix_make_elementary(matrix_t *elementary, uint n)
     }
 }
 
+void matrix_make_vandermonde_matrix(matrix_t *vandermonde,
+    reed_solomon_t *rs,
+    uint division)
+{
+    uint i, j;
+    matrix_t *vm = vandermonde;
+
+    for(i=0;i<division;i++)
+    if (rs->register_size == 2)
+        MATRIX_u(16, vm)[i] = 1;
+    else
+        MATRIX_u(32, vm)[i] = 1;
+
+    if (rs->register_size == 2) {
+        for(j=1;j<division;j++)
+            for(i=0;i<division;i++)
+                MATRIX_u(16, vm)[j * division + i] = \
+                  _rs_mul16(rs, MATRIX_u(16, vm)[(j-1) * division + i], i + 1);
+    }
+    else {
+        for(j=1;j<division;j++)
+            for(i=0;i<division;i++)
+                MATRIX_u(32, vm)[j * division + i] = \
+                  _rs_mul32(rs, MATRIX_u(32, vm)[(j-1) * division + i], i + 1);
+    }
+}
+
+/* 逆行列を計算するのは，復元時の最初の一回だけ。
+ * そのため，以下の _rs_solve_inverse() の高速化をしても，
+ * 高速化の恩恵はあまり得られない。
+ * と思ってる。profile もせずに。
+ *
+ * reed solomon 復元時に，逆行列計算時間の占める割合は，
+ * 一体如何ほどか？
+ * という話。
+ * 私も知らんけど。
+ *
+ * よって，以下では多少非効率な計算であっても，許容している。
+ * 何よりも優先すべきは，記述量を減らすことであった。
+ */
 static int _rs_solve_inverse(matrix_t *inverse,
                              matrix_t *matrix,
                              reed_solomon_t *rs,
@@ -564,7 +465,10 @@ static int _rs_solve_inverse(matrix_t *inverse,
                     do swap, via buffer
                     matrix[k], matrix[j] = matrix[j], matrix[k]
                     */
-                    ;
+                    /* 高速化する必要はないといえど，memory の copy は気になる。
+                     * まあ，手を入れたりはしません。
+                     * このまま使います。
+                     */
                     memcpy(VECTOR_ptr(buffer),
                            MATRIX_ptr(mt) + index_j,
                            VECTOR_row_size(buffer));
@@ -710,20 +614,6 @@ static int _rs_solve_inverse(matrix_t *inverse,
                     tmp3 = MATRIX_u(32, im)[index_y * division + i];
                     MATRIX_u(32, im)[index_y * division + i] = _rs_ADD(tmp3, tmp2);
                 }
-                /*
-                if (rs->register_size == 2) {
-                    tmp1 = im.u16[index_z * division + i];
-                    tmp2 = _rs_mul16(rs, tmp, tmp1);
-                    tmp3 = im.u16[index_y * division + i];
-                    im.u16[index_y * division + i] = _rs_ADD(tmp3, tmp2);
-                }
-                else {
-                    tmp1 = im.u32[index_z * division + i];
-                    tmp2 = _rs_mul32(rs, tmp, tmp1);
-                    tmp3 = im.u32[index_y * division + i];
-                    im.u32[index_y * division + i] = _rs_ADD(tmp3, tmp2);
-                }
-                */
             }
         }
     }
@@ -746,23 +636,6 @@ size_t aligned_size(size_t size)
         padding_size = 0;
     return size + padding_size;
 }
-
-#if 0
-typedef struct {                  | typedef struct {
-    size_t allocate_size;         |     uint bits;
-    char *mem;                    |     uint poly;
-    int mem_status;               |     size_t symbol_size;
-    reed_solomon_t rs[RS_GF_NUM]; |
-} big_bang_t;                     |     size_t register_size;
-                                  |
-                                  |     uint w;
-                                  |     uint gf_max;
-                                  |     vector_t *gf;
-                                  |     vector_t *gfi;
-                                  |
-                                  |     size_t allocate_size;
-                                  | } reed_solomon_t;
-#endif
 
 static big_bang_t _dokkaan = {
 /* allocate_size       mem          mem_status */
@@ -913,137 +786,6 @@ static int _rs_init_gf_gfi(big_bang_t *universe)
     return RS_SUCCESS;
 }
 
-#if 0
-static size_t _rs_calc_rse_memory_size(rs_encode_t *rse,
-                                         reed_solomon_t *rs, uint division)
-{
-    /*  need three matrixes.
-        vandermonde, merged, inverse
-        need two vectors.
-        vector, parity
-     */
-    rse->division = division;
-    rse->matrix_size = rse->division * rse->division * rs->register_size;
-    rse->matrix_size = aligned_size(rse->matrix_size);
-    /* 8KO * division * 2*/
-    rse->_row_size = division * rs->register_size;
-    rse->_row_size = aligned_size(rse->_row_size);
-
-    rse->allocate_size = sizeof(rs_encode_t) +
-                         rse->matrix_size +
-                         rse->_row_size * 2;
-    return rse->allocate_size;
-}
-
-static size_t _rs_init_rse(rs_encode_t *rse,
-                             char *mem, reed_solomon_t *rs)
-{
-    char *mem_ = mem;
-    rse->rs = rs;
-    rse->vandermonde.ptr = (void *)mem; mem += rse->matrix_size;
-    /* _row and _row2 need in rs_encodeXX() */
-    rse->_row.ptr = (void *)mem;        mem += rse->_row_size;
-    rse->_row2.ptr = (void *)mem;       mem += rse->_row_size;
-    return (size_t )(mem - mem_);
-}
-
-static size_t _rs_calc_rsd_memory_size(rs_decode_t *rsd,
-                                         reed_solomon_t *rs,
-                                         uint division)
-{
-    /*  need three matrixes.
-        vandermonde, merged, inverse
-        need two vectors.
-        vector, parity
-     */
-    rsd->division = division;
-    rsd->matrix_size = rsd->division * rsd->division * rs->register_size;
-    /* 8 KO * division * 2 */
-    rsd->_row_size = rsd->division * rs->register_size;
-    rsd->_column_size = rsd->division * rs->symbol_size;
-
-    rsd->matrix_size = aligned_size(rsd->matrix_size);
-    rsd->_row_size = aligned_size(rsd->_row_size);
-    rsd->_column_size = aligned_size(rsd->_column_size);
-
-    rsd->allocate_size = sizeof(rs_decode_t) +
-                         rsd->matrix_size * 2 +
-                         rsd->_row_size * 2 +
-                         rsd->_column_size;
-    return rsd->allocate_size;
-}
-
-static size_t _rs_init_rsd(rs_decode_t *rsd,
-                             char *mem,
-                             reed_solomon_t *rs)
-{
-    char *mem_ = mem;
-    rsd->rs = rs;
-    rsd->merged.ptr = (void *)mem;      mem += rsd->matrix_size;
-    rsd->inverse.ptr = (void *)mem;     mem += rsd->matrix_size;
-    /* _row and _row2 need in rs_decodeXX() */
-    rsd->_row.ptr = (void *)mem;        mem += rsd->_row_size;
-    rsd->_row2.ptr = (void *)mem;       mem += rsd->_row_size;
-    rsd->_column.ptr = (void *)mem;     mem += rsd->_column_size;
-    return (size_t )(mem - mem_);
-}
-#endif
-
-static void matrix_make_vandermonde_matrix(matrix_t *vandermonde,
-    reed_solomon_t *rs,
-    uint division)
-{
-    uint i, j;
-    matrix_t *vm = vandermonde;
-
-    for(i=0;i<division;i++)
-    if (rs->register_size == 2)
-        MATRIX_u(16, vm)[i] = 1;
-    else
-        MATRIX_u(32, vm)[i] = 1;
-
-    if (rs->register_size == 2) {
-        for(j=1;j<division;j++)
-            for(i=0;i<division;i++)
-                MATRIX_u(16, vm)[j * division + i] = \
-                  _rs_mul16(rs, MATRIX_u(16, vm)[(j-1) * division + i], i + 1);
-    }
-    else {
-        for(j=1;j<division;j++)
-            for(i=0;i<division;i++)
-                MATRIX_u(32, vm)[j * division + i] = \
-                  _rs_mul32(rs, MATRIX_u(32, vm)[(j-1) * division + i], i + 1);
-    }
-}
-
-#if 0
-static void _rs_make_vandermonde(rs_encode_t *rse)
-{
-    _ptr_t vm = rse->vandermonde;
-    uint i, j, division = rse->division;
-    reed_solomon_t *rs = rse->rs;
-
-    for(i=0;i<division;i++)
-    if (rs->register_size == 2)
-        vm.u16[i] = 1;
-    else
-        vm.u32[i] = 1;
-
-    if (rs->register_size == 2) {
-        for(j=1;j<division;j++)
-            for(i=0;i<division;i++)
-                vm.u16[j * division + i] =
-                    _rs_mul16(rs, vm.u16[(j-1) * division + i], i + 1);
-    }
-    else {
-        for(j=1;j<division;j++)
-            for(i=0;i<division;i++)
-                vm.u32[j * division + i] =
-                    _rs_mul32(rs, vm.u32[(j-1) * division + i], i + 1);
-    }
-}
-#endif
-
 static void _rs_view_matrix16(matrix_t *mat)
 {
     uint i, j;
@@ -1138,157 +880,6 @@ static void _rs_view_vector32(vector_t *vector)
     }
 }
 
-#if 0
-static void _rs_encode16_slots(slot_t *parity,
-                               slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num)
-{
-    reed_solomon_t *rs = rse->rs;
-    uint i, j, k;
-    size_t symbol_size = rs->symbol_size;
-    register uint division = rse->division;
-    uchar unum;
-    uint num;
-    _ptr_t vandermonde = rse->vandermonde;
-    _ptr_t _vector = rse->_row;
-    _ptr_t _parity = rse->_row2;
-
-    for (i=0;i<symbol_num;i++) {
-        for (j=0;j<division;j++) {
-            num = 0;
-            for (k=0;k<symbol_size;k++) {
-                num <<= 8;
-                num += SLOT_buf(norm + j)[i * symbol_size + k];
-            }
-            _vector.u16[j] = num;
-        }
-
-        _rs_mul_matrix_vector16(rs, _parity, vandermonde, _vector,
-                                division);
-
-        for (j=0;j<division;j++) {
-            num = _parity.u16[j];
-            for (k=0;k<symbol_size;k++) {
-                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                SLOT_buf(parity + j)[i * symbol_size + k] = unum;
-            }
-        }
-    }
-}
-
-static void _rs_encode32_slots(slot_t *parity,
-                               slot_t *norm,
-                               rs_encode_t *rse,
-                               uint symbol_num)
-{
-    reed_solomon_t *rs = rse->rs;
-    uint i, j, k;
-    size_t symbol_size = rs->symbol_size;
-    register uint division = rse->division;
-    uchar unum;
-    uint num;
-    _ptr_t vandermonde = rse->vandermonde;
-    _ptr_t _vector = rse->_row;
-    _ptr_t _parity = rse->_row2;
-
-    for (i=0;i<symbol_num;i++) {
-        for (j=0;j<division;j++) {
-            num = 0;
-            for (k=0;k<symbol_size;k++) {
-                num <<= 8;
-                num += SLOT_buf(norm + j)[i * symbol_size + k];
-            }
-            _vector.u32[j] = num;
-        }
-
-        _rs_mul_matrix_vector32(rs, _parity, vandermonde, _vector,
-                                division);
-
-        for (j=0;j<division;j++) {
-            num = _parity.u32[j];
-            for (k=0;k<symbol_size;k++) {
-                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                SLOT_buf(parity + j)[i * symbol_size + k] = unum;
-            }
-        }
-    }
-}
-
-static void _rs_decode16_slots(slot_t *recover,
-                               slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num)
-{
-    reed_solomon_t *rs = rsd->rs;
-    uint i, j, k;
-    size_t symbol_size = rs->symbol_size;
-    register uint division = rsd->division;
-    uchar unum;
-    uint num;
-    _ptr_t _vector = rsd->_row;
-    _ptr_t _recover = rsd->_row2;
-
-    for (i=0;i<symbol_num;i++) {
-        for (j=0;j<division;j++) {
-            num = 0;
-            for (k=0;k<symbol_size;k++) {
-                num <<= 8;
-                num += SLOT_buf(merged + j)[i * symbol_size + k];
-            }
-            _vector.u16[j] = num;
-        }
-
-        _rs_mul_matrix_vector16(rs, _recover, rsd->inverse, _vector,
-                                division);
-
-        for (j=0;j<division;j++) {
-            num = _recover.u16[j];
-            for (k=0;k<symbol_size;k++) {
-                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                SLOT_buf(recover + j)[i * symbol_size + k] = unum;
-            }
-        }
-    }
-}
-
-static void _rs_decode32_slots(slot_t *recover,
-                               slot_t *merged,
-                               rs_decode_t *rsd,
-                               uint symbol_num)
-{
-    reed_solomon_t *rs = rsd->rs;
-    uint i, j, k;
-    size_t symbol_size = rs->symbol_size;
-    register uint division = rsd->division;
-    uchar unum;
-    uint num;
-    _ptr_t _vector = rsd->_row;
-    _ptr_t _recover = rsd->_row2;
-
-    for (i=0;i<symbol_num;i++) {
-        for (j=0;j<division;j++) {
-            num = 0;
-            for (k=0;k<symbol_size;k++) {
-                num <<= 8;
-                num += SLOT_buf(merged + j)[i * symbol_size + k];
-            }
-            _vector.u32[j] = num;
-        }
-
-        _rs_mul_matrix_vector32(rs, _recover, rsd->inverse, _vector,
-                                division);
-
-        for (j=0;j<division;j++) {
-            num = _recover.u32[j];
-            for (k=0;k<symbol_size;k++) {
-                unum = (num >> 8 * (symbol_size - 1 - k)) & 0xff;
-                SLOT_buf(recover + j)[i * symbol_size + k] = unum;
-            }
-        }
-    }
-}
-#endif
 
 #ifdef __TEST__
 
