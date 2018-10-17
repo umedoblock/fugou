@@ -39,14 +39,6 @@ static size_t _rs_encode16_slots(slot_t *parity,
         }
 
         rs_mul_matrix_vector16(rs, parity_vector, vandermonde, data_vector);
-        /*
-        elementary = vandermonde;
-        matrix_make_elementary(elementary, division);
-        _rs_mul_matrix_vector16_wrap(rs, parity_vector, elementary, data_vector);
-        */
-        /*
-        memcpy(VECTOR16(parity_vector), VECTOR16(data_vector), VECTOR_vector_size(parity_vector));
-        */
 
         for (j=0;j<division;j++) {
             num = VECTOR16(parity_vector)[j];
