@@ -50,6 +50,7 @@ File size:                3808 bytes
 #define SLOT_UNKNOWN_TYPE_ERROR (-14)
 #define SLOT_FSEEK_ERROR       (-15)
 #define SLOT_SLOT_SIZE_ERROR   (-16)
+#define SLOT_TYPE_ERROR        (-17)
 
 #define FROM_HEAD                (1)
 #define FROM_CURRENT             (2)

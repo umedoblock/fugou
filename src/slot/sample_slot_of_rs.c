@@ -72,13 +72,14 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
     uint i, division = 41, bits = 16;
-    size_t parent_target_size = 0, child_slot_size, child_target_size;
     size_t integrate_target_size, mem_size;
+    size_t symbol_size;
     int ret;
     reed_solomon_encode_t _rse, *rse = &_rse;
 
     /* reed solomon の設定 */
     set_rse(rse, bits, division, tmp);
+    symbol_size = rse->rs->symbol_size;
 
     /* file to file で試してみる。
      * parent file を children file に分割。
@@ -92,21 +93,11 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
         SLOT_reading(children_i) = slot_fread;
         */
 
-    slot_file_named(SLF(parent), tmp_dir, random_1048576_bin);
-    slot_file_fopen(SLF(parent), "rb");
-    parent_target_size = slot_ask_target_size(parent, FROM_HEAD);
+    slot_birth(parent, children, division,
+               symbol_size, SLOT_FILE,
+               tmp_dir, random_1048576_bin);
 
-    slot_calc_sb_by_division(parent, children,
-                             parent_target_size,
-                             division,
-                             rse->rs->symbol_size, 0);
-
-    slot_children_named(SLF(children), parent, division);
-    slot_children_fopen(SLF(children), "wb+", division);
-    slot_children_set_first_pos(parent, children, division);
-
-    child_slot_size = SLOT_slot_size(children);
-    rse->symbol_num = child_slot_size / rse->rs->symbol_size;
+    rse->symbol_num = SLOT_slot_size(children) / symbol_size;
 
     /* parent => children の分割を行う。*/
     /* sample の目玉 */

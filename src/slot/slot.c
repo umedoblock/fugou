@@ -84,6 +84,33 @@ _DEBUG(" done _update_remained_size().\n");
     return remained_size;
 }
 
+int slot_birth(slot_t *parent, slot_t *children, uint division,
+               size_t symbol_size, int type,
+               const char *dir_name, const char *base_name)
+{
+    size_t parent_target_size = 0;
+
+    if (type == SLOT_FILE) {
+        slot_file_named(SLF(parent), dir_name, base_name);
+        slot_file_fopen(SLF(parent), "rb");
+        parent_target_size = slot_ask_target_size(parent, FROM_HEAD);
+
+        slot_calc_sb_by_division(parent, children,
+                                 parent_target_size,
+                                 division,
+                                 symbol_size, 0);
+
+        slot_children_named(SLF(children), parent, division);
+        slot_children_fopen(SLF(children), "wb+", division);
+        slot_children_set_first_pos(parent, children, division);
+    }
+    else {
+        return SLOT_TYPE_ERROR;
+    }
+
+    return SLOT_SUCCESS;
+}
+
 int slot_file_named(slot_file_t *file,
                     const char *dir_name,
                     const char *base_name)
