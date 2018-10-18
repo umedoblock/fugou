@@ -270,8 +270,8 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
      * parent file を children file に分割。
      * children file を integrate file に統合。
      */
-    slot_set(parent, slot_fread, NULL, slot_fwrite);
-    slot_set_ntimes(children, slot_fread, NULL, slot_fwrite, division);
+    slot_set_doing(parent, slot_fread, NULL, slot_fwrite);
+    slot_set_doing_ntimes(children, slot_fread, NULL, slot_fwrite, division);
 
     slot_file_named(SLF(parent), tmp_dir, random_1048576_bin);
     slot_file_fopen(SLF(parent), "rb");
@@ -492,8 +492,8 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
      * children file を mini file に統合。
      */
 
-    slot_set(parent, slot_fread, NULL, slot_fwrite);
-    slot_set_ntimes(children, slot_fread, NULL, slot_fwrite, division);
+    slot_set_doing(parent, slot_fread, NULL, slot_fwrite);
+    slot_set_doing_ntimes(children, slot_fread, NULL, slot_fwrite, division);
 
     for (i=0;i<division;i++) {
         SLOT_name(children_i)[0] = '\0';

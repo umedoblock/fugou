@@ -428,7 +428,7 @@ slot_t *slot_set_memory(uchar *mem, int num)
     return slt;
 }
 
-int slot_set(slot_t *slt, io_function reading,
+int slot_set_doing(slot_t *slt, io_function reading,
                           compute_function computing,
                           io_function writing)
 {
@@ -439,7 +439,7 @@ int slot_set(slot_t *slt, io_function reading,
     return SLOT_SUCCESS;
 }
 
-int slot_set_ntimes(slot_t *slt,
+int slot_set_doing_ntimes(slot_t *slt,
                     io_function reading,
                     compute_function computing,
                     io_function writing,
