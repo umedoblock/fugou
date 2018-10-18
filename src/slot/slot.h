@@ -201,6 +201,9 @@ int slot_set_ntimes(slot_t *slt,
                     compute_function computing,
                     io_function writing,
                     int ntimes);
+int slot_birth(slot_t *parent, slot_t *children, uint division,
+               size_t symbol_size, int type,
+               const char *dir_name, const char *base_name);
 size_t slot_ask_target_size(slot_t *slt, int whence);
 size_t slot_dev_null_r(slot_t *read_, void *buf, size_t read_size);
 size_t slot_dev_null_w(slot_t *writ, void *buf, size_t writ_size);
