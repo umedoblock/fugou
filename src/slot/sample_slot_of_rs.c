@@ -108,7 +108,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uint bits, uint divisi
     slot_file_fclose(SLF(parent));
 }
 
-void sample_slot_integrate(slot_t *parent, slot_t *children, uchar *tmp)
+void sample_slot_integrate(slot_t *parent, slot_t *children, uint bits, uint division, uchar *tmp)
 {
 #if 0
     strcat(SLOT_name(parent), ".integrate");
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     children = slot_set_memory(mem, TEST_MAX_SLOTS);
     mem += slot_get_memory_size() * TEST_MAX_SLOTS;
 
-    sample_slot_integrate(parent, children, tmp);
+    sample_slot_integrate(parent, children, bits, division, tmp);
 
     /* finalize reed solomon memory */
     rs_ultimate_fate_of_the_universe();
