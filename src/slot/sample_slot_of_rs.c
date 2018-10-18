@@ -87,13 +87,11 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
     SLOT_writing(parent) = slot_fwrite;
      */
     slot_set(parent, slot_fread, slot_reed_solomon_encode, NULL);
-    for (i=0;i<division;i++) {
-        slot_set(children_i, NULL, NULL, slot_fwrite);
+    slot_set_ntimes(children, NULL, NULL, slot_fwrite, division);
         /*
         SLOT_computing(children_i) = slot_reed_solomon_recover;
         SLOT_reading(children_i) = slot_fread;
         */
-    }
 
     slot_file_named(SLF(parent), tmp_dir, random_1048576_bin);
     slot_file_fopen(SLF(parent), "rb");

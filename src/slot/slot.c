@@ -411,6 +411,23 @@ int slot_set(slot_t *slt, io_function reading,
     return SLOT_SUCCESS;
 }
 
+int slot_set_ntimes(slot_t *slt,
+                    io_function reading,
+                    compute_function computing,
+                    io_function writing,
+                    int ntimes)
+{
+    int i;
+
+    for (i=0;i<ntimes;i++) {
+        SLOT_reading(slt + i) = reading;
+        SLOT_computing(slt + i) = computing;
+        SLOT_writing(slt + i) = writing;
+    }
+
+    return SLOT_SUCCESS;
+}
+
 size_t slot_ask_target_size(slot_t *slt, int whence)
 {
     FILE *fp;
