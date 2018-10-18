@@ -4,8 +4,8 @@
 #define SS_SIZE (1024)
 #define TEST_MAX_SLOTS (257)
 
-char *tmp_dir = ".";
-const char *random_1048576_bin = "random_1048576.bin";
+#define TMP_DIR "."
+#define RANDOM_1048576_BIN "random_1048576.bin"
 char msg[SS_SIZE];
 char ss[SS_SIZE];
 
@@ -97,7 +97,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children,
 
     slot_birth(parent, children, division,
                symbol_size, SLOT_FILE,
-               tmp_dir, random_1048576_bin);
+               TMP_DIR, RANDOM_1048576_BIN);
 
     symbol_num = SLOT_slot_size(children) / symbol_size;
 
