@@ -1,5 +1,5 @@
 #include "libfugou.h"
-#include "assert.h"
+#include "assert_xxx.h"
 #include "slot.h"
 
 #define TEST_MAX_SLOTS (257)
