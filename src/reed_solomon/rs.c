@@ -120,7 +120,7 @@ int rs_take_rs(reed_solomon_t **rs, uint bits, uint division)
     return RS_SUCCESS;
 }
 
-void set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
+void rs_set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
 {
     size_t matrix_mem_size, vector_mem_size;
 

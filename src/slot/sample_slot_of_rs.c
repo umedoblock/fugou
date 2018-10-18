@@ -66,13 +66,13 @@ static size_t slot_reed_solomon_encode(slot_t *parity,
                               rse->division, symbol_num);
 }
 
-void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
+void sample_slot_divide(slot_t *parent, slot_t *children, uint bits, uint division, uchar *tmp)
 {
     /*
     1048576 % 41 =  1
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
-    uint i, division = 41, bits = 16;
+    uint i;
     uint symbol_num = 0;
     size_t integrate_target_size, mem_size;
     size_t symbol_size;
@@ -80,7 +80,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
     reed_solomon_encode_t _rse, *rse = &_rse;
 
     /* reed solomon の設定 */
-    set_rse(rse, bits, division, tmp);
+    rs_set_rse(rse, bits, division, tmp);
     symbol_size = rse->rs->symbol_size;
 
     /* file to file で試してみる。
@@ -166,7 +166,7 @@ void sample_slot_integrate(slot_t *parent, slot_t *children, uchar *tmp)
 int main(int argc, char *argv[])
 {
     size_t mem_size = 0;
-    uint division = 41;
+    uint bits=16, division = 41;
     FILE *fp;
     uchar *dump_1048576;
     uchar *mem, *_mem, *tmp;
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
     mem += slot_get_memory_size() * TEST_MAX_SLOTS;
 
     rs_big_bang();
-    sample_slot_divide(parent, children, tmp);
+    sample_slot_divide(parent, children, bits, division, tmp);
     sample_slot_integrate(parent, children, tmp);
     rs_ultimate_fate_of_the_universe();
 

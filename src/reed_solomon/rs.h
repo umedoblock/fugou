@@ -414,6 +414,7 @@ int rs_big_bang(void);
 int rs_ultimate_fate_of_the_universe(void);
 
 int rs_take_rs(reed_solomon_t **rs, uint bits, uint division);
+void rs_set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem);
 
 void rs_encode_slots(slot_t *parity,
                      slot_t *norm,
