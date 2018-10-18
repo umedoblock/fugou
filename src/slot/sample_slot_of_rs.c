@@ -97,7 +97,9 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
                symbol_size, SLOT_FILE,
                tmp_dir, random_1048576_bin);
 
+    /* ここに至ってようやく rse->symbol_num の大きさを計算できることに注意 */
     rse->symbol_num = SLOT_slot_size(children) / symbol_size;
+    /* ってことは，違うんだ。 symbol_num は， rse 以下にある変数じゃない。*/
 
     /* parent => children の分割を行う。*/
     /* sample の目玉 */
