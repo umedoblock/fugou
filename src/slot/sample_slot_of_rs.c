@@ -10,7 +10,6 @@ char msg[SS_SIZE];
 char ss[SS_SIZE];
 
 uchar *dump_1048576;
-uchar *tmp;
 char random_path[SS_SIZE]; /* tmp_dir/random_1048576.bin */
 
 static size_t _rs_encode16_slots(slot_t *parity,
@@ -66,7 +65,7 @@ static size_t slot_reed_solomon_encode(slot_t *parity,
                               rse->division, rse->symbol_num);
 }
 
-void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
+void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
 {
     /*
     1048576 % 41 =  1
@@ -79,7 +78,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
     reed_solomon_encode_t _rse, *rse = &_rse;
 
     /* reed solomon の設定 */
-    set_rse(rse, bits, division, mem);
+    set_rse(rse, bits, division, tmp);
 
     /* file to file で試してみる。
      * parent file を children file に分割。
@@ -118,7 +117,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
     slot_file_fclose(SLF(parent));
 }
 
-void sample_slot_integrate(slot_t *parent, slot_t *children, uchar *mem)
+void sample_slot_integrate(slot_t *parent, slot_t *children, uchar *tmp)
 {
 #if 0
     strcat(SLOT_name(parent), ".integrate");
@@ -177,7 +176,7 @@ int main(int argc, char *argv[])
     uint division = 41;
     FILE *fp;
     uchar *dump_1048576;
-    uchar *mem, *_mem;
+    uchar *mem, *_mem, *tmp;
     slot_t *parent, *children;
     size_t matrix_mem_size, vector_mem_size;
 
