@@ -65,7 +65,9 @@ static size_t slot_reed_solomon_encode(slot_t *parity,
                               rse->division, symbol_num);
 }
 
-void sample_slot_divide(slot_t *parent, slot_t *children, uint bits, uint division, uchar *tmp)
+void sample_slot_divide(slot_t *parent, slot_t *children,
+                        uint bits, uint division,
+                        uchar *tmp)
 {
     /*
     1048576 % 41 =  1
@@ -108,7 +110,9 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uint bits, uint divisi
     slot_file_fclose(SLF(parent));
 }
 
-void sample_slot_integrate(slot_t *parent, slot_t *children, uint bits, uint division, uchar *tmp)
+void sample_slot_integrate(slot_t *parent, slot_t *children,
+                           uint bits, uint division,
+                           uchar *tmp)
 {
 #if 0
     strcat(SLOT_name(parent), ".integrate");
