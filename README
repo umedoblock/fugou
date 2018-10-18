@@ -2,8 +2,9 @@
 #
 # Copyright (c) 2012-2018 梅濁酒(umedoblock)
 #
-# Thease softwares are released under the MIT License.
+# These softwares are released under the MIT License.
 # https://github.com/umedoblock/fugou
+
 fugou
 |-- omoide, 純粋だった頃の思ひ出。
 |   |       初めてのprogramming。
@@ -42,7 +43,7 @@ fugou
 |   |   |-- sha
 |   |   `-- utbi_seki_prof
 |   `-- 梅暗号
-        C=M*e1+r*e2 mod n, e1=e*a, e2=e*x
+|       C=M*e1+r*e2 mod n, e1=e*a, e2=e*x
 `-- src
     |-- libfugou
     |   slot and reed_solomon dependent this library.
