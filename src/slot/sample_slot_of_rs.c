@@ -189,8 +189,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "faild malloc(mem_size=%lu)\n", mem_size);
         return -1;
     }
-    memset(mem, '\0', mem_size);
     _mem = mem;
+    memset(mem, '\0', mem_size);
 
     dump_1048576 = mem; mem += 1048576;
     tmp = mem; mem += 1048576;
