@@ -193,10 +193,10 @@ int slot_calc_sb_by_child_slot_size(slot_t *parent,
 
 size_t slot_get_memory_size(void);
 slot_t *slot_set_memory(uchar *mem, int num);
-int slot_set(slot_t *slt, io_function reading,
+int slot_set_doing(slot_t *slt, io_function reading,
                           compute_function computing,
                           io_function writing);
-int slot_set_ntimes(slot_t *slt,
+int slot_set_doing_ntimes(slot_t *slt,
                     io_function reading,
                     compute_function computing,
                     io_function writing,

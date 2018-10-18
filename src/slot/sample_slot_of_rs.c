@@ -88,8 +88,8 @@ void sample_slot_divide(slot_t *parent, slot_t *children,
      * children file を integrate file に統合。
     SLOT_writing(parent) = slot_fwrite;
      */
-    slot_set(parent, slot_fread, slot_reed_solomon_encode, NULL);
-    slot_set_ntimes(children, NULL, NULL, slot_fwrite, division);
+    slot_set_doing(parent, slot_fread, slot_reed_solomon_encode, NULL);
+    slot_set_doing_ntimes(children, NULL, NULL, slot_fwrite, division);
         /*
         SLOT_computing(children_i) = slot_reed_solomon_recover;
         SLOT_reading(children_i) = slot_fread;
@@ -126,8 +126,8 @@ void sample_slot_integrate(slot_t *parent, slot_t *children,
      * children file を integrate file に統合。
     SLOT_writing(parent) = slot_fwrite;
      */
-    slot_set(parent, NULL, slot_reed_solomon_encode, slot_fwrite);
-    slot_set_ntimes(children, slot_fread, NULL, NULL, division);
+    slot_set_doing(parent, NULL, slot_reed_solomon_encode, slot_fwrite);
+    slot_set_doing_ntimes(children, slot_fread, NULL, NULL, division);
 
 #if 0
     strcat(SLOT_name(parent), ".integrate");
