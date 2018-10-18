@@ -195,11 +195,9 @@ int main(int argc, char *argv[])
     dump_1048576 = mem; mem += 1048576;
     tmp = mem; mem += 1048576;
 
-    parent = SLT(mem);
-    parent = slot_set_memory((uchar *)parent, 1);
+    parent = slot_set_memory(mem, 1);
     mem += slot_get_memory_size();
-    children = SLT(mem);
-    children = slot_set_memory((uchar *)children, TEST_MAX_SLOTS);
+    children = slot_set_memory(mem, TEST_MAX_SLOTS);
     mem += slot_get_memory_size() * TEST_MAX_SLOTS;
 
     rs_big_bang();
