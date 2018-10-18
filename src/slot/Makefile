@@ -25,4 +25,4 @@ test_slot.o: slot.h libfugou.h assert_xxx.h
 
 .PHONY: clean
 clean:
-	$(RM) core $(OBJS) $(TARGET) random_1048576.bin.*
+	$(RM) core $(OBJS) $(TARGET) random_1048576.bin.* sample_slot_of_rs
