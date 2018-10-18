@@ -400,6 +400,17 @@ slot_t *slot_set_memory(uchar *mem, int num)
     return slt;
 }
 
+int slot_set(slot_t *slt, io_function reading,
+                          compute_function computing,
+                          io_function writing)
+{
+    SLOT_reading(slt) = reading;
+    SLOT_computing(slt) = computing;
+    SLOT_writing(slt) = writing;
+
+    return SLOT_SUCCESS;
+}
+
 size_t slot_ask_target_size(slot_t *slt, int whence)
 {
     FILE *fp;

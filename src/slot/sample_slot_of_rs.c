@@ -86,10 +86,9 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *mem)
      * children file を integrate file に統合。
     SLOT_writing(parent) = slot_fwrite;
      */
-    SLOT_computing(parent) = slot_reed_solomon_encode;
-    SLOT_reading(parent) = slot_fread;
+    slot_set(parent, slot_fread, slot_reed_solomon_encode, NULL);
     for (i=0;i<division;i++) {
-        SLOT_writing(children_i) = slot_fwrite;
+        slot_set(children_i, NULL, NULL, slot_fwrite);
         /*
         SLOT_computing(children_i) = slot_reed_solomon_recover;
         SLOT_reading(children_i) = slot_fread;

@@ -192,6 +192,9 @@ int slot_calc_sb_by_child_slot_size(slot_t *parent,
 
 size_t slot_get_memory_size(void);
 slot_t *slot_set_memory(uchar *mem, int num);
+int slot_set(slot_t *slt, io_function reading,
+                          compute_function computing,
+                          io_function writing);
 size_t slot_ask_target_size(slot_t *slt, int whence);
 size_t slot_dev_null_r(slot_t *read_, void *buf, size_t read_size);
 size_t slot_dev_null_w(slot_t *writ, void *buf, size_t writ_size);
