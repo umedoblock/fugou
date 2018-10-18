@@ -114,6 +114,21 @@ void sample_slot_integrate(slot_t *parent, slot_t *children,
                            uint bits, uint division,
                            uchar *tmp)
 {
+    size_t symbol_size;
+    reed_solomon_encode_t _rse, *rse = &_rse;
+
+    /* reed solomon の設定 */
+    rs_set_rse(rse, bits, division, tmp);
+    symbol_size = rse->rs->symbol_size;
+
+    /* file to file で試してみる。
+     * parent file を children file に分割。
+     * children file を integrate file に統合。
+    SLOT_writing(parent) = slot_fwrite;
+     */
+    slot_set(parent, NULL, slot_reed_solomon_encode, slot_fwrite);
+    slot_set_ntimes(children, slot_fread, NULL, NULL, division);
+
 #if 0
     strcat(SLOT_name(parent), ".integrate");
     fp = fopen(SLOT_name(parent), "wb+");
