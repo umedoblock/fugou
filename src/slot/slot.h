@@ -131,7 +131,7 @@ typedef union {
 typedef struct _slot_t _slot_t;
 typedef struct slot_t slot_t;
 
-typedef size_t (*compute_function)(slot_t *, slot_t *, uint, void *);
+typedef size_t (*compute_function)(slot_t *, slot_t *, uint, uint, void *);
 typedef size_t (*io_function)(slot_t *, void *, size_t );
 typedef size_t (*pos_function)(slot_t *, void * );
 
@@ -212,8 +212,8 @@ size_t slot_memcpy_r(slot_t *read_, void *buf, size_t read_size);
 size_t slot_memcpy_w(slot_t *writ, void *buf, size_t writ_size);
 int slot_setpos(slot_t *slt, _pos_t *pos);
 
-int _slot_divide(slot_t *children, slot_t *parent, uint division, void *args);
-int _slot_integrate(slot_t *parent, slot_t *children, uint division, \
+int _slot_divide(slot_t *children, slot_t *parent, uint division, uint symbol_num, void *args);
+int _slot_integrate(slot_t *parent, slot_t *children, uint division, uint symbol_num,
                     void *args);
 
 int slot_children_set_first_pos(slot_t *parent,

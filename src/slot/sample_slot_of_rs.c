@@ -55,6 +55,7 @@ static size_t _rs_encode16_slots(slot_t *parity,
 static size_t slot_reed_solomon_encode(slot_t *parity,
                                      slot_t *data,
                                      uint division,
+                                     uint symbol_num,
                                      void *args)
 {
     reed_solomon_encode_t *rse = args;
@@ -62,7 +63,7 @@ static size_t slot_reed_solomon_encode(slot_t *parity,
                               rse->rs,
                               rse->vandermonde,
                               rse->parity_vector, rse->data_vector,
-                              rse->division, rse->symbol_num);
+                              rse->division, symbol_num);
 }
 
 void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
@@ -72,6 +73,7 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
     uint i, division = 41, bits = 16;
+    uint symbol_num = 0;
     size_t integrate_target_size, mem_size;
     size_t symbol_size;
     int ret;
@@ -97,13 +99,11 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uchar *tmp)
                symbol_size, SLOT_FILE,
                tmp_dir, random_1048576_bin);
 
-    /* ここに至ってようやく rse->symbol_num の大きさを計算できることに注意 */
-    rse->symbol_num = SLOT_slot_size(children) / symbol_size;
-    /* ってことは，違うんだ。 symbol_num は， rse 以下にある変数じゃない。*/
+    symbol_num = SLOT_slot_size(children) / symbol_size;
 
     /* parent => children の分割を行う。*/
     /* sample の目玉 */
-    ret = _slot_divide(children, parent, division, (void *)rse);
+    ret = _slot_divide(children, parent, division, symbol_num, (void *)rse);
 
     slot_children_fclose(SLF(children), division);
 

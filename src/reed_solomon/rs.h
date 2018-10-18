@@ -213,7 +213,6 @@ typedef struct {
     vector_t *data_vector;
     size_t matrix_mem_size;
     size_t vector_mem_size;
-    uint symbol_num;
 } reed_solomon_encode_t;
 
 /* row, 行

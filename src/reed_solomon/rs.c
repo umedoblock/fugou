@@ -126,7 +126,6 @@ void set_rse(reed_solomon_encode_t *rse, uint bits, uint division, uchar *mem)
 
     rse->division = division;
     rs_take_rs(&rse->rs, bits, division);
-    rse->symbol_num = 0;
 
     matrix_mem_size = \
         matrix_calc_mem_size(division, division, rse->rs->register_size);

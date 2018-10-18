@@ -813,6 +813,7 @@ _DEBUG(" done _slot_divide_now_reading().\n");
 size_t _slot_divide_now_computing(slot_t *children,
                                   slot_t *parent,
                                   uint division,
+                                  uint symbol_num,
                                   void *args)
 {
     size_t compute_size = 0;
@@ -821,7 +822,7 @@ _DEBUG("start _slot_divide_now_computing(children=%p, parent=%p, "
             "args=%p), SLOT_computing(parent)=%p.\n",
              children, parent, args, SLOT_computing(parent));
     if (SLOT_computing(parent)) {
-        compute_size = SLOT_computing(parent)(children, parent, division, args);
+        compute_size = SLOT_computing(parent)(children, parent, division, symbol_num, args);
     }
     else {
         #if 0
@@ -920,6 +921,7 @@ size_t _cat_mem(void *arg, uchar *buf, size_t available_size)
 size_t _slot_integrate_now_computing(slot_t *parent,
                                      slot_t *children,
                                      uint division,
+                                     uint symbol_num,
                                      void *args)
 {
     size_t compute_size = 0;
@@ -930,7 +932,7 @@ size_t _slot_integrate_now_computing(slot_t *parent,
         child = children_i;
         if (SLOT_computing(child)) {
             /* 以下は、bug の可能性高し。適当にしている。*/
-            SLOT_computing(child)(parent, children, division, args);
+            SLOT_computing(child)(parent, children, division, symbol_num, args);
             _DEBUG("start _slot_integrate_now_computing(children=%p, "
                    "parent=%p, args=%p), SLOT_computing(parent)=%p.\n",
                          children, parent, args, SLOT_computing(parent));
@@ -1021,7 +1023,7 @@ size_t _slot_determine_doing_size(slot_t *slt)
     return doing_size;
 }
 
-int _slot_divide(slot_t *children, slot_t *parent, uint division, void *args)
+int _slot_divide(slot_t *children, slot_t *parent, uint division, uint symbol_num, void *args)
 {
     size_t child_slot_size, parent_slot_size, consumed_size, doing_size;
     size_t child_remained_size;
@@ -1048,7 +1050,7 @@ _DEBUG("start _slot_divide().\n");
 
        /*********************************************************/
        _slot_divide_now_reading(children, parent, division, doing_size);
-       _slot_divide_now_computing(children, parent, division, args);
+       _slot_divide_now_computing(children, parent, division, symbol_num, args);
        _slot_divide_now_writing(children, parent, division, doing_size);
 
        consumed_size += doing_size * division;
@@ -1062,7 +1064,7 @@ _DEBUG(" done _slot_divide().\n");
     return ret;
 }
 
-int _slot_integrate(slot_t *parent, slot_t *children, uint division, void *args)
+int _slot_integrate(slot_t *parent, slot_t *children, uint division, uint symbol_num, void *args)
 {
     size_t child_slot_size, parent_slot_size, consumed_size, doing_size;
     size_t child_remained_size;
@@ -1089,7 +1091,7 @@ _DEBUG("start _slot_integrate().\n");
 
        /*********************************************************/
        _slot_integrate_now_reading(parent, children, division, doing_size);
-       _slot_integrate_now_computing(parent, children, division, args);
+       _slot_integrate_now_computing(parent, children, division, symbol_num, args);
        _slot_integrate_now_writing(parent, children, division, doing_size);
 
        consumed_size += doing_size * division;
