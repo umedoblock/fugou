@@ -84,7 +84,9 @@ _DEBUG(" done _update_remained_size().\n");
     return remained_size;
 }
 
-int slot_birth(slot_t *parent, slot_t *children, uint division,
+int slot_birth(slot_t *parent, const char *parent_mode,
+               slot_t *children, const char *children_mode,
+               uint division,
                size_t symbol_size, int type,
                const char *dir_name, const char *base_name)
 {
@@ -92,7 +94,7 @@ int slot_birth(slot_t *parent, slot_t *children, uint division,
 
     if (type == SLOT_FILE) {
         slot_file_named(SLF(parent), dir_name, base_name);
-        slot_file_fopen(SLF(parent), "rb");
+        slot_file_fopen(SLF(parent), parent_mode);
         parent_target_size = slot_ask_target_size(parent, FROM_HEAD);
 
         slot_calc_sb_by_division(parent, children,
@@ -102,7 +104,7 @@ int slot_birth(slot_t *parent, slot_t *children, uint division,
         /* slot_calc_sb_by_division() より後で，symbol_num を設定する。*/
 
         slot_children_named(SLF(children), parent, division);
-        slot_children_fopen(SLF(children), "wb+", division);
+        slot_children_fopen(SLF(children), children_mode, division);
         slot_children_set_first_pos(parent, children, division);
     }
     else {

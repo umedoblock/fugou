@@ -95,7 +95,9 @@ void sample_slot_divide(slot_t *parent, slot_t *children,
         SLOT_reading(children_i) = slot_fread;
         */
 
-    slot_birth(parent, children, division,
+    slot_birth(parent, "rb",
+               children, "wb+",
+               division,
                symbol_size, SLOT_FILE,
                TMP_DIR, RANDOM_1048576_BIN);
 
