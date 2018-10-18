@@ -186,7 +186,9 @@ int main(int argc, char *argv[])
     children = slot_set_memory(mem, TEST_MAX_SLOTS);
     mem += slot_get_memory_size() * TEST_MAX_SLOTS;
 
+    /* initialize reed solomon memory */
     rs_big_bang();
+
     sample_slot_divide(parent, children, bits, division, tmp);
 
     /* clean up memory */
@@ -202,8 +204,10 @@ int main(int argc, char *argv[])
 
     sample_slot_integrate(parent, children, tmp);
 
+    /* finalize reed solomon memory */
     rs_ultimate_fate_of_the_universe();
 
+    /* free working area */
     free(_mem);
 
     return 0;
