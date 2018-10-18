@@ -6,13 +6,16 @@
 # https://github.com/umedoblock/fugou
 
 fugou
-|-- omoide, 純粋だった頃の思ひ出。
-|   |       初めてのprogramming。
-|   |       20歳の頃，cygwin, Visual Studio .net を使って
-|   |       C 言語の勉強をしていました。
+|   Below softwares are under tha MIT License.
+|   Except omoide/梅暗号/ume_sorce.zip
+|-- omoide
+|   |   純粋だった頃の思ひ出。
+|   |   初めてのprogramming。
+|   |   20歳の頃，cygwin, Visual Studio .net を使って
+|   |   C 言語の勉強をしていました。
 |   |-- src
 |   |   |-- utbi_sanjutsu
-|   |   |       多倍長整数ライブラリ, 1 file 1 function 主義
+|   |   |   多倍長整数ライブラリ, 1 file 1 function 主義
 |   |   |-- DH
 |   |   |   Diffee Hellman key exchange dependents on utbi_sanjutsu library.
 |   |   |-- camellia
@@ -46,15 +49,15 @@ fugou
 |       C=M*e1+r*e2 mod n, e1=e*a, e2=e*x
 `-- src
     |-- libfugou
-    |   slot and reed_solomon dependent this library.
+    |   slot and reed_solomon dependent on this library.
     |-- slot
     |   efficientry use every binary function
-    |   sample show you that how tu use slot with reed solomon.
+    |   sample show you that how to use slot with reed solomon.
     |-- reed_solomon
     |   reed solomon encode
     |-- ecc
     |   楕円曲線暗号 library
-    |   You use a ecdh and ecdsa.
+    |   You get a ecdh and ecdsa library.
     |-- camellia
     |   対称鍵暗号
     |-- sha
