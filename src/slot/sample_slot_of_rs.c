@@ -188,7 +188,20 @@ int main(int argc, char *argv[])
 
     rs_big_bang();
     sample_slot_divide(parent, children, bits, division, tmp);
+
+    /* clean up memory */
+    mem = _mem;
+    memset(mem, '\0', mem_size);
+
+    /* retry memory mapping */
+    tmp = mem; mem += 1048576;
+    parent = slot_set_memory(mem, 1);
+    mem += slot_get_memory_size();
+    children = slot_set_memory(mem, TEST_MAX_SLOTS);
+    mem += slot_get_memory_size() * TEST_MAX_SLOTS;
+
     sample_slot_integrate(parent, children, tmp);
+
     rs_ultimate_fate_of_the_universe();
 
     free(_mem);
