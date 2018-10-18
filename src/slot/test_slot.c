@@ -254,7 +254,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     1048576 % 41 =  1
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
-    uint i, division = 41, symbol_size = 3;
+    uint i, division = 41, symbol_size = 3, symbol_num = 0;
     size_t parent_target_size = 0, child_slot_size, child_target_size;
     size_t zero_size;
     size_t integrate_target_size;
@@ -285,6 +285,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
                              parent_target_size,
                              division,
                              symbol_size, 0);
+    symbol_num = SLOT_slot_size(children) / symbol_size;
 
     for (i=0;i<division;i++) {
         SLOT_name(children_i)[0] = '\0';
@@ -324,7 +325,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     }
 
     /* parent => children の分割を行う。*/
-    ret = _slot_divide(children, parent, division, NULL);
+    ret = _slot_divide(children, parent, division, symbol_num, NULL);
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
@@ -394,7 +395,7 @@ void test__slot_divide_and_integrate(slot_t *parent, slot_t *children)
     }
 
     /* children => parent の統合 */
-    ret = _slot_integrate(parent, children, division, NULL);
+    ret = _slot_integrate(parent, children, division, symbol_num, NULL);
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);
@@ -436,7 +437,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     size_t expected_division, expected_column_size;
     size_t expected_parent_slot_size, expected_parent_padding_size;
     uint expected_index;
-    uint i, division = 0, symbol_size = 0;
+    uint i, division = 0, symbol_num, symbol_size = 0;
     size_t parent_target_size = 0, child_slot_size, child_target_size;
     size_t slot_buf_size, integrate_target_size, zero_size;
     int ret;
@@ -461,6 +462,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     parent_target_size = 533;
     child_slot_size = 99;
     symbol_size = 3; /* must be zero that child_slot_size mod symbol_size */
+    symbol_num = child_slot_size / symbol_size;
 
     sprintf(msg, "before slot_calc_sb_by_child_slot_size()");
     assert_by_uint(0, SLOT_division(parent), msg);
@@ -541,7 +543,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     }
 
     /* parent => children の分割を行う。*/
-    ret = _slot_divide(children, parent, division, NULL);
+    ret = _slot_divide(children, parent, division, symbol_num, NULL);
     sprintf(msg, "_slot_divide(children=%p, parent=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   children, parent, division);
@@ -622,7 +624,7 @@ void test__slot_divide_and_integrate_mini_by_slot_size(
     */
 
     /* children => parent の統合 */
-    ret = _slot_integrate(parent, children, division, NULL);
+    ret = _slot_integrate(parent, children, division, symbol_num, NULL);
     sprintf(msg, "_slot_divide_or_integrate(parent=%p, children=%p, "
                  "division=%u, slot_fread, slot_fwrite)",
                   parent, children, division);

@@ -99,6 +99,7 @@ int slot_birth(slot_t *parent, slot_t *children, uint division,
                                  parent_target_size,
                                  division,
                                  symbol_size, 0);
+        /* slot_calc_sb_by_division() より後で，symbol_num を設定する。*/
 
         slot_children_named(SLF(children), parent, division);
         slot_children_fopen(SLF(children), "wb+", division);
@@ -598,6 +599,7 @@ int slot_calc_sb_by_division(slot_t *parent,
                                            column_size,
                                            padding_size,
                                            division);
+        /* slot_calc_sb_by_division() より後で，symbol_num を設定する。*/
     }
 
     return ret;
