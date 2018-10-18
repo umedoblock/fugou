@@ -168,12 +168,11 @@ int main(int argc, char *argv[])
     size_t mem_size = 0;
     uint bits=16, division = 41;
     FILE *fp;
-    uchar *dump_1048576;
     uchar *mem, *_mem, *tmp;
     slot_t *parent, *children;
     size_t matrix_mem_size, vector_mem_size;
 
-    mem_size += 1048576 * 2;
+    mem_size += 1048576 * 1;
     mem_size += (1 + TEST_MAX_SLOTS) * slot_get_memory_size();
 
     mem = (uchar *)malloc(mem_size);
@@ -184,7 +183,6 @@ int main(int argc, char *argv[])
     _mem = mem;
     memset(mem, '\0', mem_size);
 
-    dump_1048576 = mem; mem += 1048576;
     tmp = mem; mem += 1048576;
 
     parent = slot_set_memory(mem, 1);
