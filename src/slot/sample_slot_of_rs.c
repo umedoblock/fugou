@@ -25,7 +25,6 @@ static size_t _rs_encode16_slots(slot_t *parity,
     size_t symbol_size = rs->symbol_size, encoded_size=0;
     uchar unum;
     uint num;
-    matrix_t *elementary = NULL;
 
     for (i=0;i<symbol_num;i++) {
         for (j=0;j<division;j++) {
@@ -72,9 +71,8 @@ void sample_slot_divide(slot_t *parent, slot_t *children, uint bits, uint divisi
     1048576 % 41 =  1
    (1048576 + 122) / 41 = 25578.0, column_size = 123, division = 41
     */
-    uint i;
     uint symbol_num = 0;
-    size_t integrate_target_size, mem_size;
+    size_t integrate_target_size;
     size_t symbol_size;
     int ret;
     reed_solomon_encode_t _rse, *rse = &_rse;
@@ -167,10 +165,8 @@ int main(int argc, char *argv[])
 {
     size_t mem_size = 0;
     uint bits=16, division = 41;
-    FILE *fp;
     uchar *mem, *_mem, *tmp;
     slot_t *parent, *children;
-    size_t matrix_mem_size, vector_mem_size;
 
     mem_size += 1048576 * 1;
     mem_size += (1 + TEST_MAX_SLOTS) * slot_get_memory_size();
