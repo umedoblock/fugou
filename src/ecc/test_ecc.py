@@ -30,7 +30,7 @@ class TestECDSA(unittest.TestCase):
         # signer: alice
         # verifier: bob
         # alice doesn't need to calculate public key for signature.
-        # alice needs judt to set private key.
+        # alice needs just to set private key.
         alice = ECDSA(G256)
         bob = ECDSA(G256)
 
@@ -58,7 +58,7 @@ class TestECDSA(unittest.TestCase):
                     'BA7816BF 8F01CFEA 414140DE 5DAE2223'
                     'B00361A3 96177A9C B410FF61 F20015AD'), 'big')
         # alice doesn't need calculated public key for signature.
-        # alice needs judt to set private key.
+        # alice needs just to set private key.
         r, s = alice.sign(h)
         self.assertEqual(k, generate_random(ecc256.order))
         del d['randrange']
