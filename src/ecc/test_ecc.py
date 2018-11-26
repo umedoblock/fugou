@@ -568,7 +568,7 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         self.assertFalse(0, ecc.order)
         self.assertEqual(11, len(points))
         expected_points = frozenset([
-            ECCPoint(0, 0, ecc, is_infinity=True),
+            ECCPoint(None, None, ecc, is_infinity=True),
             ECCPoint(1, 3, ecc),
             ECCPoint(1, 4, ecc),
             ECCPoint(2, 2, ecc),
