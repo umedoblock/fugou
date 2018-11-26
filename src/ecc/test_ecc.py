@@ -330,6 +330,37 @@ class TestECC(unittest.TestCase):
         self.assertTrue(R.isinf())
         self.assertEqual('(inf, inf)', str(R))
 
+    def test_ECCPoint_compare_with_infinity(self):
+        ecc = ECC(19, 77, 307, 331)
+        P = ECCPoint(0x12e, 0xde, ecc)
+        O = ECCPoint(0, 0, ecc, is_infinity=True)
+
+        self.assertFalse(P.isinf())
+        self.assertTrue(O.isinf())
+
+        self.assertLess(P, O)
+        self.assertLessEqual(P, O)
+        self.assertGreater(O, P)
+        self.assertGreaterEqual(O, P)
+
+        self.assertNotEqual(P, O)
+
+    def test_ECCPoint_compare_with_infinity_infinity(self):
+        ecc = ECC(19, 77, 307, 331)
+        O = ECCPoint(0, 0, ecc, is_infinity=True)
+        O2 = ECCPoint(0, 0, ecc, is_infinity=True)
+
+        self.assertTrue(O.isinf())
+        self.assertTrue(O2.isinf())
+
+        self.assertEqual(O, O2)
+
+        self.assertLessEqual(O, O2)
+        self.assertGreaterEqual(O, O2)
+
+        self.assertFalse(O > O2)
+        self.assertFalse(O < O2)
+
     def test_ECCPoint_on_different_ec(self):
         ecc_0 = ECC(2, -1, 7, 11)
         ecc_1 = ECC(19, 77, 307, 331)
