@@ -47,13 +47,15 @@ if __name__ == "__main__":
     points.sort()
 
     points_on_ec = []
+    x_is_prime = []
     if args.primes:
         for point in points:
             if point.isinf():
-                raise ValueError(f"doesn't collect {args.n_points} primes, we have {len(points_on_ec)} primes.")
+                raise ValueError(f"doesn't collect {args.n_points} primes, we have {len(x_is_prime)} primes.")
             if lib.is_prime(point.x):
-                points_on_ec.append(point)
-            if len(points_on_ec) >= args.n_points:
+                x_is_prime.append(point)
+            if len(x_is_prime) >= args.n_points:
+                points_on_ec = x_is_prime
                 break
     else:
         points_on_ec = points[:args.n_points]
