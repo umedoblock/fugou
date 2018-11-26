@@ -6,7 +6,11 @@
 import math
 import random
 
-from . import lib
+# umm...
+if __name__ == '__main__':
+    import lib
+else:
+    from . import lib
 
 __all__ = [
     'ECC', 'ECCPoint', 'ECCPointError', 'ECCGetItem',
