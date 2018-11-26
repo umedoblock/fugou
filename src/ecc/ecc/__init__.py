@@ -6,6 +6,8 @@
 import math
 import random
 
+from . import lib
+
 __all__ = [
     'ECC', 'ECCPoint', 'ECCPointError', 'ECCGetItem',
     'generate_random', 'gcdext'
@@ -281,7 +283,7 @@ class ECC(EC):
         # for point at infinity
         order += 1
 
-        if not is_prime(order):
+        if not lib.is_prime(order):
             raise RuntimeWarning(('order(={}) '
                                   'is not prime number.').format(order))
 
@@ -410,27 +412,6 @@ class ECCPoint(Point):
 
 class ECCPointError(BaseException):
     pass
-
-def collect_primes(n):
-    primes = list()
-    primes.append(2)
-    for i in range(3, n + 1, 2):
-        # print(i)
-        dived = False
-        sq = int(math.sqrt(i))
-        for prime in primes:
-            if prime > sq:
-      #     if prime ** 2 > i:
-                break
-            if i % prime == 0:
-                dived = True
-        if not dived:
-            primes.append(i)
-    return primes
-
-def is_prime(n):
-    primes = collect_primes(n)
-    return n in primes
 
 if __name__ == '__main__':
     # data from http://www.rfc-editor.org/rfc/rfc5903.txt
