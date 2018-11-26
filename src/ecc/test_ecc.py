@@ -559,7 +559,7 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         self.assertEqual(P26, S)
 
     # util test ###############################################################
-    def test_calc_all_pair_of_xy(self):
+    def test_collect_all_points(self):
         ecc = ECC(2, -1, 7)
         self.assertEqual(0, ecc.order)
 
