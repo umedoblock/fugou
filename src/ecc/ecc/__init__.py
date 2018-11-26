@@ -114,6 +114,9 @@ class Point(Line):
             return '(inf, inf)'
         return '(0x{:x}, 0x{:x})'.format(self.x, self.y)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
     def __gt__(self, other):
         if self.x > other.x:
             return True
@@ -430,10 +433,7 @@ class ECCPoint(Point):
         elif self.isinf() != other.isinf():
             return False
 
-        x_eq = self.x == other.x
-        y_eq = self.y == other.y
-
-        return x_eq and y_eq
+        return super().__eq__(other)
 
     def __bool__(self):
         return not self.isinf()
