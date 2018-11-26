@@ -17,6 +17,18 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def uniq_by_x(points):
+    uniq = {}
+    for point in points:
+        if point.x in uniq.keys() and \
+           point > uniq[point.x]:
+            # point.x == uniq[point.x].x and
+            # point.y > uniq[point.x].y
+            continue
+        uniq[point.x] = point
+
+    return uniq.values()
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -30,15 +42,8 @@ if __name__ == "__main__":
         print("\n".join([str(x) for x in L]))
         raise()
 
-    uniq_x_points = {}
-    for point in points:
-        if point.x in uniq_x_points.keys() and \
-           point > uniq_x_points[point.x]:
-            # point.x == uniq_x_points[point.x].x and
-            # point.y > uniq_x_points[point.x].y
-            continue
-        uniq_x_points[point.x] = point
-    points = list(uniq_x_points.values())
+    uniq = uniq_by_x(points)
+    points = list(uniq)
     points.sort()
 
     points_on_x_axis = []
