@@ -3,7 +3,7 @@
 
 import math
 
-def collect_primes(n):
+def collect_primes(n, len_primes=0):
     primes = list()
     primes.append(2)
     for i in range(3, n + 1, 2):
@@ -18,6 +18,8 @@ def collect_primes(n):
                 dived = True
         if not dived:
             primes.append(i)
+            if len_primes and len(primes) >= len_primes:
+                break
     return primes
 
 def is_prime(n):

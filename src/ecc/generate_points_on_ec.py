@@ -5,13 +5,12 @@ from ecc import lib
 
 def parse_args():
     parser = argparse.ArgumentParser(description=("look for primes on ec of x axis."))
-
-    parser.add_argument("--max_prime", metavar="N", dest="max_prime",
-                       type=int, default=100,
-                       help="max_prime default: 100")
-#   parser.add_argument("--n_points", metavar="N", dest="n_points",
-#                      type=int, default=53,
-#                      help="collect n_points on ec default: 53")
+    parser.add_argument("--primes", dest="primes",
+                       action='store_true', default=False,
+                       help="primes option default: False")
+    parser.add_argument("--n_points", metavar="N", dest="n_points",
+                       type=int, default=53,
+                       help="collect n_points on ec default: 53")
   # parser.add_argument("--top", metavar="N", dest="top",
   #                    type=int, nargs="?", default=10,
   #                    help="ranking default: 10")
@@ -29,14 +28,34 @@ if __name__ == "__main__":
         L = list(points)
         L.sort()
         print("\n".join([str(x) for x in L]))
+        raise()
 
-    max_prime = args.max_prime
-    primes = lib.collect_primes(max_prime)
+    uniq_x_points = {}
+    for point in points:
+        if point.x in uniq_x_points.keys() and \
+           point > uniq_x_points[point.x]:
+            # point.x == uniq_x_points[point.x].x and
+            # point.y > uniq_x_points[point.x].y
+            continue
+        uniq_x_points[point.x] = point
+    points = list(uniq_x_points.values())
+    points.sort()
 
     points_on_x_axis = []
-    for point in points:
-        if point.x in primes:
-            points_on_x_axis.append(point)
+    if args.primes:
+        for point in points:
+            if point.isinf():
+                raise ValueError(f"doesn't collect {args.n_points} primes, we have {len(points_on_x_axis)} primes.")
+            if lib.is_prime(point.x):
+                points_on_x_axis.append(point)
+            if len(points_on_x_axis) >= args.n_points:
+                break
+    else:
+        points_on_x_axis = points[:args.n_points]
+        if points_on_x_axis[-1].isinf():
+            len_available_points = len(points) - 1
+            # "len(points) - 1" means delete infinity point in points.
+            raise ValueError(f"doesn't collect available {args.n_points} points, we have {len_available_points} points.")
 
     print("points =")
     if points_on_x_axis:
