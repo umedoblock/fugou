@@ -584,23 +584,42 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
 
     def test_calc_pair_of_xy(self):
         ecc = ECC(2, -1, 7, 11)
+#       points = ecc.collect_all_points()
+#       print(points)
+        #(1, 3),
+        #(1, 4),
+        #(2, 2),
+        #(2, 5),
+        #(3, 2),
+        #(3, 5),
+        #(4, 1),
+        #(4, 6),
+        #(5, 1),
+        #(5, 6),
+        #(inf, inf)
 
-        x, y = ecc.calc_pair_of_xy(x=2)
-        # print('x, y =', x, y)
-        self.assertEqual((2, 2), (x, y))
+        P, Q = ecc.calc_pair_of_xy(x=1)
+        self.assertEqual((1, 3), P)
+        self.assertEqual((1, 4), Q)
 
-        x, y = ecc.calc_pair_of_xy(x=5)
-        # print('x, y =', x, y)
-        self.assertEqual((5, 1), (x, y))
+        P, Q = ecc.calc_pair_of_xy(x=2)
+        self.assertEqual((2, 2), P)
+        self.assertEqual((2, 5), Q)
 
-        x, y = ecc.calc_pair_of_xy(y=4)
-        self.assertEqual((1, 4), (x, y))
+        P, Q = ecc.calc_pair_of_xy(x=3)
+        self.assertEqual((3, 2), P)
+        self.assertEqual((3, 5), Q)
 
-        x, y = ecc.calc_pair_of_xy(y=6)
-        self.assertEqual((4, 6), (x, y))
+        P, Q = ecc.calc_pair_of_xy(x=4)
+        self.assertEqual((4, 1), P)
+        self.assertEqual((4, 6), Q)
 
-        p = ecc.calc_pair_of_xy(y=0)
-        self.assertFalse(p)
+        P, Q = ecc.calc_pair_of_xy(x=5)
+        self.assertEqual((5, 1), P)
+        self.assertEqual((5, 6), Q)
+
+        P = ecc.calc_pair_of_xy(y=0)
+        self.assertEqual(None, P)
 
     def test_calc_pair_of_xy_Nones(self):
         ecc = ECC(2, -1, 7, 11)
