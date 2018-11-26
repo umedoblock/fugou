@@ -51,7 +51,7 @@ if __name__ == "__main__":
     if args.primes:
         for point in points:
             if point.isinf():
-                raise ValueError(f"doesn't collect {args.n_points} primes, we have {len(x_is_prime)} primes.")
+                raise ValueError(f"doesn't collect {args.n_points} primes, {ecc} has {len(x_is_prime)} primes of uniq x.")
             if lib.is_prime(point.x):
                 x_is_prime.append(point)
             if len(x_is_prime) >= args.n_points:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         if points_on_ec[-1].isinf():
             len_available_points = len(points) - 1
             # "len(points) - 1" means delete infinity point in points.
-            raise ValueError(f"doesn't collect available {args.n_points} points, we have {len_available_points} points.")
+            raise ValueError(f"doesn't collect available {args.n_points} points, {ecc} has {len_available_points} points of uniq x.")
 
     print("points =")
     if points_on_ec:
