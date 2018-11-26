@@ -67,8 +67,7 @@ class ECDH(object):
 
     def __del__(self):
         # TODO: change _private_key and _secret_key value in C language.
-        self._private_key = None
-        self._secret_key = None
+        del(self._private_key, self._secret_key)
 
 class ECDHError(BaseException):
     pass
