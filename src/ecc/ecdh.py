@@ -18,8 +18,6 @@ class ECDH(object):
         self._public_key = ECCPoint(0, 0, generator.ecc, is_infinity=True)
         self._secret_key = ECCPoint(0, 0, generator.ecc, is_infinity=True)
         self._computed_public_key = False
-        self._client_public_key = \
-            ECCPoint(0, 0, generator.ecc, is_infinity=True)
 
     def set_private_key(self, private_key=0):
         if not isinstance(private_key, int):
