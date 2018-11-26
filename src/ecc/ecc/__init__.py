@@ -114,6 +114,41 @@ class Point(Line):
             return '(inf, inf)'
         return '(0x{:x}, 0x{:x})'.format(self.x, self.y)
 
+    def __gt__(self, other):
+        if self.x > other.x:
+            return True
+        elif self.x < other.x:
+            return False
+        # now, self.x == other.x
+        if self.y > other.y:
+            return True
+        else:
+            # now,
+            #  self.x == other.x and
+            # (self.y < other.y or self.y == other.y)
+            return False
+
+    def __ge__(self, other):
+        return self > other or self == other
+
+    def __lt__(self, other):
+        if self.x < other.x:
+            return True
+        elif self.x > other.x:
+            return False
+
+        # now, self.x == other.x
+        if self.y < other.y:
+            return True
+        else:
+            # now,
+            #  self.x == other.x and
+            # (self.y > other.y or self.y == other.y)
+            return False
+
+    def __le__(self, other):
+        return self < other or self == other
+
 '''
 class Space(Point):
     def __init__(self, x, y, z):

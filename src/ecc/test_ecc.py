@@ -258,6 +258,39 @@ class TestECC(unittest.TestCase):
         self.assertEqual(P, P_)
         self.assertNotEqual(P, Q)
 
+    def test_ECCPoint_gt_lt(self):
+        ecc = ECC(19, 77, 307, 331)
+        # same x
+        P = ECCPoint(0xd, 0x28, ecc)
+        Q = ECCPoint(0xd, 0x10b, ecc)
+        # same y
+        R = ECCPoint(0x4f, 0x1f, ecc)
+        S = ECCPoint(0x61, 0x1f, ecc)
+
+        # same x
+        self.assertLess(P, Q)
+        self.assertGreater(Q, P)
+
+        # same y
+        self.assertLess(R, S)
+        self.assertGreater(S, R)
+
+        # smallest and biggest
+        self.assertLess(P, S)
+        self.assertGreater(S, P)
+
+        # for a rainy day
+        self.assertLess(Q, R)
+        self.assertGreater(R, Q)
+
+    def test_ECCPoint_ge_le(self):
+        ecc = ECC(19, 77, 307, 331)
+        P = ECCPoint(0xd, 0x28, ecc)
+        P_ = ECCPoint(0xd, 0x28, ecc)
+
+        self.assertGreaterEqual(P, P_)
+        self.assertLessEqual(P, P_)
+
     def test_ecc_point_at_infinity(self):
         # point at infinity names O.
         ecc = ECC(2, -1, 7, 11)
