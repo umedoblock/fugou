@@ -334,24 +334,26 @@ class ECC(EC):
 
     def collect_all_points(self):
         points = []
-        for y in range(self.prime):
-            for x in range(self.prime):
-                point = Point(x, y)
-                if self.exists_with(point, raise_error=False):
-                    eccp = ECCPoint(point.x, point.y, self)
-                    points.append(eccp)
+        for x in range(self.prime):
+            new_points = self.calc_pair_of_xy(x=x)
+          # print("new_points =")
+          # print(new_points)
+            if new_points:
+                points.extend(new_points)
         point_at_infinity = ECCPoint(0, 0, self, is_infinity=True)
         points.append(point_at_infinity)
 
+      # print("points =", points)
         return frozenset(points)
 
     def calc_pair_of_xy(self, x=None, y=None):
         if (x, y) == (None, None):
             raise ECCPointError('x and y are None.')
 
+      # print(f'x={x}, y={y}')
         points = []
       # y ^ 2 = x ^ 3 + a * x + b (mod prime).
-        if x:
+        if x is not None:
           # ignore y.
           # y ^ 2 = x ^ 3 + a * x + b
             y_square = (x ** 3 + self.a * x + self.b) % self.prime
@@ -370,20 +372,21 @@ class ECC(EC):
                 if yy == root_y ** 2:
                     y1 = root_y % self.prime
                     y2 = self.prime - y1
-                    points.append((x, y1))
-                    points.append((x, y2))
+                    points.append(ECCPoint(x, y1, self))
+                    points.append(ECCPoint(x, y2, self))
                     break
         else:
             # y is num
             # x ^ 3 + a * x = y ^ 2 - b
             # x * (x ^ 2 + a) = y ^ 2 - b
+          # print(f"y={y}, self.b={self.b}, x={x}")
             y2_b = y ** 2 - self.b
             for x in range(self.prime):
                 left = x * (x ** 2 + self.a)
                 if left % self.prime == y2_b % self.prime:
                     x %= self.prime
                     y %= self.prime
-                    P = (x, y)
+                    P = ECCPoint(x, y, self)
                     points.append(P)
 
         return points

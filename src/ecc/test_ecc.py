@@ -580,6 +580,8 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
             ECCPoint(5, 1, ecc),
             ECCPoint(5, 6, ecc),
         ])
+#       print("points =", points)
+#       print("expected_points =", expected_points)
         self.assertEqual(expected_points, points)
 
     def test_calc_pair_of_xy(self):
@@ -599,28 +601,28 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         #(inf, inf)
 
         points = ecc.calc_pair_of_xy(x=1)
-        self.assertIn((1, 3), points)
-        self.assertIn((1, 4), points)
+        self.assertIn(ECCPoint(1, 3, ecc), points)
+        self.assertIn(ECCPoint(1, 4, ecc), points)
 
         points = ecc.calc_pair_of_xy(x=2)
-        self.assertIn((2, 2), points)
-        self.assertIn((2, 5), points)
+        self.assertIn(ECCPoint(2, 2, ecc), points)
+        self.assertIn(ECCPoint(2, 5, ecc), points)
 
         points = ecc.calc_pair_of_xy(x=3)
-        self.assertIn((3, 2), points)
-        self.assertIn((3, 5), points)
+        self.assertIn(ECCPoint(3, 2, ecc), points)
+        self.assertIn(ECCPoint(3, 5, ecc), points)
 
         points = ecc.calc_pair_of_xy(x=4)
-        self.assertIn((4, 1), points)
-        self.assertIn((4, 6), points)
+        self.assertIn(ECCPoint(4, 1, ecc), points)
+        self.assertIn(ECCPoint(4, 6, ecc), points)
 
         points = ecc.calc_pair_of_xy(x=5)
-        self.assertIn((5, 1), points)
-        self.assertIn((5, 6), points)
+        self.assertIn(ECCPoint(5, 1, ecc), points)
+        self.assertIn(ECCPoint(5, 6, ecc), points)
 
         points = ecc.calc_pair_of_xy(y=1)
-        self.assertIn((4, 1), points)
-        self.assertIn((5, 1), points)
+        self.assertIn(ECCPoint(4, 1, ecc), points)
+        self.assertIn(ECCPoint(5, 1, ecc), points)
 
         points = ecc.calc_pair_of_xy(y=0)
         self.assertFalse(points)
