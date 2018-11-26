@@ -161,6 +161,18 @@ class TestECDH(unittest.TestCase):
 
 class TestECC(unittest.TestCase):
 
+    # basic test
+    def test_ecc_point_eq_ne(self):
+        ecc = ECC(19, 77, 307, 331)
+        # How to find a point on ecc ?
+        # Please run and see ecc/generate_points_on_ec.py
+        P = ECCPoint(0xd, 0x28, ecc)
+        P_ = ECCPoint(0xd, 0x28, ecc)
+        Q = ECCPoint(0x3b, 0xcd, ecc)
+
+        self.assertEqual(P, P_)
+        self.assertNotEqual(P, Q)
+
     def test_simple_ecdh(self):
         ecc = ECC(19, 77, 307, 331)
         P8 = ECCPoint(7, 218, ecc)
