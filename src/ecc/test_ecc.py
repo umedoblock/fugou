@@ -618,8 +618,12 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         self.assertEqual((5, 1), P)
         self.assertEqual((5, 6), Q)
 
-        P = ecc.calc_pair_of_xy(y=0)
-        self.assertEqual(None, P)
+        P, Q = ecc.calc_pair_of_xy(y=1)
+        self.assertEqual((4, 1), P)
+        self.assertEqual((5, 1), Q)
+
+        points = ecc.calc_pair_of_xy(y=0)
+        self.assertFalse(points)
 
     def test_calc_pair_of_xy_Nones(self):
         ecc = ECC(2, -1, 7, 11)

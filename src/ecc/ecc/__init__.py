@@ -352,36 +352,50 @@ class ECC(EC):
         if (x, y) == (None, None):
             raise ECCPointError('x and y are None.')
 
-        on_curve = False
+        P, Q = None, None
       # y ^ 2 = x ^ 3 + a * x + b (mod prime).
         if x:
           # ignore y if y is available.
           # y ^ 2 = x ^ 3 + a * x + b
             # TODO: buf ? % self.prime
             y_square = (x ** 3 + self.a * x + self.b) % self.prime
-            y_ = int(math.sqrt(y_square))
-            if y_square == (y_ ** 2) % self.prime:
-                y = y_
-                tup = (x, y)
-            else:
-                tup = None
+            # x=1, a=2, b=-1, p=7, order=11
+            # y_square = 1 ** 3 + 2 * 1 + -1
+            #          = 1 + 2 + -1
+            #          = 2, 9
+            # y        = 3
+            # x=3, a=2, b=-1, p=7, order=11
+            # y_square = 3 ** 3 + 2 * 3 + -1
+            #          = 27 + 6 - 1
+            #          = 32, 25
+            for i in range(self.prime):
+                yy = y_square + i * self.prime
+                root_y = int(math.sqrt(yy))
+                if yy == root_y ** 2:
+                    y1 = root_y % self.prime
+                    y2 = self.prime - y1
+                    P, Q = (x, y1), (x, y2)
+                    break
         else:
             # y is num
             # x ^ 3 + a * x = y ^ 2 - b
             # x * (x ^ 2 + a) = y ^ 2 - b
             y2_b = y ** 2 - self.b
-            equal = False
+            points = []
             for x in range(self.prime):
                 left = x * (x ** 2 + self.a)
                 if left % self.prime == y2_b % self.prime:
-                    equal = True
-                    break;
-            if not equal:
-                tup = None
-            else:
-                tup = (x, y)
+                    x %= self.prime
+                    y %= self.prime
+                    P = (x, y)
+                    points.append(P)
+            return points
 
-        return tup
+        if (None, None) != (P, Q):
+            if P > Q:
+                P, Q = Q, P
+
+        return P, Q
 
     def __str__(self):
         ss = super().__str__()
