@@ -446,6 +446,9 @@ class ECCPoint(Point):
 
         return super().__eq__(other)
 
+    def __repr__(self):
+        return f"({self.x}, {self.y})"
+
     def __bool__(self):
         return not self.isinf()
 
