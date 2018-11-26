@@ -124,8 +124,8 @@ if __name__ == '__main__':
                 'A7E6EF09 34E70975 59C27F16 14C88A7F'), 'big')
     alice.set_private_key(private_key=w)
     # you can use set_private_key() like a below.
-    # private_key is initialized by random number.
     # alice.set_private_key()
+    # private_key is initialized by random number.
 
     # calculate digest.
     import hashlib
