@@ -232,7 +232,7 @@ class ECC(EC):
         elif x1 == x2:
             # P is not qual to Q.
             # P and Q are on same y coordinate.
-            point_at_infinity = ECCPoint(0, 0, self, is_infinity=True)
+            point_at_infinity = ECCPoint(None, None, self, is_infinity=True)
             return point_at_infinity
         else:
             gcd, x2_x1_inv, _n = gcdext(x2 - x1, self.prime)
@@ -261,7 +261,7 @@ class ECC(EC):
         flged_eccp = eccp
 
         muled = 0
-        muled_eccp = ECCPoint(0, 0, self, is_infinity=True)
+        muled_eccp = ECCPoint(None, None, self, is_infinity=True)
 
         if flg & num:
             muled += flg
@@ -340,7 +340,7 @@ class ECC(EC):
           # print(new_points)
             if new_points:
                 points.extend(new_points)
-        point_at_infinity = ECCPoint(0, 0, self, is_infinity=True)
+        point_at_infinity = ECCPoint(None, None, self, is_infinity=True)
         points.append(point_at_infinity)
 
       # print("points =", points)
