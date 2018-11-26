@@ -45,7 +45,7 @@ class ECDSA(object):
            1 <= s <= ecc.order - 1:
            pass
         else:
-            return INVALID
+            return ECDSA.INVALID
 
         gw = public_key
         gcd, s_inv, n_inv = gcdext(s, ecc.order)
@@ -112,13 +112,13 @@ if __name__ == '__main__':
 
     # signer: alice
     # verifier: bob
-    # alice needs judt to set private key.
+    # alice needs just to set private key.
     # alice doesn't need to compute public key for signature.
     # however bob needs alice's public key to verify signature.
     alice = ECDSA(generator256)
     bob = ECDSA(generator256)
 
-    # alice needs judt to set private key.
+    # alice needs just to set private key.
     w = int.from_bytes(bytes.fromhex(
                 'DC51D386 6A15BACD E33D96F9 92FCA99D'
                 'A7E6EF09 34E70975 59C27F16 14C88A7F'), 'big')
