@@ -29,6 +29,14 @@ def uniq_by_x(points):
 
     return uniq.values()
 
+def get_mazekoze_candidates(points):
+    mazekoze_candidates = []
+    for point in points:
+        if point.isinf():
+            continue
+        mazekoze_candidates.append(point)
+    return mazekoze_candidates
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -43,26 +51,25 @@ if __name__ == "__main__":
         raise()
 
     x_is_uniq = uniq_by_x(points_on_ecc)
-    x_is_uniq = list(x_is_uniq)
-    x_is_uniq.sort()
+    mazekoze_candidates = get_mazekoze_candidates(x_is_uniq)
+    mazekoze_candidates = list(mazekoze_candidates)
+    mazekoze_candidates.sort()
 
     candidates = []
     x_is_prime = []
     if args.primes:
-        for point in x_is_uniq:
-            if point.isinf():
-                raise ValueError(f"doesn't collect {args.n_points} primes, {ecc} has {len(x_is_prime)} primes of uniq x.")
+        for point in mazekoze_candidates:
             if lib.is_prime(point.x):
                 x_is_prime.append(point)
             if len(x_is_prime) >= args.n_points:
-                candidates = x_is_prime
                 break
+        if len(x_is_prime) < args.n_points:
+            raise ValueError(f"doesn't collect {args.n_points} primes, {ecc} has {len(x_is_prime)} primes of uniq x.")
+        candidates = x_is_prime
     else:
-        candidates = x_is_uniq[:args.n_points]
-        if candidates[-1].isinf():
-            len_available_points = len(x_is_uniq) - 1
-            # "len(points) - 1" means delete infinity point in points.
-            raise ValueError(f"doesn't collect available {args.n_points} points, {ecc} has {len_available_points} points of uniq x.")
+        if len(mazekoze_candidates) < args.n_points:
+            raise ValueError(f"doesn't collect available {args.n_points} points, {ecc} has {len(mazekoze_candidates)} points of uniq x.")
+        candidates = mazekoze_candidates[:args.n_points]
 
     print("points =")
     if candidates:
