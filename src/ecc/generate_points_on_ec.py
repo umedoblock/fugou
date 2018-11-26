@@ -24,6 +24,12 @@ if __name__ == "__main__":
     ecc = ECC(19, 77, 307, 331)
     points = ecc.collect_all_points()
 
+    view_all_points = False
+    if view_all_points:
+        L = list(points)
+        L.sort()
+        print("\n".join([str(x) for x in L]))
+
     max_prime = args.max_prime
     primes = lib.collect_primes(max_prime)
 
