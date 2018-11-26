@@ -352,7 +352,7 @@ class ECC(EC):
         if (x, y) == (None, None):
             raise ECCPointError('x and y are None.')
 
-        P, Q = None, None
+        points = []
       # y ^ 2 = x ^ 3 + a * x + b (mod prime).
         if x:
           # ignore y if y is available.
@@ -374,14 +374,14 @@ class ECC(EC):
                 if yy == root_y ** 2:
                     y1 = root_y % self.prime
                     y2 = self.prime - y1
-                    P, Q = (x, y1), (x, y2)
+                    points.append((x, y1))
+                    points.append((x, y2))
                     break
         else:
             # y is num
             # x ^ 3 + a * x = y ^ 2 - b
             # x * (x ^ 2 + a) = y ^ 2 - b
             y2_b = y ** 2 - self.b
-            points = []
             for x in range(self.prime):
                 left = x * (x ** 2 + self.a)
                 if left % self.prime == y2_b % self.prime:
@@ -389,13 +389,8 @@ class ECC(EC):
                     y %= self.prime
                     P = (x, y)
                     points.append(P)
-            return points
 
-        if (None, None) != (P, Q):
-            if P > Q:
-                P, Q = Q, P
-
-        return P, Q
+        return points
 
     def __str__(self):
         ss = super().__str__()

@@ -598,29 +598,29 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         #(5, 6),
         #(inf, inf)
 
-        P, Q = ecc.calc_pair_of_xy(x=1)
-        self.assertEqual((1, 3), P)
-        self.assertEqual((1, 4), Q)
+        points = ecc.calc_pair_of_xy(x=1)
+        self.assertIn((1, 3), points)
+        self.assertIn((1, 4), points)
 
-        P, Q = ecc.calc_pair_of_xy(x=2)
-        self.assertEqual((2, 2), P)
-        self.assertEqual((2, 5), Q)
+        points = ecc.calc_pair_of_xy(x=2)
+        self.assertIn((2, 2), points)
+        self.assertIn((2, 5), points)
 
-        P, Q = ecc.calc_pair_of_xy(x=3)
-        self.assertEqual((3, 2), P)
-        self.assertEqual((3, 5), Q)
+        points = ecc.calc_pair_of_xy(x=3)
+        self.assertIn((3, 2), points)
+        self.assertIn((3, 5), points)
 
-        P, Q = ecc.calc_pair_of_xy(x=4)
-        self.assertEqual((4, 1), P)
-        self.assertEqual((4, 6), Q)
+        points = ecc.calc_pair_of_xy(x=4)
+        self.assertIn((4, 1), points)
+        self.assertIn((4, 6), points)
 
-        P, Q = ecc.calc_pair_of_xy(x=5)
-        self.assertEqual((5, 1), P)
-        self.assertEqual((5, 6), Q)
+        points = ecc.calc_pair_of_xy(x=5)
+        self.assertIn((5, 1), points)
+        self.assertIn((5, 6), points)
 
-        P, Q = ecc.calc_pair_of_xy(y=1)
-        self.assertEqual((4, 1), P)
-        self.assertEqual((5, 1), Q)
+        points = ecc.calc_pair_of_xy(y=1)
+        self.assertIn((4, 1), points)
+        self.assertIn((5, 1), points)
 
         points = ecc.calc_pair_of_xy(y=0)
         self.assertFalse(points)
