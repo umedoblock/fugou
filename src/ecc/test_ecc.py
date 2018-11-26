@@ -432,6 +432,38 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
 
         self.assertEqual(ECCPoint(1, 3, ecc), P)
 
+    def test_same_y_axis(self):
+        # 気になったので。
+        ecc = ECC(19, 77, 307, 331)
+        P = ECCPoint(0xaa, 0x3, ecc)
+        Q = ECCPoint(0xbe, 0x3, ecc)
+
+        R = P + Q
+      # print("R =")
+      # print(R)
+        self.assertEqual(ECCPoint(0xfe, 0x130, ecc), R)
+
+        # ecc = ECC(19, 77, 307, 331)
+        # 上の楕円曲線について，下の方法で，
+        # y 座標が同じになりx座標が異なる点が
+        # 2 個の場合がないか調べたが，
+        # 1 個または 3 個のみであったことに驚愕した。
+        # view_all_points is True
+        # $ python3 generate_points_on_ec.py | \
+        #           awk -F, -e '{print $2}' | \
+        #           sort | \
+        #           uniq --count | \
+        #           sort
+        #
+        # 目視では辛かったので，以下の改良版でも確認。
+        # $ python3 generate_points_on_ec.py | \
+        #           awk -F, -e '{print $2}' | \
+        #           sort | \
+        #           uniq --count | \
+        #           awk -e '{print $1}' | \
+        #           sort | \
+        #           uniq
+
     def test_ecc_the_group_low(self):
         # http://en.wikipedia.org/wiki/Elliptic_curve
         # The group law
