@@ -29,12 +29,16 @@ def uniq_by_x(points):
 
     return uniq.values()
 
-def get_mazekoze_candidates(points):
+def get_mazekoze_candidates(points_on_ecc):
+    x_is_uniq = uniq_by_x(points_on_ecc)
+
     mazekoze_candidates = []
-    for point in points:
+    for point in x_is_uniq:
         if point.isinf():
+            # eliminate infinity from mazekoze_candidates
             continue
         mazekoze_candidates.append(point)
+    mazekoze_candidates.sort()
     return mazekoze_candidates
 
 if __name__ == "__main__":
@@ -50,10 +54,7 @@ if __name__ == "__main__":
         print("\n".join([str(x) for x in L]))
         raise()
 
-    x_is_uniq = uniq_by_x(points_on_ecc)
-    mazekoze_candidates = get_mazekoze_candidates(x_is_uniq)
-    mazekoze_candidates = list(mazekoze_candidates)
-    mazekoze_candidates.sort()
+    mazekoze_candidates = get_mazekoze_candidates(points_on_ecc)
 
     candidates = []
     x_is_prime = []
