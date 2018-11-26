@@ -602,6 +602,12 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         p = ecc.calc_pair_of_xy(y=0)
         self.assertFalse(p)
 
+    def test_calc_pair_of_xy_Nones(self):
+        ecc = ECC(2, -1, 7, 11)
+
+        with self.assertRaises(ECCPointError) as raiz:
+            ecc.calc_pair_of_xy(x=None, y=None)
+
 class TestHelper(unittest.TestCase):
     def test_gcdext(self):
         a, b = 5, 7

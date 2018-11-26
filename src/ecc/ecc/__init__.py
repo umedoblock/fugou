@@ -346,10 +346,18 @@ class ECC(EC):
         return frozenset(points)
 
     def calc_pair_of_xy(self, x=None, y=None):
+        # ドコモ使ってないよ。
+        # test だけ使ってる。。。
+        # bug っててもどこにも影響はない。。。4949
+        if (x, y) == (None, None):
+            raise ECCPointError('x and y are None.')
+
         on_curve = False
       # y ^ 2 = x ^ 3 + a * x + b (mod prime).
-        if x is not None:
+        if x:
+          # ignore y if y is available.
           # y ^ 2 = x ^ 3 + a * x + b
+            # TODO: buf ? % self.prime
             y_square = (x ** 3 + self.a * x + self.b) % self.prime
             y_ = int(math.sqrt(y_square))
             if y_square == (y_ ** 2) % self.prime:
@@ -357,7 +365,8 @@ class ECC(EC):
                 tup = (x, y)
             else:
                 tup = None
-        elif y is not None:
+        else:
+            # y is num
             # x ^ 3 + a * x = y ^ 2 - b
             # x * (x ^ 2 + a) = y ^ 2 - b
             y2_b = y ** 2 - self.b
@@ -371,8 +380,6 @@ class ECC(EC):
                 tup = None
             else:
                 tup = (x, y)
-        else:
-            raise ECCPointError('x and y are None.')
 
         return tup
 
