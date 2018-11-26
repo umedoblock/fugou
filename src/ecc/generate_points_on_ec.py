@@ -33,41 +33,41 @@ if __name__ == "__main__":
     args = parse_args()
 
     ecc = ECC(19, 77, 307, 331)
-    points = ecc.collect_all_points()
+    points_on_ecc = ecc.collect_all_points()
 
     view_all_points = False
     if view_all_points:
-        L = list(points)
+        L = list(points_on_ecc)
         L.sort()
         print("\n".join([str(x) for x in L]))
         raise()
 
-    uniq = uniq_by_x(points)
-    points = list(uniq)
-    points.sort()
+    x_is_uniq = uniq_by_x(points_on_ecc)
+    x_is_uniq = list(x_is_uniq)
+    x_is_uniq.sort()
 
-    points_on_ec = []
+    candidates = []
     x_is_prime = []
     if args.primes:
-        for point in points:
+        for point in x_is_uniq:
             if point.isinf():
                 raise ValueError(f"doesn't collect {args.n_points} primes, {ecc} has {len(x_is_prime)} primes of uniq x.")
             if lib.is_prime(point.x):
                 x_is_prime.append(point)
             if len(x_is_prime) >= args.n_points:
-                points_on_ec = x_is_prime
+                candidates = x_is_prime
                 break
     else:
-        points_on_ec = points[:args.n_points]
-        if points_on_ec[-1].isinf():
-            len_available_points = len(points) - 1
+        candidates = x_is_uniq[:args.n_points]
+        if candidates[-1].isinf():
+            len_available_points = len(x_is_uniq) - 1
             # "len(points) - 1" means delete infinity point in points.
             raise ValueError(f"doesn't collect available {args.n_points} points, {ecc} has {len_available_points} points of uniq x.")
 
     print("points =")
-    if points_on_ec:
-        points_on_ec.sort()
-        str_points = [str(point) for point in points_on_ec]
+    if candidates:
+        candidates.sort()
+        str_points = [str(point) for point in candidates]
         print("\n".join(str_points))
     else:
         print("nothing")
