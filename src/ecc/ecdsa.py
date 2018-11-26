@@ -35,8 +35,14 @@ class ECDSA(object):
                 s = (h + rw) * k_inv % ecc.order
                 if s:
                     break
+            # for security
+            if r:
+                del(k, rw, k_inv, n_inv)
+            else:
+                del(k)
 
-        k = 0
+        # for security
+        del(k, w, rw, k_inv, n_inv)
         return r, s
 
     def verify(self, r, s, h, public_key):
