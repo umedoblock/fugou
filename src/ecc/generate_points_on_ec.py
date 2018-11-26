@@ -46,26 +46,26 @@ if __name__ == "__main__":
     points = list(uniq)
     points.sort()
 
-    points_on_x_axis = []
+    points_on_ec = []
     if args.primes:
         for point in points:
             if point.isinf():
-                raise ValueError(f"doesn't collect {args.n_points} primes, we have {len(points_on_x_axis)} primes.")
+                raise ValueError(f"doesn't collect {args.n_points} primes, we have {len(points_on_ec)} primes.")
             if lib.is_prime(point.x):
-                points_on_x_axis.append(point)
-            if len(points_on_x_axis) >= args.n_points:
+                points_on_ec.append(point)
+            if len(points_on_ec) >= args.n_points:
                 break
     else:
-        points_on_x_axis = points[:args.n_points]
-        if points_on_x_axis[-1].isinf():
+        points_on_ec = points[:args.n_points]
+        if points_on_ec[-1].isinf():
             len_available_points = len(points) - 1
             # "len(points) - 1" means delete infinity point in points.
             raise ValueError(f"doesn't collect available {args.n_points} points, we have {len_available_points} points.")
 
     print("points =")
-    if points_on_x_axis:
-        points_on_x_axis.sort()
-        str_points = [str(point) for point in points_on_x_axis]
+    if points_on_ec:
+        points_on_ec.sort()
+        str_points = [str(point) for point in points_on_ec]
         print("\n".join(str_points))
     else:
         print("nothing")
