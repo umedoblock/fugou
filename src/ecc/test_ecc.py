@@ -244,7 +244,7 @@ class TestECC(unittest.TestCase):
         ecc = ECC(2, -1, 7)
         P = ECCPoint(3, 2, ecc)
         self.assertTrue(P)
-        Q = ECCPoint(0, 0, ecc, is_infinity=True)
+        Q = ECCPoint(None, None, ecc, is_infinity=True)
         self.assertFalse(Q)
 
     def test_ECCPoint_eq_ne(self):
@@ -295,7 +295,7 @@ class TestECC(unittest.TestCase):
         # point at infinity names O.
         ecc = ECC(2, -1, 7, 11)
 
-        O = ECCPoint(0, 0, ecc, is_infinity=True)
+        O = ECCPoint(None, None, ecc, is_infinity=True)
         self.assertTrue(ecc.exists_with(O))
         self.assertTrue(O.isinf())
         self.assertEqual('(inf, inf)', str(O))
@@ -317,7 +317,7 @@ class TestECC(unittest.TestCase):
         P0 = 0 * P
         self.assertEqual(O, P0)
 
-        O_ = ECCPoint(0, 0, ecc, is_infinity=True)
+        O_ = ECCPoint(None, None, ecc, is_infinity=True)
         OO_ = O + O_
         self.assertTrue(OO_.isinf())
         self.assertEqual(O, OO_)
@@ -333,7 +333,7 @@ class TestECC(unittest.TestCase):
     def test_ECCPoint_compare_with_infinity(self):
         ecc = ECC(19, 77, 307, 331)
         P = ECCPoint(0x12e, 0xde, ecc)
-        O = ECCPoint(0, 0, ecc, is_infinity=True)
+        O = ECCPoint(None, None, ecc, is_infinity=True)
 
         self.assertFalse(P.isinf())
         self.assertTrue(O.isinf())
@@ -347,8 +347,8 @@ class TestECC(unittest.TestCase):
 
     def test_ECCPoint_compare_with_infinity_infinity(self):
         ecc = ECC(19, 77, 307, 331)
-        O = ECCPoint(0, 0, ecc, is_infinity=True)
-        O2 = ECCPoint(0, 0, ecc, is_infinity=True)
+        O = ECCPoint(None, None, ecc, is_infinity=True)
+        O2 = ECCPoint(None, None, ecc, is_infinity=True)
 
         self.assertTrue(O.isinf())
         self.assertTrue(O2.isinf())
@@ -383,7 +383,7 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         ecc_0 = ECC(2, -1, 7, 11)
         ecc_1 = ECC(19, 77, 307)
 
-        O_ecc_0 = ECCPoint(0, 0, ecc_0, is_infinity=True)
+        O_ecc_0 = ECCPoint(None, None, ecc_0, is_infinity=True)
 
         self.assertTrue(ecc_0.exists_with(O_ecc_0))
 
@@ -468,7 +468,7 @@ Therefore, __eq__() cannot compare (0x3, 0x2) with (0x7, 0x59).'''
         # http://en.wikipedia.org/wiki/Elliptic_curve
         # The group law
         ecc = ECC(2, -1, 7, 11)
-        O = ECCPoint(0, 0, ecc, is_infinity=True)
+        O = ECCPoint(None, None, ecc, is_infinity=True)
 
         # case 1.
         P = ECCPoint(1, 3, ecc)
